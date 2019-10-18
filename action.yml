@@ -1,0 +1,13 @@
+name: 'ROS 2 CI Action'
+description: 'Run ROS 2 package test in CI using Github Actions.'
+author: 'Thomas Moulard'
+branding:
+  icon: 'activity'
+  color: 'gray-dark'
+inputs:
+  package-name:
+    description: 'Name of the package under test, as expected by colcon'
+    required: true
+runs:
+  using: 'node12'
+  main: 'lib/action-ros2-ci.js'
