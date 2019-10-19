@@ -1,6 +1,6 @@
 name: 'ROS 2 CI Action'
 description: 'Run ROS 2 package test in CI using Github Actions.'
-author: 'Thomas Moulard'
+author: 'ROS Tooling Working Group'
 branding:
   icon: 'activity'
   color: 'gray-dark'
