@@ -25,6 +25,8 @@ async function run() {
     // incorporate the custom repository URL and branch name, when a PR is
     // being built.
     const repo = github.context.repo;
+    const headRef = process.env.GITHUB_HEAD_REF as string;
+    const commitRef = headRef || github.context.sha;
     await exec.exec(
         "bash",
         ["-c", `vcs import src/ << EOF
@@ -32,7 +34,7 @@ repositories:
   ${packageName}:
     type: git
     url: "https://github.com/${repo["owner"]}/${repo["repo"]}.git"
-    version: "${github.context.sha}"
+    version: "${commitRef}"
 EOF`], options);
 
     // For "latest" builds, rosdep often misses some keys, adding "|| true", to
