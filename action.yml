@@ -8,6 +8,12 @@ inputs:
   package-name:
     description: 'Name of the package under test, as expected by colcon'
     required: true
+  # IMPORTANT: ros2-repo-file-url should *NOT* contain the package under
+  # test (as specified by package-name), only the dependencies.
+  ros2-repo-file-url:
+    description: 'VCS file used to pull all necessary dependencies'
+    required: false
+    default: https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
 runs:
   using: 'node12'
   main: 'lib/action-ros2-ci.js'

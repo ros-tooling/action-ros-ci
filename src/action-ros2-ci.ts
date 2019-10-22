@@ -6,6 +6,7 @@ import * as io from "@actions/io";
 async function run() {
   try {
     const packageName = core.getInput("package-name");
+    const ros2RepoFileUrl = core.getInput("ros2-repo-file-url");
     const ros2WorkspaceDir = "/opt/ros2_ws";
     await exec.exec("rosdep", ["update"]);
 
@@ -17,9 +18,7 @@ async function run() {
     };
     await exec.exec(
         "bash",
-        ["-c",
-        "curl https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos | vcs import src/"],
-        options);
+        ["-c", `curl "{$ros2RepoFileUrl}" | vcs import src/`], options);
 
     // The repo file for the repository needs to be generated on-the-fly to
     // incorporate the custom repository URL and branch name, when a PR is
