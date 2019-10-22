@@ -37,6 +37,14 @@ repositories:
     version: "${commitRef}"
 EOF`], options);
 
+    // Remove all repositories the package under test does not depend on, to
+    // avoid having rosdep installing unrequired dependencies.
+    await exec.exec(
+        "bash",
+        ["-c",
+         `diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageName} -p) | xargs rm -rf`],
+        options);
+
     // For "latest" builds, rosdep often misses some keys, adding "|| true", to
     // ignore those failures, as it is often non-critical.
     await exec.exec(
