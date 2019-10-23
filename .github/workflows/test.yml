@@ -17,14 +17,21 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+          os: [macOS-10.14, ubuntu-18.04]
     steps:
     - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
 
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros2@0.0.3
+    - uses: ros-tooling/setup-ros2@master
     - uses: ./ # Uses an action in the root directory
       with:
         package-name: ament_copyright

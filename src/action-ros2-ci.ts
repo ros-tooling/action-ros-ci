@@ -2,13 +2,15 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 import * as io from "@actions/io";
+import * as path from 'path';
 
 async function run() {
   try {
     const repo = github.context.repo;
+    const workspace = process.env.GITHUB_WORKSPACE as string;
 
     const packageName = core.getInput("package-name");
-    const ros2WorkspaceDir = "/opt/ros2_ws";
+    const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
     await exec.exec("rosdep", ["update"]);
 
     // Checkout ROS 2 from source and install ROS 2 system dependencies
