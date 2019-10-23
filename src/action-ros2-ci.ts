@@ -5,6 +5,8 @@ import * as io from "@actions/io";
 
 async function run() {
   try {
+    const repo = github.context.repo;
+
     const packageName = core.getInput("package-name");
     const ros2WorkspaceDir = "/opt/ros2_ws";
     await exec.exec("rosdep", ["update"]);
@@ -28,19 +30,18 @@ async function run() {
     await exec.exec(
         "bash",
         ["-c",
-         `colcon list --packages-select "${packageName}" -p | xargs rm -rf`]);
+        `find "${ros2WorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`]);
 
     // The repo file for the repository needs to be generated on-the-fly to
     // incorporate the custom repository URL and branch name, when a PR is
     // being built.
-    const repo = github.context.repo;
     const headRef = process.env.GITHUB_HEAD_REF as string;
     const commitRef = headRef || github.context.sha;
     await exec.exec(
         "bash",
         ["-c", `vcs import src/ << EOF
 repositories:
-  ${packageName}:
+  ${repo["repo"]}:
     type: git
     url: "https://github.com/${repo["owner"]}/${repo["repo"]}.git"
     version: "${commitRef}"
