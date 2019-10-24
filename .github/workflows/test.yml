@@ -37,3 +37,7 @@ jobs:
         colcon-mixin-name: asan
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         package-name: ament_copyright
+    - uses: actions/upload-artifact@master
+      with:
+        name: colcon-logs
+        path: ros2_ws/log
