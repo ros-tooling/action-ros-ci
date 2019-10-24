@@ -9,6 +9,8 @@ async function run() {
     const repo = github.context.repo;
     const workspace = process.env.GITHUB_WORKSPACE as string;
 
+    const colconMixinName = core.getInput("colcon-mixin-name");
+    const colconMixinRepo = core.getInput("colcon-mixin-repository");
     const packageName = core.getInput("package-name");
     const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
     await exec.exec("rosdep", ["update"]);
@@ -64,14 +66,23 @@ EOF`], options);
         ["-c", "DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true"],
         options);
 
+     if (colconMixinName !== "" && colconMixinRepo !== "") {
+       await exec.exec("colcon", ["mixin", "add", "default", colconMixinRepo]);
+       await exec.exec("colcon", ["mixin", "update", "default"]);
+     }
+
+    let extra_options: string[] = [];
+    if (colconMixinName !== "") {
+      extra_options.concat(["--mixin", colconMixinName]);
+    }
     await exec.exec(
         "colcon",
         ["build", "--event-handlers", "console_cohesion+", "--packages-up-to",
-        packageName, "--symlink-install"], options);
+        packageName, "--symlink-install"].concat(extra_options), options);
     await exec.exec(
         "colcon",
         ["test", "--event-handlers", "console_cohesion+", "--packages-select",
-        packageName, "--return-code-on-test-failure"], options);
+        packageName, "--return-code-on-test-failure"].concat(extra_options), options);
   } catch (error) {
     core.setFailed(error.message);
   }

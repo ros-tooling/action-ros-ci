@@ -5,6 +5,14 @@ branding:
   icon: 'activity'
   color: 'gray-dark'
 inputs:
+  colcon-mixin-name:
+    default: ''
+    description: 'Colcon mixin to be used to compile and test (empty means no mixin)'
+    required: false
+  colcon-mixin-repository:
+    default: 'https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml'
+    description: 'Mixin repository containing the mixin specified in colcon-mixin-name'
+    required: false
   package-name:
     description: 'Name of the package under test, as expected by colcon'
     required: true
