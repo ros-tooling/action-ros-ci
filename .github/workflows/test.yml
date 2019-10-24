@@ -5,6 +5,15 @@ on:
     branches:
       - master
       - 'releases/*'
+      # Greenkeeper provides automated dependency management
+      # for this repository. It will automatically create
+      # new branches with updated npm versions, and send
+      # PRs for those automatically, if they build.
+      # Greenkeeper relies on this CI to determine if a
+      # PR needs to be open or not, and as such we need
+      # to whitelist those branches for CI run here.
+      # See also https://greenkeeper.io/faq#no-initial-pr
+      - 'greenkeeper**'
 
 jobs:
   test:
