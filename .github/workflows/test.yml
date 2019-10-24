@@ -34,4 +34,6 @@ jobs:
     - uses: ros-tooling/setup-ros2@master
     - uses: ./ # Uses an action in the root directory
       with:
+        colcon-mixin-name: asan
+        colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         package-name: ament_copyright
