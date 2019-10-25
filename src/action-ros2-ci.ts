@@ -80,6 +80,9 @@ EOF`], options);
         ["build", "--event-handlers", "console_cohesion+", "--packages-up-to",
         packageName, "--symlink-install"].concat(extra_options), options);
     await exec.exec(
+        "bash",
+        ["-c", `source install/local_setup.bash && colcon build --event-handlers console_cohesion+ --packages-up-to ${packageName} --symlink-install ${extra_options.join(" ")}`], options);
+    await exec.exec(
         "colcon",
         ["test", "--event-handlers", "console_cohesion+", "--packages-select",
         packageName, "--return-code-on-test-failure"].concat(extra_options), options);
