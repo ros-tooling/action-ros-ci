@@ -81,8 +81,10 @@ EOF`], options);
         packageName, "--symlink-install"].concat(extra_options), options);
     await exec.exec(
         "colcon",
-        ["test", "--event-handlers", "console_cohesion+", "--packages-select",
-        packageName, "--return-code-on-test-failure"].concat(extra_options), options);
+        ["test", "--event-handlers", "console_cohesion+", "--pytest-args",
+         "'--cov=.'", "'--cov-report=xml'", "--packages-select",
+         packageName, "--return-code-on-test-failure"].concat(extra_options),
+        options);
   } catch (error) {
     core.setFailed(error.message);
   }
