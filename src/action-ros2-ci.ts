@@ -39,6 +39,10 @@ async function run() {
     // The repo file for the repository needs to be generated on-the-fly to
     // incorporate the custom repository URL and branch name, when a PR is
     // being built.
+    let repoFullName = process.env.GITHUB_REPOSITORY as string;
+    if (github.context.payload.pull_request) {
+        repoFullName = github.context.payload.pull_request.head.repo.full_name;
+    }
     const headRef = process.env.GITHUB_HEAD_REF as string;
     const commitRef = headRef || github.context.sha;
     await exec.exec(
@@ -47,7 +51,7 @@ async function run() {
 repositories:
   ${repo["repo"]}:
     type: git
-    url: "https://github.com/${repo["owner"]}/${repo["repo"]}.git"
+    url: "https://github.com/${repoFullName}.git"
     version: "${commitRef}"
 EOF`], options);
 
