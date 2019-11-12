@@ -31,7 +31,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros2@master
+    - uses: ros-tooling/setup-ros2@0.0.6
     - uses: ./ # Uses an action in the root directory
       with:
         colcon-mixin-name: asan
