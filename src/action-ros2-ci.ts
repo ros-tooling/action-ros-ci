@@ -99,12 +99,17 @@ EOF`], options);
         "colcon",
         ["build", "--event-handlers", "console_cohesion+", "--packages-up-to",
         packageName, "--symlink-install"].concat(extra_options), options);
+    await exec.exec("colcon", ["lcov-result", "--initial"]);
     await exec.exec(
         "colcon",
         ["test", "--event-handlers", "console_cohesion+", "--pytest-args",
          "'--cov=.'", "'--cov-report=xml'", "--packages-select",
          packageName, "--return-code-on-test-failure"].concat(extra_options),
         options);
+
+    // ignoreReturnCode is set to true to avoid  having a lack of coverage
+    // data fail the build.
+    await exec.exec("colcon", ["lcov-result"], {ignoreReturnCode: true});
   } catch (error) {
     core.setFailed(error.message);
   }
