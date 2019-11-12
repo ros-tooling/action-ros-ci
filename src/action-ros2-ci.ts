@@ -77,7 +77,7 @@ EOF`], options);
 
     let extra_options: string[] = [];
     if (colconMixinName !== "") {
-      extra_options.concat(["--mixin", colconMixinName]);
+      extra_options = extra_options.concat(["--mixin", colconMixinName]);
     }
 
     // Add the future install bin directory to PATH.
@@ -99,7 +99,6 @@ EOF`], options);
         "colcon",
         ["build", "--event-handlers", "console_cohesion+", "--packages-up-to",
         packageName, "--symlink-install"].concat(extra_options), options);
-    await exec.exec("colcon", ["lcov-result", "--initial"]);
     await exec.exec(
         "colcon",
         ["test", "--event-handlers", "console_cohesion+", "--pytest-args",
@@ -109,7 +108,10 @@ EOF`], options);
 
     // ignoreReturnCode is set to true to avoid  having a lack of coverage
     // data fail the build.
-    await exec.exec("colcon", ["lcov-result"], {ignoreReturnCode: true});
+    await exec.exec(
+        "colcon", [
+            "lcov-result", "--packages-select", packageName
+        ], {ignoreReturnCode: true});
   } catch (error) {
     core.setFailed(error.message);
   }
