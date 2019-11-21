@@ -18,4 +18,4 @@ inputs:
     required: true
 runs:
   using: 'node12'
-  main: 'lib/action-ros2-ci.js'
+  main: 'dist/index.js'
