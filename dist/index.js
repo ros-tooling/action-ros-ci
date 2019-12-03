@@ -4790,6 +4790,10 @@ function run() {
             if (process.platform != "win32") {
                 yield exec.exec("rosdep", ["update"]);
             }
+            else {
+                core.addPath("C:\\ProgramData\\Chocolatey\\lib\\asio");
+                core.addPath("C:\\ProgramData\\Chocolatey\\lib\\tinyxml2");
+            }
             // Checkout ROS 2 from source and install ROS 2 system dependencies
             yield io.mkdirP(ros2WorkspaceDir + "/src");
             const options = {
@@ -4842,6 +4846,14 @@ EOF`
                 yield exec.exec("colcon", ["mixin", "add", "default", colconMixinRepo]);
                 yield exec.exec("colcon", ["mixin", "update", "default"]);
             }
+            let build_extra_options = [];
+            if (process.platform === "win32") {
+                build_extra_options = build_extra_options.concat([
+                    "--cmake-args",
+                    "-G",
+                    "Visual Studio 16 2019"
+                ]);
+            }
             let extra_options = [];
             if (colconMixinName !== "") {
                 extra_options = extra_options.concat(["--mixin", colconMixinName]);
@@ -4867,7 +4879,9 @@ EOF`
                 "--packages-up-to",
                 packageName,
                 "--symlink-install"
-            ].concat(extra_options), options);
+            ]
+                .concat(extra_options)
+                .concat(build_extra_options), options);
             yield exec.exec("colcon", [
                 "test",
                 "--event-handlers",

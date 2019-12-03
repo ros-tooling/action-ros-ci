@@ -18,6 +18,9 @@ async function run() {
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
 		if (process.platform != "win32") {
 			await exec.exec("rosdep", ["update"]);
+		} else {
+			core.addPath("C:\\ProgramData\\Chocolatey\\lib\\asio");
+			core.addPath("C:\\ProgramData\\Chocolatey\\lib\\tinyxml2");
 		}
 
 		// Checkout ROS 2 from source and install ROS 2 system dependencies
@@ -95,6 +98,14 @@ EOF`
 			await exec.exec("colcon", ["mixin", "update", "default"]);
 		}
 
+		let build_extra_options: string[] = [];
+		if (process.platform === "win32") {
+			build_extra_options = build_extra_options.concat([
+				"--cmake-args",
+				"-G",
+				"Visual Studio 16 2019"
+			]);
+		}
 		let extra_options: string[] = [];
 		if (colconMixinName !== "") {
 			extra_options = extra_options.concat(["--mixin", colconMixinName]);
@@ -124,7 +135,9 @@ EOF`
 				"--packages-up-to",
 				packageName,
 				"--symlink-install"
-			].concat(extra_options),
+			]
+				.concat(extra_options)
+				.concat(build_extra_options),
 			options
 		);
 		await exec.exec(
