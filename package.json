@@ -4,10 +4,10 @@
   "description": "GitHub Action compiling and testing a ROS 2 package",
   "main": "lib/main.js",
   "scripts": {
-    "build": "ncc build src/*.ts -o dist",
-    "lint": "eslint src/*.ts",
-    "prettier": "prettier --write 'src/*.ts'",
-    "test": "eslint src/*.ts && jest --coverage"
+    "build": "ncc build src/action-ros2-ci.ts -o dist",
+    "lint": "eslint src/action-ros2-ci.ts",
+    "prettier": "prettier --write 'src/action-ros2-ci.ts'",
+    "test": "eslint src/action-ros2-ci.ts && jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -36,12 +36,12 @@
     "@actions/io": "^1.0.1"
   },
   "devDependencies": {
-    "acorn": "^7.1.0",
-    "@zeit/ncc": "^0.20.5",
     "@types/jest": "^24.0.13",
     "@types/node": "^12.12.5",
     "@typescript-eslint/eslint-plugin": "^2.4.0",
     "@typescript-eslint/parser": "^2.4.0",
+    "@zeit/ncc": "^0.20.5",
+    "acorn": "^7.1.0",
     "eslint": "^6.5.1",
     "jest": "^24.8.0",
     "jest-circus": "^24.7.1",

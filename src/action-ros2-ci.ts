@@ -13,7 +13,12 @@ async function run() {
 		const colconMixinRepo = core.getInput("colcon-mixin-repository");
 		const packageName = core.getInput("package-name");
 		const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
-		await exec.exec("rosdep", ["update"]);
+
+		// rosdep on Windows does not reliably work on Windows, see
+		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
+		if (process.platform != "win32") {
+			await exec.exec("rosdep", ["update"]);
+		}
 
 		// Checkout ROS 2 from source and install ROS 2 system dependencies
 		await io.mkdirP(ros2WorkspaceDir + "/src");
