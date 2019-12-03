@@ -11,7 +11,8 @@ async function run() {
 
 		const colconMixinName = core.getInput("colcon-mixin-name");
 		const colconMixinRepo = core.getInput("colcon-mixin-repository");
-		const packageName = core.getInput("package-name");
+		const packageName = core.getInput("package-name", { required: true });
+		const packageNameList = packageName.split(RegExp("\\s"));
 		const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
 
 		// rosdep on Windows does not reliably work on Windows, see
@@ -74,7 +75,9 @@ EOF`
 			"bash",
 			[
 				"-c",
-				`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageName} -p) | xargs rm -rf`
+				`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(
+					" "
+				)} -p) | xargs rm -rf`
 			],
 			options
 		);
@@ -121,10 +124,11 @@ EOF`
 				"build",
 				"--event-handlers",
 				"console_cohesion+",
-				"--packages-up-to",
-				packageName,
-				"--symlink-install"
-			].concat(extra_options),
+				"--symlink-install",
+				"--packages-up-to"
+			]
+				.concat(packageNameList)
+				.concat(extra_options),
 			options
 		);
 		await exec.exec(
@@ -136,10 +140,11 @@ EOF`
 				"--pytest-args",
 				"'--cov=.'",
 				"'--cov-report=xml'",
-				"--packages-select",
-				packageName,
-				"--return-code-on-test-failure"
-			].concat(extra_options),
+				"--return-code-on-test-failure",
+				"--packages-select"
+			]
+				.concat(packageNameList)
+				.concat(extra_options),
 			options
 		);
 
@@ -147,7 +152,7 @@ EOF`
 		// data fail the build.
 		await exec.exec(
 			"colcon",
-			["lcov-result", "--packages-select", packageName],
+			["lcov-result", "--packages-select"].concat(packageNameList),
 			{ ignoreReturnCode: true }
 		);
 	} catch (error) {
