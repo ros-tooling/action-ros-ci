@@ -13,6 +13,7 @@ async function run() {
 		const colconMixinRepo = core.getInput("colcon-mixin-repository");
 		const packageName = core.getInput("package-name", { required: true });
 		const packageNameList = packageName.split(RegExp("\\s"));
+		console.info(packageNameList);
 		const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
 
 		// rosdep on Windows does not reliably work on Windows, see
