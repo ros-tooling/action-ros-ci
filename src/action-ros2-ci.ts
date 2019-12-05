@@ -2,6 +2,7 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 import * as io from "@actions/io";
+import * as os from "os";
 import * as path from "path";
 import fs from "fs";
 
@@ -42,6 +43,13 @@ async function run() {
 		if (process.platform != "win32") {
 			await exec.exec("rosdep", ["update"]);
 		}
+
+		// Reset colcon configuration.
+		await io.rmRF(path.join(os.homedir(), ".colcon"));
+
+		// Wipe out the workspace directory to ensure the workspace is always
+		// identical.
+		await io.rmRF(ros2WorkspaceDir);
 
 		// Checkout ROS 2 from source and install ROS 2 system dependencies
 		await io.mkdirP(ros2WorkspaceDir + "/src");
