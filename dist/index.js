@@ -4784,7 +4784,7 @@ function run() {
             const colconMixinName = core.getInput("colcon-mixin-name");
             const colconMixinRepo = core.getInput("colcon-mixin-repository");
             const packageName = core.getInput("package-name", { required: true });
-            const packageNameList = packageName.split(RegExp('\\s'));
+            const packageNameList = packageName.split(RegExp("\\s"));
             const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
             // rosdep on Windows does not reliably work on Windows, see
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
@@ -4804,10 +4804,6 @@ function run() {
             // We do not want to allow the "default" head state of the package to
             // to be present in the workspace, and colcon will fail stating it found twice
             // a package with an identical name.
-            yield exec.exec("bash", [
-                "-c",
-                `find "${ros2WorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`
-            ]);
             // The repo file for the repository needs to be generated on-the-fly to
             // incorporate the custom repository URL and branch name, when a PR is
             // being built.
@@ -4831,7 +4827,7 @@ EOF`
             // avoid having rosdep installing unrequired dependencies.
             yield exec.exec("bash", [
                 "-c",
-                `diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(' ')} -p) | xargs rm -rf`
+                `diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`
             ], options);
             // For "latest" builds, rosdep often misses some keys, adding "|| true", to
             // ignore those failures, as it is often non-critical.
@@ -4867,7 +4863,9 @@ EOF`
                 "console_cohesion+",
                 "--symlink-install",
                 "--packages-up-to"
-            ].concat(packageNameList).concat(extra_options), options);
+            ]
+                .concat(packageNameList)
+                .concat(extra_options), options);
             yield exec.exec("colcon", [
                 "test",
                 "--event-handlers",
@@ -4877,7 +4875,9 @@ EOF`
                 "'--cov-report=xml'",
                 "--return-code-on-test-failure",
                 "--packages-select"
-            ].concat(packageNameList).concat(extra_options), options);
+            ]
+                .concat(packageNameList)
+                .concat(extra_options), options);
             // ignoreReturnCode is set to true to avoid  having a lack of coverage
             // data fail the build.
             yield exec.exec("colcon", ["lcov-result", "--packages-select"].concat(packageNameList), { ignoreReturnCode: true });

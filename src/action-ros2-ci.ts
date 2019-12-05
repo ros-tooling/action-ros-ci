@@ -40,10 +40,6 @@ async function run() {
 		// We do not want to allow the "default" head state of the package to
 		// to be present in the workspace, and colcon will fail stating it found twice
 		// a package with an identical name.
-		await exec.exec("bash", [
-			"-c",
-			`find "${ros2WorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`
-		]);
 
 		// The repo file for the repository needs to be generated on-the-fly to
 		// incorporate the custom repository URL and branch name, when a PR is
