@@ -32,11 +32,30 @@ jobs:
     - run: npm run build
 
     - uses: ros-tooling/setup-ros2@0.0.7
-    - uses: ./ # Uses an action in the root directory
+
+    - uses: ./
+      name: "Test single package, default options"
+      with:
+        package-name: ament_copyright
+
+    - uses: ./
+      name: "Test multiple package, default options"
+      with:
+        package-name: ament_copyright ament_lint
+
+    - uses: ./
+      name: "Test single package, with custom mixin"
       with:
         colcon-mixin-name: asan
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-        package-name: ament_copyright ament_lint
+        package-name: ament_copyright
+
+    - uses: ./
+      name: "Test single package, with custom repository file"
+      with:
+        colcon-mixin-repository: .github/workflows/repo_file_for_test.repos
+        package-name: ament_copyright
+
     - uses: actions/upload-artifact@master
       with:
         name: colcon-logs

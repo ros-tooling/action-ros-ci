@@ -3,6 +3,25 @@ import * as exec from "@actions/exec";
 import * as github from "@actions/github";
 import * as io from "@actions/io";
 import * as path from "path";
+import fs from "fs";
+
+/**
+ * Convert local paths to URLs.
+ *
+ * The user can pass the VCS repo file either as a URL or a path.
+ * If it is a path, this function will convert it into a URL (file://...).
+ * If the file is already passed as an URL, this function does nothing.
+ *
+ * @param   vcsRepoFileUrl     path or URL to the repo file
+ * @returns                    URL to the repo file
+ */
+function resolveVcsRepoFileUrl(vcsRepoFileUrl: string): string {
+	if (fs.existsSync(vcsRepoFileUrl)) {
+		return "file://" + path.resolve(vcsRepoFileUrl);
+	} else {
+		return vcsRepoFileUrl;
+	}
+}
 
 async function run() {
 	try {
@@ -14,6 +33,9 @@ async function run() {
 		const packageName = core.getInput("package-name", { required: true });
 		const packageNameList = packageName.split(RegExp("\\s"));
 		const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
+		const vcsRepoFileUrl = resolveVcsRepoFileUrl(
+			core.getInput("vcs-repo-file-url", { required: true })
+		);
 
 		// rosdep on Windows does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
@@ -29,10 +51,7 @@ async function run() {
 		};
 		await exec.exec(
 			"bash",
-			[
-				"-c",
-				"curl https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos | vcs import src/"
-			],
+			["-c", `curl '${vcsRepoFileUrl}' | vcs import src/`],
 			options
 		);
 

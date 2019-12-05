@@ -1,0 +1,10 @@
+# repo file only containing ament_lint
+# This repository has been chosen because it does depend on anything, as of
+# 0.8.1.
+#
+# https://github.com/ament/ament_lint/tree/0.8.1
+repositories:
+  cross_compile:
+    type: git
+    url: https://github.com/ament/ament_lint.git
+    version: 0.8.1
