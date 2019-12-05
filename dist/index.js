@@ -4770,12 +4770,34 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const exec = __importStar(__webpack_require__(986));
 const github = __importStar(__webpack_require__(469));
 const io = __importStar(__webpack_require__(1));
 const path = __importStar(__webpack_require__(622));
+const fs_1 = __importDefault(__webpack_require__(747));
+/**
+ * Convert local paths to URLs.
+ *
+ * The user can pass the VCS repo file either as a URL or a path.
+ * If it is a path, this function will convert it into a URL (file://...).
+ * If the file is already passed as an URL, this function does nothing.
+ *
+ * @param   vcsRepoFileUrl     path or URL to the repo file
+ * @returns                    URL to the repo file
+ */
+function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
+    if (fs_1.default.existsSync(vcsRepoFileUrl)) {
+        return "file://" + path.resolve(vcsRepoFileUrl);
+    }
+    else {
+        return vcsRepoFileUrl;
+    }
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -4784,8 +4806,9 @@ function run() {
             const colconMixinName = core.getInput("colcon-mixin-name");
             const colconMixinRepo = core.getInput("colcon-mixin-repository");
             const packageName = core.getInput("package-name", { required: true });
-            const packageNameList = packageName.split(RegExp('\\s'));
+            const packageNameList = packageName.split(RegExp("\\s"));
             const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
+            const vcsRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("vcs-repo-file-url", { required: true }));
             // rosdep on Windows does not reliably work on Windows, see
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
             if (process.platform != "win32") {
@@ -4796,10 +4819,7 @@ function run() {
             const options = {
                 cwd: ros2WorkspaceDir
             };
-            yield exec.exec("bash", [
-                "-c",
-                "curl https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos | vcs import src/"
-            ], options);
+            yield exec.exec("bash", ["-c", `curl '${vcsRepoFileUrl}' | vcs import src/`], options);
             // If the package under tests is part of ros2.repos, remove it first.
             // We do not want to allow the "default" head state of the package to
             // to be present in the workspace, and colcon will fail stating it found twice
@@ -4831,7 +4851,7 @@ EOF`
             // avoid having rosdep installing unrequired dependencies.
             yield exec.exec("bash", [
                 "-c",
-                `diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(' ')} -p) | xargs rm -rf`
+                `diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`
             ], options);
             // For "latest" builds, rosdep often misses some keys, adding "|| true", to
             // ignore those failures, as it is often non-critical.
@@ -4867,7 +4887,9 @@ EOF`
                 "console_cohesion+",
                 "--symlink-install",
                 "--packages-up-to"
-            ].concat(packageNameList).concat(extra_options), options);
+            ]
+                .concat(packageNameList)
+                .concat(extra_options), options);
             yield exec.exec("colcon", [
                 "test",
                 "--event-handlers",
@@ -4877,7 +4899,9 @@ EOF`
                 "'--cov-report=xml'",
                 "--return-code-on-test-failure",
                 "--packages-select"
-            ].concat(packageNameList).concat(extra_options), options);
+            ]
+                .concat(packageNameList)
+                .concat(extra_options), options);
             // ignoreReturnCode is set to true to avoid  having a lack of coverage
             // data fail the build.
             yield exec.exec("colcon", ["lcov-result", "--packages-select"].concat(packageNameList), { ignoreReturnCode: true });
