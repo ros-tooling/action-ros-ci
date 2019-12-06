@@ -180,7 +180,7 @@ EOF`
 		await exec.exec(
 			"colcon",
 			["lcov-result", "--packages-select"].concat(packageNameList),
-			{ ignoreReturnCode: true }
+			{ cwd: ros2WorkspaceDir, ignoreReturnCode: true }
 		);
 	} catch (error) {
 		core.setFailed(error.message);
