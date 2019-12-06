@@ -4910,7 +4910,7 @@ EOF`
                 .concat(extra_options), options);
             // ignoreReturnCode is set to true to avoid  having a lack of coverage
             // data fail the build.
-            yield exec.exec("colcon", ["lcov-result", "--packages-select"].concat(packageNameList), { ignoreReturnCode: true });
+            yield exec.exec("colcon", ["lcov-result", "--packages-select"].concat(packageNameList), { cwd: ros2WorkspaceDir, ignoreReturnCode: true });
         }
         catch (error) {
             core.setFailed(error.message);
