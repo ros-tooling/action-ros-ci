@@ -37,11 +37,20 @@ jobs:
       name: "Test single package, default options"
       with:
         package-name: ament_copyright
+    - run: test -d "ros2_ws/install/ament_copyright"
+      name: "Check that ament_copyright install directory is present"
+      shell: bash
 
     - uses: ./
       name: "Test multiple package, default options"
       with:
         package-name: ament_copyright ament_lint
+    - run: test -d "ros2_ws/install/ament_copyright"
+      name: "Check that ament_copyright install directory is present"
+      shell: bash
+    - run: test -d "ros2_ws/install/ament_lint"
+      name: "Check that ament_lint install directory is present"
+      shell: bash
 
     - uses: ./
       name: "Test single package, with custom mixin"
@@ -49,14 +58,27 @@ jobs:
         colcon-mixin-name: asan
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         package-name: ament_copyright
+    - run: test -d "ros2_ws/install/ament_copyright"
+      name: "Check that ament_copyright install directory is present"
+      shell: bash
 
     - uses: ./
       name: "Test single package, with custom repository file"
       with:
-        colcon-mixin-repository: .github/workflows/repo_file_for_test.repos
+        vcs-repo-file-url: .github/workflows/repo_file_for_test.repos
         package-name: ament_copyright
+    - run: test -d "ros2_ws/install/ament_copyright"
+      shell: bash
 
-    - uses: actions/upload-artifact@master
+    - uses: ./
+      name: "Test single package, with coverage enabled (Linux only)"
       with:
-        name: colcon-logs
-        path: ros2_ws/log
+        colcon-mixin-name: coverage-gcc
+        colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+        package-name: osrf_testing_tools_cpp
+        vcs-repo-file-url: .github/workflows/repo_file_for_test_cpp_package.repos
+      if: matrix.os != 'windows-latest'
+    - run: find ros2_ws/build -name "*.gcda" | grep -q "."
+      name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
+      shell: bash
+      if: matrix.os != 'windows-latest'

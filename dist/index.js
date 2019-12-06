@@ -4778,6 +4778,7 @@ const core = __importStar(__webpack_require__(470));
 const exec = __importStar(__webpack_require__(986));
 const github = __importStar(__webpack_require__(469));
 const io = __importStar(__webpack_require__(1));
+const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
 const fs_1 = __importDefault(__webpack_require__(747));
 /**
@@ -4814,6 +4815,11 @@ function run() {
             if (process.platform != "win32") {
                 yield exec.exec("rosdep", ["update"]);
             }
+            // Reset colcon configuration.
+            yield io.rmRF(path.join(os.homedir(), ".colcon"));
+            // Wipe out the workspace directory to ensure the workspace is always
+            // identical.
+            yield io.rmRF(ros2WorkspaceDir);
             // Checkout ROS 2 from source and install ROS 2 system dependencies
             yield io.mkdirP(ros2WorkspaceDir + "/src");
             const options = {
