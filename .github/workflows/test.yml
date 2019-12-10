@@ -16,7 +16,34 @@ on:
       - 'greenkeeper**'
 
 jobs:
-  test:
+  test_ros:
+    name: "ROS Test Suite"
+    # ROS 1 tests only run on Ubuntu
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - run: npm ci
+    - run: npm run build
+
+    - uses: ros-tooling/setup-ros2@0.0.8
+      with:
+        required-ros-distributions: melodic
+
+    - uses: ./
+      name: "Build and run tests for a single package (Melodic)"
+      with:
+        vcs-repo-file-url: .github/workflows/ros_tutorials.repos
+        package-name: roscpp_tutorials
+        source-ros-binary-installation: melodic
+    - run: test -d "ros2_ws/install/roscpp_tutorials"
+      name: "Check that roscpp_tutorials install directory is present"
+
+  test_ros2:
+    name: "ROS 2 Test Suite"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -31,7 +58,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros2@0.0.7
+    - uses: ros-tooling/setup-ros2@0.0.8
 
     - uses: ./
       name: "Test single package, default options"
