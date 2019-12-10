@@ -29,7 +29,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros2@0.0.8
+    - uses: ros-tooling/setup-ros2@0.0.11
       with:
         required-ros-distributions: melodic
 
@@ -58,7 +58,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros2@0.0.8
+    - uses: ros-tooling/setup-ros2@0.0.11
 
     - uses: ./
       name: "Test single package, default options"
@@ -109,3 +109,18 @@ jobs:
       name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
       shell: bash
       if: matrix.os != 'windows-latest'
+
+    - uses: ./
+      name: "Test single package, with extra cmake flags"
+      with:
+        package-name: osrf_testing_tools_cpp
+        vcs-repo-file-url: .github/workflows/repo_file_for_test_cpp_package.repos
+        # We use a long unique string here to make sure that if this string
+        # is found in CMakeCache.txt, it means the additional CMake flag has
+        # been passed successfully. Non recognized flags are also written by
+        # cmake into CMakeCache.txt, so this does not need to be a flag that
+        # really exists in this package.
+        extra-cmake-args: |
+            -DADDITIONAL_CMAKE_OPTION_FOR_TEST:STR="9ae391a63628efe6d72ba34a1a1d9dc9"
+    - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./ros2_ws/build/osrf_testing_tools_cpp/CMakeCache.txt
+      name: "Check that the additional extra flags has been correctly passed"

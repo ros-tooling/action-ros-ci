@@ -43,9 +43,34 @@ export async function execBashCommand(
 ): Promise<number> {
 	const bashScript = `${commandPrefix}${commandLine}`;
 	const message = log_message || `Invoking "bash -c '${bashScript}'`;
+
+	let toolRunnerCommandLine = "";
+	let toolRunnerCommandLineArgs: string[] = [];
+	if (process.platform == "win32") {
+		toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
+		// This passes the same flags to cmd.exe that "run:" in a workflow.
+		// https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
+		toolRunnerCommandLineArgs = [
+			"/D",
+			"/E:ON",
+			"/V:OFF",
+			"/S",
+			"/C",
+			"call",
+			"%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+			"amd64",
+			"&",
+			"C:\\Program Files\\Git\\bin\\bash.exe",
+			"-c",
+			bashScript
+		];
+	} else {
+		toolRunnerCommandLine = "bash";
+		toolRunnerCommandLineArgs = ["-c", bashScript];
+	}
 	const runner: tr.ToolRunner = new tr.ToolRunner(
-		"bash",
-		["-c", bashScript],
+		toolRunnerCommandLine,
+		toolRunnerCommandLineArgs,
 		options
 	);
 	return core.group(message, async () => {
@@ -60,6 +85,7 @@ async function run() {
 
 		const colconMixinName = core.getInput("colcon-mixin-name");
 		const colconMixinRepo = core.getInput("colcon-mixin-repository");
+		const extraCmakeArgs = core.getInput("extra-cmake-args");
 		const packageName = core.getInput("package-name", { required: true });
 		const packageNameList = packageName.split(RegExp("\\s"));
 		const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
@@ -105,6 +131,7 @@ async function run() {
 		const options = {
 			cwd: ros2WorkspaceDir
 		};
+
 		await execBashCommand(
 			`curl '${vcsRepoFileUrl}' | vcs import src/`,
 			commandPrefix,
@@ -129,14 +156,15 @@ async function run() {
 		}
 		const headRef = process.env.GITHUB_HEAD_REF as string;
 		const commitRef = headRef || github.context.sha;
-		await execBashCommand(
-			`vcs import src/ << EOF
-repositories:
+		const repoFilePath = path.join(ros2WorkspaceDir, "package.repo");
+		const repoFileContent = `repositories:
   ${repo["repo"]}:
     type: git
-    url: "https://github.com/${repoFullName}.git"
-    version: "${commitRef}"
-EOF`,
+    url: 'https://github.com/${repoFullName}.git'
+    version: '${commitRef}'`;
+		fs.writeFileSync(repoFilePath, repoFileContent);
+		await execBashCommand(
+			"vcs import src/ < package.repo",
 			commandPrefix,
 			options
 		);
@@ -189,7 +217,7 @@ EOF`,
 
 		const colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install --packages-up-to ${packageNameList.join(
 			" "
-		)} ${extra_options.join(" ")}`;
+		)} ${extra_options.join(" ")} --cmake-args ${extraCmakeArgs}`;
 		await execBashCommand(colconBuildCmd, commandPrefix, options);
 		const colconTestCmd = `colcon test --event-handlers console_cohesion+ --pytest-args --cov=. --cov-report=xml --return-code-on-test-failure --packages-select ${packageNameList.join(
 			" "
