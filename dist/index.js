@@ -4231,7 +4231,32 @@ function execBashCommand(commandLine, commandPrefix, options, log_message) {
     return __awaiter(this, void 0, void 0, function* () {
         const bashScript = `${commandPrefix}${commandLine}`;
         const message = log_message || `Invoking "bash -c '${bashScript}'`;
-        const runner = new tr.ToolRunner("bash", ["-c", bashScript], options);
+        let toolRunnerCommandLine = "";
+        let toolRunnerCommandLineArgs = [];
+        if (process.platform == "win32") {
+            toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
+            // This passes the same flags to cmd.exe that "run:" in a workflow.
+            // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
+            toolRunnerCommandLineArgs = [
+                "/D",
+                "/E:ON",
+                "/V:OFF",
+                "/S",
+                "/C",
+                "call",
+                "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+                "amd64",
+                "&",
+                "C:\\Program Files\\Git\\bin\\bash.exe",
+                "-c",
+                bashScript
+            ];
+        }
+        else {
+            toolRunnerCommandLine = "bash";
+            toolRunnerCommandLineArgs = ["-c", bashScript];
+        }
+        const runner = new tr.ToolRunner(toolRunnerCommandLine, toolRunnerCommandLineArgs, options);
         return core.group(message, () => __awaiter(this, void 0, void 0, function* () {
             return runner.exec();
         }));
@@ -4245,6 +4270,7 @@ function run() {
             const workspace = process.env.GITHUB_WORKSPACE;
             const colconMixinName = core.getInput("colcon-mixin-name");
             const colconMixinRepo = core.getInput("colcon-mixin-repository");
+            const extraCmakeArgs = core.getInput("extra-cmake-args");
             const packageName = core.getInput("package-name", { required: true });
             const packageNameList = packageName.split(RegExp("\\s"));
             const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
@@ -4291,13 +4317,14 @@ function run() {
             }
             const headRef = process.env.GITHUB_HEAD_REF;
             const commitRef = headRef || github.context.sha;
-            yield execBashCommand(`vcs import src/ << EOF
-repositories:
+            const repoFilePath = path.join(ros2WorkspaceDir, 'package.repo');
+            const repoFileContent = `repositories:
   ${repo["repo"]}:
     type: git
-    url: "https://github.com/${repoFullName}.git"
-    version: "${commitRef}"
-EOF`, commandPrefix, options);
+    url: 'https://github.com/${repoFullName}.git'
+    version: '${commitRef}'`;
+            fs_1.default.writeFileSync(repoFilePath, repoFileContent);
+            yield execBashCommand('vcs import src/ < package.repo', commandPrefix, options);
             // Remove all repositories the package under test does not depend on, to
             // avoid having rosdep installing unrequired dependencies.
             yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, commandPrefix, options);
@@ -4326,7 +4353,7 @@ EOF`, commandPrefix, options);
             // ament_cmake should handle this automatically, but we are seeing cases
             // where this does not happen. See issue #26 for relevant CI logs.
             core.addPath(path.join(ros2WorkspaceDir, "install", "bin"));
-            const colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install --packages-up-to ${packageNameList.join(" ")} ${extra_options.join(" ")}`;
+            const colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install --packages-up-to ${packageNameList.join(" ")} ${extra_options.join(" ")} --cmake-args ${extraCmakeArgs}`;
             yield execBashCommand(colconBuildCmd, commandPrefix, options);
             const colconTestCmd = `colcon test --event-handlers console_cohesion+ --pytest-args --cov=. --cov-report=xml --return-code-on-test-failure --packages-select ${packageNameList.join(" ")} ${extra_options.join(" ")}`;
             yield execBashCommand(colconTestCmd, commandPrefix, options);

@@ -13,6 +13,11 @@ inputs:
     default: 'https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml'
     description: 'Mixin repository containing the mixin specified in colcon-mixin-name'
     required: false
+  extra-cmake-args:
+    default: ''
+    description: |
+        Additional flags passed to CMake (using colcon build --cmake-args)
+    required: false
   package-name:
     description: |
         Name of the package(s) under test, as expected by colcon.
