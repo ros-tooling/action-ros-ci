@@ -1,4 +1,4 @@
-name: "Test action-ros2-ci"
+name: "Test action-ros-ci"
 on:
   pull_request:
   push:
@@ -29,7 +29,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros2@0.0.11
+    - uses: ros-tooling/setup-ros@0.0.11
       with:
         required-ros-distributions: melodic
 
@@ -39,7 +39,7 @@ jobs:
         vcs-repo-file-url: .github/workflows/ros_tutorials.repos
         package-name: roscpp_tutorials
         source-ros-binary-installation: melodic
-    - run: test -d "ros2_ws/install/roscpp_tutorials"
+    - run: test -d "ros_ws/install/roscpp_tutorials"
       name: "Check that roscpp_tutorials install directory is present"
 
   test_ros2:
@@ -58,13 +58,13 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros2@0.0.11
+    - uses: ros-tooling/setup-ros@0.0.11
 
     - uses: ./
       name: "Test single package, default options"
       with:
         package-name: ament_copyright
-    - run: test -d "ros2_ws/install/ament_copyright"
+    - run: test -d "ros_ws/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
       shell: bash
 
@@ -72,10 +72,10 @@ jobs:
       name: "Test multiple package, default options"
       with:
         package-name: ament_copyright ament_lint
-    - run: test -d "ros2_ws/install/ament_copyright"
+    - run: test -d "ros_ws/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
       shell: bash
-    - run: test -d "ros2_ws/install/ament_lint"
+    - run: test -d "ros_ws/install/ament_lint"
       name: "Check that ament_lint install directory is present"
       shell: bash
 
@@ -85,7 +85,7 @@ jobs:
         colcon-mixin-name: asan
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         package-name: ament_copyright
-    - run: test -d "ros2_ws/install/ament_copyright"
+    - run: test -d "ros_ws/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
       shell: bash
 
@@ -94,7 +94,7 @@ jobs:
       with:
         vcs-repo-file-url: .github/workflows/repo_file_for_test.repos
         package-name: ament_copyright
-    - run: test -d "ros2_ws/install/ament_copyright"
+    - run: test -d "ros_ws/install/ament_copyright"
       shell: bash
 
     - uses: ./
@@ -105,7 +105,7 @@ jobs:
         package-name: osrf_testing_tools_cpp
         vcs-repo-file-url: .github/workflows/repo_file_for_test_cpp_package.repos
       if: matrix.os != 'windows-latest'
-    - run: find ros2_ws/build -name "*.gcda" | grep -q "."
+    - run: find ros_ws/build -name "*.gcda" | grep -q "."
       name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
       shell: bash
       if: matrix.os != 'windows-latest'
@@ -122,5 +122,5 @@ jobs:
         # really exists in this package.
         extra-cmake-args: |
             -DADDITIONAL_CMAKE_OPTION_FOR_TEST:STR="9ae391a63628efe6d72ba34a1a1d9dc9"
-    - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./ros2_ws/build/osrf_testing_tools_cpp/CMakeCache.txt
+    - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./ros_ws/build/osrf_testing_tools_cpp/CMakeCache.txt
       name: "Check that the additional extra flags has been correctly passed"
