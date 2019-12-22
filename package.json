@@ -1,21 +1,21 @@
 {
-  "name": "action-ros2-ci",
+  "name": "action-ros-ci",
   "version": "0.0.0",
   "description": "GitHub Action compiling and testing a ROS 2 package",
   "main": "lib/main.js",
   "scripts": {
-    "build": "ncc build src/action-ros2-ci.ts -o dist",
-    "lint": "eslint src/action-ros2-ci.ts",
-    "prettier": "prettier --write 'src/action-ros2-ci.ts'",
-    "test": "eslint src/action-ros2-ci.ts && jest --coverage"
+    "build": "ncc build src/action-ros-ci.ts -o dist",
+    "lint": "eslint src/action-ros-ci.ts",
+    "prettier": "prettier --write 'src/action-ros-ci.ts'",
+    "test": "eslint src/action-ros-ci.ts && jest --coverage"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ros-tooling/action-ros2-ci.git"
+    "url": "git+https://github.com/ros-tooling/action-ros-ci.git"
   },
   "keywords": [
     "actions",
-    "ros2",
+    "ros",
     "ci"
   ],
   "author": "ROS 2 Tooling Working Group",
@@ -27,7 +27,7 @@
     }
   ],
   "bugs": {
-    "url": "https://github.com/ros-tooling/action-ros2-ci/issues"
+    "url": "https://github.com/ros-tooling/action-ros-ci/issues"
   },
   "dependencies": {
     "@actions/core": "^1.0.0",

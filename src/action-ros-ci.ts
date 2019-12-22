@@ -88,7 +88,7 @@ async function run() {
 		const extraCmakeArgs = core.getInput("extra-cmake-args");
 		const packageName = core.getInput("package-name", { required: true });
 		const packageNameList = packageName.split(RegExp("\\s"));
-		const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
+		const rosWorkspaceDir = path.join(workspace, "ros_ws");
 		const sourceRosBinaryInstallation = core.getInput(
 			"source-ros-binary-installation"
 		);
@@ -123,13 +123,13 @@ async function run() {
 
 		// Wipe out the workspace directory to ensure the workspace is always
 		// identical.
-		await io.rmRF(ros2WorkspaceDir);
+		await io.rmRF(rosWorkspaceDir);
 
 		// Checkout ROS 2 from source and install ROS 2 system dependencies
-		await io.mkdirP(ros2WorkspaceDir + "/src");
+		await io.mkdirP(rosWorkspaceDir + "/src");
 
 		const options = {
-			cwd: ros2WorkspaceDir
+			cwd: rosWorkspaceDir
 		};
 
 		await execBashCommand(
@@ -138,12 +138,12 @@ async function run() {
 			options
 		);
 
-		// If the package under tests is part of ros2.repos, remove it first.
+		// If the package under tests is part of ros.repos, remove it first.
 		// We do not want to allow the "default" head state of the package to
 		// to be present in the workspace, and colcon will fail stating it found twice
 		// a package with an identical name.
 		await execBashCommand(
-			`find "${ros2WorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`,
+			`find "${rosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`,
 			commandPrefix
 		);
 
@@ -156,7 +156,7 @@ async function run() {
 		}
 		const headRef = process.env.GITHUB_HEAD_REF as string;
 		const commitRef = headRef || github.context.sha;
-		const repoFilePath = path.join(ros2WorkspaceDir, "package.repo");
+		const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
 		const repoFileContent = `repositories:
   ${repo["repo"]}:
     type: git
@@ -213,7 +213,7 @@ async function run() {
 		//
 		// ament_cmake should handle this automatically, but we are seeing cases
 		// where this does not happen. See issue #26 for relevant CI logs.
-		core.addPath(path.join(ros2WorkspaceDir, "install", "bin"));
+		core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
 
 		const colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install --packages-up-to ${packageNameList.join(
 			" "
@@ -230,7 +230,7 @@ async function run() {
 			" "
 		)}`;
 		await execBashCommand(colconLcovResultCmd, undefined, {
-			cwd: ros2WorkspaceDir,
+			cwd: rosWorkspaceDir,
 			ignoreReturnCode: true
 		});
 	} catch (error) {

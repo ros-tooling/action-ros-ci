@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(331);
+/******/ 		return __webpack_require__(374);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -3510,7 +3510,7 @@ exports.getUserAgent = getUserAgent;
 /***/ 215:
 /***/ (function(module) {
 
-module.exports = {"_args":[["@octokit/rest@16.35.0","/home/ANT.AMAZON.COM/tmoulard/action/action-ros2-ci"]],"_from":"@octokit/rest@16.35.0","_id":"@octokit/rest@16.35.0","_inBundle":false,"_integrity":"sha512-9ShFqYWo0CLoGYhA1FdtdykJuMzS/9H6vSbbQWDX4pWr4p9v+15MsH/wpd/3fIU+tSxylaNO48+PIHqOkBRx3w==","_location":"/@octokit/rest","_phantomChildren":{"os-name":"3.1.0"},"_requested":{"type":"version","registry":true,"raw":"@octokit/rest@16.35.0","name":"@octokit/rest","escapedName":"@octokit%2frest","scope":"@octokit","rawSpec":"16.35.0","saveSpec":null,"fetchSpec":"16.35.0"},"_requiredBy":["/@actions/github"],"_resolved":"https://registry.npmjs.org/@octokit/rest/-/rest-16.35.0.tgz","_spec":"16.35.0","_where":"/home/ANT.AMAZON.COM/tmoulard/action/action-ros2-ci","author":{"name":"Gregor Martynus","url":"https://github.com/gr2m"},"bugs":{"url":"https://github.com/octokit/rest.js/issues"},"bundlesize":[{"path":"./dist/octokit-rest.min.js.gz","maxSize":"33 kB"}],"contributors":[{"name":"Mike de Boer","email":"info@mikedeboer.nl"},{"name":"Fabian Jakobs","email":"fabian@c9.io"},{"name":"Joe Gallo","email":"joe@brassafrax.com"},{"name":"Gregor Martynus","url":"https://github.com/gr2m"}],"dependencies":{"@octokit/request":"^5.2.0","@octokit/request-error":"^1.0.2","atob-lite":"^2.0.0","before-after-hook":"^2.0.0","btoa-lite":"^1.0.0","deprecation":"^2.0.0","lodash.get":"^4.4.2","lodash.set":"^4.3.2","lodash.uniq":"^4.5.0","octokit-pagination-methods":"^1.1.0","once":"^1.4.0","universal-user-agent":"^4.0.0"},"description":"GitHub REST API client for Node.js","devDependencies":{"@gimenete/type-writer":"^0.1.3","@octokit/fixtures-server":"^5.0.6","@octokit/graphql":"^4.2.0","@types/node":"^12.0.0","bundlesize":"^0.18.0","chai":"^4.1.2","compression-webpack-plugin":"^3.0.0","cypress":"^3.0.0","glob":"^7.1.2","http-proxy-agent":"^2.1.0","lodash.camelcase":"^4.3.0","lodash.merge":"^4.6.1","lodash.upperfirst":"^4.3.1","mkdirp":"^0.5.1","mocha":"^6.0.0","mustache":"^3.0.0","nock":"^11.3.3","npm-run-all":"^4.1.2","nyc":"^14.0.0","prettier":"^1.14.2","proxy":"^1.0.0","semantic-release":"^15.0.0","sinon":"^7.2.4","sinon-chai":"^3.0.0","sort-keys":"^4.0.0","string-to-arraybuffer":"^1.0.0","string-to-jsdoc-comment":"^1.0.0","typescript":"^3.3.1","webpack":"^4.0.0","webpack-bundle-analyzer":"^3.0.0","webpack-cli":"^3.0.0"},"files":["index.js","index.d.ts","lib","plugins"],"homepage":"https://github.com/octokit/rest.js#readme","keywords":["octokit","github","rest","api-client"],"license":"MIT","name":"@octokit/rest","nyc":{"ignore":["test"]},"publishConfig":{"access":"public"},"release":{"publish":["@semantic-release/npm",{"path":"@semantic-release/github","assets":["dist/*","!dist/*.map.gz"]}]},"repository":{"type":"git","url":"git+https://github.com/octokit/rest.js.git"},"scripts":{"build":"npm-run-all build:*","build:browser":"npm-run-all build:browser:*","build:browser:development":"webpack --mode development --entry . --output-library=Octokit --output=./dist/octokit-rest.js --profile --json > dist/bundle-stats.json","build:browser:production":"webpack --mode production --entry . --plugin=compression-webpack-plugin --output-library=Octokit --output-path=./dist --output-filename=octokit-rest.min.js --devtool source-map","build:ts":"npm run -s update-endpoints:typescript","coverage":"nyc report --reporter=html && open coverage/index.html","generate-bundle-report":"webpack-bundle-analyzer dist/bundle-stats.json --mode=static --no-open --report dist/bundle-report.html","lint":"prettier --check '{lib,plugins,scripts,test}/**/*.{js,json,ts}' 'docs/*.{js,json}' 'docs/src/**/*' index.js README.md package.json","lint:fix":"prettier --write '{lib,plugins,scripts,test}/**/*.{js,json,ts}' 'docs/*.{js,json}' 'docs/src/**/*' index.js README.md package.json","postvalidate:ts":"tsc --noEmit --target es6 test/typescript-validate.ts","prebuild:browser":"mkdirp dist/","pretest":"npm run -s lint","prevalidate:ts":"npm run -s build:ts","start-fixtures-server":"octokit-fixtures-server","test":"nyc mocha test/mocha-node-setup.js \"test/*/**/*-test.js\"","test:browser":"cypress run --browser chrome","update-endpoints":"npm-run-all update-endpoints:*","update-endpoints:code":"node scripts/update-endpoints/code","update-endpoints:fetch-json":"node scripts/update-endpoints/fetch-json","update-endpoints:typescript":"node scripts/update-endpoints/typescript","validate:ts":"tsc --target es6 --noImplicitAny index.d.ts"},"types":"index.d.ts","version":"16.35.0"};
+module.exports = {"_args":[["@octokit/rest@16.35.0","/home/ANT.AMAZON.COM/tmoulard/action/action-ros-ci"]],"_from":"@octokit/rest@16.35.0","_id":"@octokit/rest@16.35.0","_inBundle":false,"_integrity":"sha512-9ShFqYWo0CLoGYhA1FdtdykJuMzS/9H6vSbbQWDX4pWr4p9v+15MsH/wpd/3fIU+tSxylaNO48+PIHqOkBRx3w==","_location":"/@octokit/rest","_phantomChildren":{"os-name":"3.1.0"},"_requested":{"type":"version","registry":true,"raw":"@octokit/rest@16.35.0","name":"@octokit/rest","escapedName":"@octokit%2frest","scope":"@octokit","rawSpec":"16.35.0","saveSpec":null,"fetchSpec":"16.35.0"},"_requiredBy":["/@actions/github"],"_resolved":"https://registry.npmjs.org/@octokit/rest/-/rest-16.35.0.tgz","_spec":"16.35.0","_where":"/home/ANT.AMAZON.COM/tmoulard/action/action-ros-ci","author":{"name":"Gregor Martynus","url":"https://github.com/gr2m"},"bugs":{"url":"https://github.com/octokit/rest.js/issues"},"bundlesize":[{"path":"./dist/octokit-rest.min.js.gz","maxSize":"33 kB"}],"contributors":[{"name":"Mike de Boer","email":"info@mikedeboer.nl"},{"name":"Fabian Jakobs","email":"fabian@c9.io"},{"name":"Joe Gallo","email":"joe@brassafrax.com"},{"name":"Gregor Martynus","url":"https://github.com/gr2m"}],"dependencies":{"@octokit/request":"^5.2.0","@octokit/request-error":"^1.0.2","atob-lite":"^2.0.0","before-after-hook":"^2.0.0","btoa-lite":"^1.0.0","deprecation":"^2.0.0","lodash.get":"^4.4.2","lodash.set":"^4.3.2","lodash.uniq":"^4.5.0","octokit-pagination-methods":"^1.1.0","once":"^1.4.0","universal-user-agent":"^4.0.0"},"description":"GitHub REST API client for Node.js","devDependencies":{"@gimenete/type-writer":"^0.1.3","@octokit/fixtures-server":"^5.0.6","@octokit/graphql":"^4.2.0","@types/node":"^12.0.0","bundlesize":"^0.18.0","chai":"^4.1.2","compression-webpack-plugin":"^3.0.0","cypress":"^3.0.0","glob":"^7.1.2","http-proxy-agent":"^2.1.0","lodash.camelcase":"^4.3.0","lodash.merge":"^4.6.1","lodash.upperfirst":"^4.3.1","mkdirp":"^0.5.1","mocha":"^6.0.0","mustache":"^3.0.0","nock":"^11.3.3","npm-run-all":"^4.1.2","nyc":"^14.0.0","prettier":"^1.14.2","proxy":"^1.0.0","semantic-release":"^15.0.0","sinon":"^7.2.4","sinon-chai":"^3.0.0","sort-keys":"^4.0.0","string-to-arraybuffer":"^1.0.0","string-to-jsdoc-comment":"^1.0.0","typescript":"^3.3.1","webpack":"^4.0.0","webpack-bundle-analyzer":"^3.0.0","webpack-cli":"^3.0.0"},"files":["index.js","index.d.ts","lib","plugins"],"homepage":"https://github.com/octokit/rest.js#readme","keywords":["octokit","github","rest","api-client"],"license":"MIT","name":"@octokit/rest","nyc":{"ignore":["test"]},"publishConfig":{"access":"public"},"release":{"publish":["@semantic-release/npm",{"path":"@semantic-release/github","assets":["dist/*","!dist/*.map.gz"]}]},"repository":{"type":"git","url":"git+https://github.com/octokit/rest.js.git"},"scripts":{"build":"npm-run-all build:*","build:browser":"npm-run-all build:browser:*","build:browser:development":"webpack --mode development --entry . --output-library=Octokit --output=./dist/octokit-rest.js --profile --json > dist/bundle-stats.json","build:browser:production":"webpack --mode production --entry . --plugin=compression-webpack-plugin --output-library=Octokit --output-path=./dist --output-filename=octokit-rest.min.js --devtool source-map","build:ts":"npm run -s update-endpoints:typescript","coverage":"nyc report --reporter=html && open coverage/index.html","generate-bundle-report":"webpack-bundle-analyzer dist/bundle-stats.json --mode=static --no-open --report dist/bundle-report.html","lint":"prettier --check '{lib,plugins,scripts,test}/**/*.{js,json,ts}' 'docs/*.{js,json}' 'docs/src/**/*' index.js README.md package.json","lint:fix":"prettier --write '{lib,plugins,scripts,test}/**/*.{js,json,ts}' 'docs/*.{js,json}' 'docs/src/**/*' index.js README.md package.json","postvalidate:ts":"tsc --noEmit --target es6 test/typescript-validate.ts","prebuild:browser":"mkdirp dist/","pretest":"npm run -s lint","prevalidate:ts":"npm run -s build:ts","start-fixtures-server":"octokit-fixtures-server","test":"nyc mocha test/mocha-node-setup.js \"test/*/**/*-test.js\"","test:browser":"cypress run --browser chrome","update-endpoints":"npm-run-all update-endpoints:*","update-endpoints:code":"node scripts/update-endpoints/code","update-endpoints:fetch-json":"node scripts/update-endpoints/fetch-json","update-endpoints:typescript":"node scripts/update-endpoints/typescript","validate:ts":"tsc --target es6 --noImplicitAny index.d.ts"},"types":"index.d.ts","version":"16.35.0"};
 
 /***/ }),
 
@@ -4136,7 +4136,7 @@ function normalizePaginatedListResponse(octokit, url, response) {
 /***/ 314:
 /***/ (function(module) {
 
-module.exports = {"_args":[["@octokit/graphql@2.1.3","/home/ANT.AMAZON.COM/tmoulard/action/action-ros2-ci"]],"_from":"@octokit/graphql@2.1.3","_id":"@octokit/graphql@2.1.3","_inBundle":false,"_integrity":"sha512-XoXJqL2ondwdnMIW3wtqJWEwcBfKk37jO/rYkoxNPEVeLBDGsGO1TCWggrAlq3keGt/O+C/7VepXnukUxwt5vA==","_location":"/@octokit/graphql","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"@octokit/graphql@2.1.3","name":"@octokit/graphql","escapedName":"@octokit%2fgraphql","scope":"@octokit","rawSpec":"2.1.3","saveSpec":null,"fetchSpec":"2.1.3"},"_requiredBy":["/@actions/github"],"_resolved":"https://registry.npmjs.org/@octokit/graphql/-/graphql-2.1.3.tgz","_spec":"2.1.3","_where":"/home/ANT.AMAZON.COM/tmoulard/action/action-ros2-ci","author":{"name":"Gregor Martynus","url":"https://github.com/gr2m"},"bugs":{"url":"https://github.com/octokit/graphql.js/issues"},"bundlesize":[{"path":"./dist/octokit-graphql.min.js.gz","maxSize":"5KB"}],"dependencies":{"@octokit/request":"^5.0.0","universal-user-agent":"^2.0.3"},"description":"GitHub GraphQL API client for browsers and Node","devDependencies":{"chai":"^4.2.0","compression-webpack-plugin":"^2.0.0","coveralls":"^3.0.3","cypress":"^3.1.5","fetch-mock":"^7.3.1","mkdirp":"^0.5.1","mocha":"^6.0.0","npm-run-all":"^4.1.3","nyc":"^14.0.0","semantic-release":"^15.13.3","simple-mock":"^0.8.0","standard":"^12.0.1","webpack":"^4.29.6","webpack-bundle-analyzer":"^3.1.0","webpack-cli":"^3.2.3"},"files":["lib"],"homepage":"https://github.com/octokit/graphql.js#readme","keywords":["octokit","github","api","graphql"],"license":"MIT","main":"index.js","name":"@octokit/graphql","publishConfig":{"access":"public"},"release":{"publish":["@semantic-release/npm",{"path":"@semantic-release/github","assets":["dist/*","!dist/*.map.gz"]}]},"repository":{"type":"git","url":"git+https://github.com/octokit/graphql.js.git"},"scripts":{"build":"npm-run-all build:*","build:development":"webpack --mode development --entry . --output-library=octokitGraphql --output=./dist/octokit-graphql.js --profile --json > dist/bundle-stats.json","build:production":"webpack --mode production --entry . --plugin=compression-webpack-plugin --output-library=octokitGraphql --output-path=./dist --output-filename=octokit-graphql.min.js --devtool source-map","bundle-report":"webpack-bundle-analyzer dist/bundle-stats.json --mode=static --no-open --report dist/bundle-report.html","coverage":"nyc report --reporter=html && open coverage/index.html","coverage:upload":"nyc report --reporter=text-lcov | coveralls","prebuild":"mkdirp dist/","pretest":"standard","test":"nyc mocha test/*-test.js","test:browser":"cypress run --browser chrome"},"standard":{"globals":["describe","before","beforeEach","afterEach","after","it","expect"]},"version":"2.1.3"};
+module.exports = {"_args":[["@octokit/graphql@2.1.3","/home/ANT.AMAZON.COM/tmoulard/action/action-ros-ci"]],"_from":"@octokit/graphql@2.1.3","_id":"@octokit/graphql@2.1.3","_inBundle":false,"_integrity":"sha512-XoXJqL2ondwdnMIW3wtqJWEwcBfKk37jO/rYkoxNPEVeLBDGsGO1TCWggrAlq3keGt/O+C/7VepXnukUxwt5vA==","_location":"/@octokit/graphql","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"@octokit/graphql@2.1.3","name":"@octokit/graphql","escapedName":"@octokit%2fgraphql","scope":"@octokit","rawSpec":"2.1.3","saveSpec":null,"fetchSpec":"2.1.3"},"_requiredBy":["/@actions/github"],"_resolved":"https://registry.npmjs.org/@octokit/graphql/-/graphql-2.1.3.tgz","_spec":"2.1.3","_where":"/home/ANT.AMAZON.COM/tmoulard/action/action-ros-ci","author":{"name":"Gregor Martynus","url":"https://github.com/gr2m"},"bugs":{"url":"https://github.com/octokit/graphql.js/issues"},"bundlesize":[{"path":"./dist/octokit-graphql.min.js.gz","maxSize":"5KB"}],"dependencies":{"@octokit/request":"^5.0.0","universal-user-agent":"^2.0.3"},"description":"GitHub GraphQL API client for browsers and Node","devDependencies":{"chai":"^4.2.0","compression-webpack-plugin":"^2.0.0","coveralls":"^3.0.3","cypress":"^3.1.5","fetch-mock":"^7.3.1","mkdirp":"^0.5.1","mocha":"^6.0.0","npm-run-all":"^4.1.3","nyc":"^14.0.0","semantic-release":"^15.13.3","simple-mock":"^0.8.0","standard":"^12.0.1","webpack":"^4.29.6","webpack-bundle-analyzer":"^3.1.0","webpack-cli":"^3.2.3"},"files":["lib"],"homepage":"https://github.com/octokit/graphql.js#readme","keywords":["octokit","github","api","graphql"],"license":"MIT","main":"index.js","name":"@octokit/graphql","publishConfig":{"access":"public"},"release":{"publish":["@semantic-release/npm",{"path":"@semantic-release/github","assets":["dist/*","!dist/*.map.gz"]}]},"repository":{"type":"git","url":"git+https://github.com/octokit/graphql.js.git"},"scripts":{"build":"npm-run-all build:*","build:development":"webpack --mode development --entry . --output-library=octokitGraphql --output=./dist/octokit-graphql.js --profile --json > dist/bundle-stats.json","build:production":"webpack --mode production --entry . --plugin=compression-webpack-plugin --output-library=octokitGraphql --output-path=./dist --output-filename=octokit-graphql.min.js --devtool source-map","bundle-report":"webpack-bundle-analyzer dist/bundle-stats.json --mode=static --no-open --report dist/bundle-report.html","coverage":"nyc report --reporter=html && open coverage/index.html","coverage:upload":"nyc report --reporter=text-lcov | coveralls","prebuild":"mkdirp dist/","pretest":"standard","test":"nyc mocha test/*-test.js","test:browser":"cypress run --browser chrome"},"standard":{"globals":["describe","before","beforeEach","afterEach","after","it","expect"]},"version":"2.1.3"};
 
 /***/ }),
 
@@ -4165,212 +4165,6 @@ isStream.duplex = function (stream) {
 isStream.transform = function (stream) {
 	return isStream.duplex(stream) && typeof stream._transform === 'function' && typeof stream._transformState === 'object';
 };
-
-
-/***/ }),
-
-/***/ 331:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const core = __importStar(__webpack_require__(470));
-const github = __importStar(__webpack_require__(469));
-const tr = __importStar(__webpack_require__(686));
-const io = __importStar(__webpack_require__(1));
-const os = __importStar(__webpack_require__(87));
-const path = __importStar(__webpack_require__(622));
-const fs_1 = __importDefault(__webpack_require__(747));
-/**
- * Convert local paths to URLs.
- *
- * The user can pass the VCS repo file either as a URL or a path.
- * If it is a path, this function will convert it into a URL (file://...).
- * If the file is already passed as an URL, this function does nothing.
- *
- * @param   vcsRepoFileUrl     path or URL to the repo file
- * @returns                    URL to the repo file
- */
-function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
-    if (fs_1.default.existsSync(vcsRepoFileUrl)) {
-        return "file://" + path.resolve(vcsRepoFileUrl);
-    }
-    else {
-        return vcsRepoFileUrl;
-    }
-}
-/**
- * Execute a command in bash and wrap the output in a log group.
- *
- * @param   commandLine     command to execute (can include additional args). Must be correctly escaped.
- * @param   commandPrefix    optional string used to prefix the command to be executed.
- * @param   options         optional exec options.  See ExecOptions
- * @param   log_message     log group title.
- * @returns Promise<number> exit code
- */
-function execBashCommand(commandLine, commandPrefix, options, log_message) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const bashScript = `${commandPrefix}${commandLine}`;
-        const message = log_message || `Invoking "bash -c '${bashScript}'`;
-        let toolRunnerCommandLine = "";
-        let toolRunnerCommandLineArgs = [];
-        if (process.platform == "win32") {
-            toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
-            // This passes the same flags to cmd.exe that "run:" in a workflow.
-            // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
-            toolRunnerCommandLineArgs = [
-                "/D",
-                "/E:ON",
-                "/V:OFF",
-                "/S",
-                "/C",
-                "call",
-                "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat",
-                "amd64",
-                "&",
-                "C:\\Program Files\\Git\\bin\\bash.exe",
-                "-c",
-                bashScript
-            ];
-        }
-        else {
-            toolRunnerCommandLine = "bash";
-            toolRunnerCommandLineArgs = ["-c", bashScript];
-        }
-        const runner = new tr.ToolRunner(toolRunnerCommandLine, toolRunnerCommandLineArgs, options);
-        return core.group(message, () => __awaiter(this, void 0, void 0, function* () {
-            return runner.exec();
-        }));
-    });
-}
-exports.execBashCommand = execBashCommand;
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const repo = github.context.repo;
-            const workspace = process.env.GITHUB_WORKSPACE;
-            const colconMixinName = core.getInput("colcon-mixin-name");
-            const colconMixinRepo = core.getInput("colcon-mixin-repository");
-            const extraCmakeArgs = core.getInput("extra-cmake-args");
-            const packageName = core.getInput("package-name", { required: true });
-            const packageNameList = packageName.split(RegExp("\\s"));
-            const ros2WorkspaceDir = path.join(workspace, "ros2_ws");
-            const sourceRosBinaryInstallation = core.getInput("source-ros-binary-installation");
-            const vcsRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("vcs-repo-file-url", { required: true }));
-            let commandPrefix = "";
-            if (sourceRosBinaryInstallation) {
-                if (process.platform !== "linux") {
-                    core.setFailed("sourcing binary installation is only available on Linux");
-                    return;
-                }
-                const sourceRosBinaryInstallationList = sourceRosBinaryInstallation.split(RegExp("\\s"));
-                for (let rosDistribution of sourceRosBinaryInstallationList) {
-                    commandPrefix += `source /opt/ros/${rosDistribution}/setup.sh && `;
-                }
-            }
-            // rosdep on Windows does not reliably work on Windows, see
-            // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
-            if (process.platform != "win32") {
-                yield execBashCommand("rosdep update", commandPrefix);
-            }
-            // Reset colcon configuration.
-            yield io.rmRF(path.join(os.homedir(), ".colcon"));
-            // Wipe out the workspace directory to ensure the workspace is always
-            // identical.
-            yield io.rmRF(ros2WorkspaceDir);
-            // Checkout ROS 2 from source and install ROS 2 system dependencies
-            yield io.mkdirP(ros2WorkspaceDir + "/src");
-            const options = {
-                cwd: ros2WorkspaceDir
-            };
-            yield execBashCommand(`curl '${vcsRepoFileUrl}' | vcs import src/`, commandPrefix, options);
-            // If the package under tests is part of ros2.repos, remove it first.
-            // We do not want to allow the "default" head state of the package to
-            // to be present in the workspace, and colcon will fail stating it found twice
-            // a package with an identical name.
-            yield execBashCommand(`find "${ros2WorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`, commandPrefix);
-            // The repo file for the repository needs to be generated on-the-fly to
-            // incorporate the custom repository URL and branch name, when a PR is
-            // being built.
-            let repoFullName = process.env.GITHUB_REPOSITORY;
-            if (github.context.payload.pull_request) {
-                repoFullName = github.context.payload.pull_request.head.repo.full_name;
-            }
-            const headRef = process.env.GITHUB_HEAD_REF;
-            const commitRef = headRef || github.context.sha;
-            const repoFilePath = path.join(ros2WorkspaceDir, 'package.repo');
-            const repoFileContent = `repositories:
-  ${repo["repo"]}:
-    type: git
-    url: 'https://github.com/${repoFullName}.git'
-    version: '${commitRef}'`;
-            fs_1.default.writeFileSync(repoFilePath, repoFileContent);
-            yield execBashCommand('vcs import src/ < package.repo', commandPrefix, options);
-            // Remove all repositories the package under test does not depend on, to
-            // avoid having rosdep installing unrequired dependencies.
-            yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, commandPrefix, options);
-            // For "latest" builds, rosdep often misses some keys, adding "|| true", to
-            // ignore those failures, as it is often non-critical.
-            yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true`, commandPrefix, options);
-            if (colconMixinName !== "" && colconMixinRepo !== "") {
-                yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, commandPrefix);
-                yield execBashCommand("colcon mixin update default", commandPrefix);
-            }
-            let extra_options = [];
-            if (colconMixinName !== "") {
-                extra_options = extra_options.concat(["--mixin", colconMixinName]);
-            }
-            // Add the future install bin directory to PATH.
-            // This enables cmake find_package to find packages installed in the
-            // colcon install directory, even if local_setup.sh has not been sourced.
-            //
-            // From the find_package doc:
-            // https://cmake.org/cmake/help/latest/command/find_package.html
-            //   5. Search the standard system environment variables.
-            //   Path entries ending in /bin or /sbin are automatically converted to
-            //   their parent directories:
-            //   PATH
-            //
-            // ament_cmake should handle this automatically, but we are seeing cases
-            // where this does not happen. See issue #26 for relevant CI logs.
-            core.addPath(path.join(ros2WorkspaceDir, "install", "bin"));
-            const colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install --packages-up-to ${packageNameList.join(" ")} ${extra_options.join(" ")} --cmake-args ${extraCmakeArgs}`;
-            yield execBashCommand(colconBuildCmd, commandPrefix, options);
-            const colconTestCmd = `colcon test --event-handlers console_cohesion+ --pytest-args --cov=. --cov-report=xml --return-code-on-test-failure --packages-select ${packageNameList.join(" ")} ${extra_options.join(" ")}`;
-            yield execBashCommand(colconTestCmd, commandPrefix, options);
-            // ignoreReturnCode is set to true to avoid  having a lack of coverage
-            // data fail the build.
-            const colconLcovResultCmd = `colcon lcov-result --packages-select ${packageNameList.join(" ")}`;
-            yield execBashCommand(colconLcovResultCmd, undefined, {
-                cwd: ros2WorkspaceDir,
-                ignoreReturnCode: true
-            });
-        }
-        catch (error) {
-            core.setFailed(error.message);
-        }
-    });
-}
-run();
 
 
 /***/ }),
@@ -4679,6 +4473,212 @@ function octokitDebug(octokit) {
       });
   });
 }
+
+
+/***/ }),
+
+/***/ 374:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const core = __importStar(__webpack_require__(470));
+const github = __importStar(__webpack_require__(469));
+const tr = __importStar(__webpack_require__(686));
+const io = __importStar(__webpack_require__(1));
+const os = __importStar(__webpack_require__(87));
+const path = __importStar(__webpack_require__(622));
+const fs_1 = __importDefault(__webpack_require__(747));
+/**
+ * Convert local paths to URLs.
+ *
+ * The user can pass the VCS repo file either as a URL or a path.
+ * If it is a path, this function will convert it into a URL (file://...).
+ * If the file is already passed as an URL, this function does nothing.
+ *
+ * @param   vcsRepoFileUrl     path or URL to the repo file
+ * @returns                    URL to the repo file
+ */
+function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
+    if (fs_1.default.existsSync(vcsRepoFileUrl)) {
+        return "file://" + path.resolve(vcsRepoFileUrl);
+    }
+    else {
+        return vcsRepoFileUrl;
+    }
+}
+/**
+ * Execute a command in bash and wrap the output in a log group.
+ *
+ * @param   commandLine     command to execute (can include additional args). Must be correctly escaped.
+ * @param   commandPrefix    optional string used to prefix the command to be executed.
+ * @param   options         optional exec options.  See ExecOptions
+ * @param   log_message     log group title.
+ * @returns Promise<number> exit code
+ */
+function execBashCommand(commandLine, commandPrefix, options, log_message) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const bashScript = `${commandPrefix}${commandLine}`;
+        const message = log_message || `Invoking "bash -c '${bashScript}'`;
+        let toolRunnerCommandLine = "";
+        let toolRunnerCommandLineArgs = [];
+        if (process.platform == "win32") {
+            toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
+            // This passes the same flags to cmd.exe that "run:" in a workflow.
+            // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
+            toolRunnerCommandLineArgs = [
+                "/D",
+                "/E:ON",
+                "/V:OFF",
+                "/S",
+                "/C",
+                "call",
+                "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+                "amd64",
+                "&",
+                "C:\\Program Files\\Git\\bin\\bash.exe",
+                "-c",
+                bashScript
+            ];
+        }
+        else {
+            toolRunnerCommandLine = "bash";
+            toolRunnerCommandLineArgs = ["-c", bashScript];
+        }
+        const runner = new tr.ToolRunner(toolRunnerCommandLine, toolRunnerCommandLineArgs, options);
+        return core.group(message, () => __awaiter(this, void 0, void 0, function* () {
+            return runner.exec();
+        }));
+    });
+}
+exports.execBashCommand = execBashCommand;
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const repo = github.context.repo;
+            const workspace = process.env.GITHUB_WORKSPACE;
+            const colconMixinName = core.getInput("colcon-mixin-name");
+            const colconMixinRepo = core.getInput("colcon-mixin-repository");
+            const extraCmakeArgs = core.getInput("extra-cmake-args");
+            const packageName = core.getInput("package-name", { required: true });
+            const packageNameList = packageName.split(RegExp("\\s"));
+            const rosWorkspaceDir = path.join(workspace, "ros_ws");
+            const sourceRosBinaryInstallation = core.getInput("source-ros-binary-installation");
+            const vcsRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("vcs-repo-file-url", { required: true }));
+            let commandPrefix = "";
+            if (sourceRosBinaryInstallation) {
+                if (process.platform !== "linux") {
+                    core.setFailed("sourcing binary installation is only available on Linux");
+                    return;
+                }
+                const sourceRosBinaryInstallationList = sourceRosBinaryInstallation.split(RegExp("\\s"));
+                for (let rosDistribution of sourceRosBinaryInstallationList) {
+                    commandPrefix += `source /opt/ros/${rosDistribution}/setup.sh && `;
+                }
+            }
+            // rosdep on Windows does not reliably work on Windows, see
+            // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
+            if (process.platform != "win32") {
+                yield execBashCommand("rosdep update", commandPrefix);
+            }
+            // Reset colcon configuration.
+            yield io.rmRF(path.join(os.homedir(), ".colcon"));
+            // Wipe out the workspace directory to ensure the workspace is always
+            // identical.
+            yield io.rmRF(rosWorkspaceDir);
+            // Checkout ROS 2 from source and install ROS 2 system dependencies
+            yield io.mkdirP(rosWorkspaceDir + "/src");
+            const options = {
+                cwd: rosWorkspaceDir
+            };
+            yield execBashCommand(`curl '${vcsRepoFileUrl}' | vcs import src/`, commandPrefix, options);
+            // If the package under tests is part of ros.repos, remove it first.
+            // We do not want to allow the "default" head state of the package to
+            // to be present in the workspace, and colcon will fail stating it found twice
+            // a package with an identical name.
+            yield execBashCommand(`find "${rosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`, commandPrefix);
+            // The repo file for the repository needs to be generated on-the-fly to
+            // incorporate the custom repository URL and branch name, when a PR is
+            // being built.
+            let repoFullName = process.env.GITHUB_REPOSITORY;
+            if (github.context.payload.pull_request) {
+                repoFullName = github.context.payload.pull_request.head.repo.full_name;
+            }
+            const headRef = process.env.GITHUB_HEAD_REF;
+            const commitRef = headRef || github.context.sha;
+            const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
+            const repoFileContent = `repositories:
+  ${repo["repo"]}:
+    type: git
+    url: 'https://github.com/${repoFullName}.git'
+    version: '${commitRef}'`;
+            fs_1.default.writeFileSync(repoFilePath, repoFileContent);
+            yield execBashCommand("vcs import src/ < package.repo", commandPrefix, options);
+            // Remove all repositories the package under test does not depend on, to
+            // avoid having rosdep installing unrequired dependencies.
+            yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, commandPrefix, options);
+            // For "latest" builds, rosdep often misses some keys, adding "|| true", to
+            // ignore those failures, as it is often non-critical.
+            yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true`, commandPrefix, options);
+            if (colconMixinName !== "" && colconMixinRepo !== "") {
+                yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, commandPrefix);
+                yield execBashCommand("colcon mixin update default", commandPrefix);
+            }
+            let extra_options = [];
+            if (colconMixinName !== "") {
+                extra_options = extra_options.concat(["--mixin", colconMixinName]);
+            }
+            // Add the future install bin directory to PATH.
+            // This enables cmake find_package to find packages installed in the
+            // colcon install directory, even if local_setup.sh has not been sourced.
+            //
+            // From the find_package doc:
+            // https://cmake.org/cmake/help/latest/command/find_package.html
+            //   5. Search the standard system environment variables.
+            //   Path entries ending in /bin or /sbin are automatically converted to
+            //   their parent directories:
+            //   PATH
+            //
+            // ament_cmake should handle this automatically, but we are seeing cases
+            // where this does not happen. See issue #26 for relevant CI logs.
+            core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
+            const colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install --packages-up-to ${packageNameList.join(" ")} ${extra_options.join(" ")} --cmake-args ${extraCmakeArgs}`;
+            yield execBashCommand(colconBuildCmd, commandPrefix, options);
+            const colconTestCmd = `colcon test --event-handlers console_cohesion+ --pytest-args --cov=. --cov-report=xml --return-code-on-test-failure --packages-select ${packageNameList.join(" ")} ${extra_options.join(" ")}`;
+            yield execBashCommand(colconTestCmd, commandPrefix, options);
+            // ignoreReturnCode is set to true to avoid  having a lack of coverage
+            // data fail the build.
+            const colconLcovResultCmd = `colcon lcov-result --packages-select ${packageNameList.join(" ")}`;
+            yield execBashCommand(colconLcovResultCmd, undefined, {
+                cwd: rosWorkspaceDir,
+                ignoreReturnCode: true
+            });
+        }
+        catch (error) {
+            core.setFailed(error.message);
+        }
+    });
+}
+run();
 
 
 /***/ }),

@@ -1,8 +1,8 @@
-# action-ros2-ci
+# action-ros-ci
 
-[![GitHub Action Status](https://github.com/ros-tooling/action-ros2-ci/workflows/Test%20action-ros2-ci/badge.svg)](https://github.com/ros-tooling/action-ros2-ci) [![Greenkeeper badge](https://badges.greenkeeper.io/ros-tooling/action-ros2-ci.svg)](https://greenkeeper.io/)
+[![GitHub Action Status](https://github.com/ros-tooling/action-ros-ci/workflows/Test%20action-ros-ci/badge.svg)](https://github.com/ros-tooling/action-ros-ci) [![Greenkeeper badge](https://badges.greenkeeper.io/ros-tooling/action-ros-ci.svg)](https://greenkeeper.io/)
 
-This action compiles [ROS 2](https://index.ros.org/doc/ros2/) from source, and run colon-test on the package under test.
+This action compiles [ROS 2](https://index.ros.org/doc/ros/) from source, and run colon-test on the package under test.
 
 ## Usage
 
@@ -10,8 +10,8 @@ See [action.yml](action.yml)
 
 ```yaml
 steps:
-- uses: ros-tooling/setup-ros2@master
-- uses: ros-tooling/action-ros2-ci@master
+- uses: ros-tooling/setup-ros@master
+- uses: ros-tooling/action-ros-ci@master
   with:
     package-name: ament_copyright
 ```
