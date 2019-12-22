@@ -29,12 +29,66 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros@0.0.11
+    - uses: ros-tooling/setup-ros@0.0.12
       with:
         required-ros-distributions: melodic
 
     - uses: ./
       name: "Build and run tests for a single package (Melodic)"
+      with:
+        vcs-repo-file-url: .github/workflows/ros_tutorials.repos
+        package-name: roscpp_tutorials
+        source-ros-binary-installation: melodic
+    - run: test -d "ros_ws/install/roscpp_tutorials"
+      name: "Check that roscpp_tutorials install directory is present"
+
+  test_ros_docker_kinetic:
+    name: "ROS Test Suite (Docker, Kinetic)"
+    container:
+      image: ubuntu:xenial
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - run: npm ci
+    - run: npm run build
+
+    - uses: ros-tooling/setup-ros@0.0.12
+      with:
+        required-ros-distributions: kinetic
+
+    - uses: ./
+      name: "Build and run tests for a single package (Kinetic)"
+      with:
+        vcs-repo-file-url: .github/workflows/ros_tutorials.repos
+        package-name: roscpp_tutorials
+        source-ros-binary-installation: kinetic
+    - run: test -d "ros_ws/install/roscpp_tutorials"
+      name: "Check that roscpp_tutorials install directory is present"
+
+  test_ros_docker_melodic:
+    name: "ROS Test Suite (Docker, Melodic)"
+    container:
+      image: ubuntu:bionic
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - run: npm ci
+    - run: npm run build
+
+    - uses: ros-tooling/setup-ros@0.0.12
+      with:
+        required-ros-distributions: melodic
+
+    - uses: ./
+      name: "Build and run tests for a single package (Kinetic)"
       with:
         vcs-repo-file-url: .github/workflows/ros_tutorials.repos
         package-name: roscpp_tutorials
@@ -58,7 +112,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros@0.0.11
+    - uses: ros-tooling/setup-ros@0.0.12
 
     - uses: ./
       name: "Test single package, default options"
@@ -124,3 +178,59 @@ jobs:
             -DADDITIONAL_CMAKE_OPTION_FOR_TEST:STR="9ae391a63628efe6d72ba34a1a1d9dc9"
     - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./ros_ws/build/osrf_testing_tools_cpp/CMakeCache.txt
       name: "Check that the additional extra flags has been correctly passed"
+
+  test_ros2_docker_dashing:
+    name: "ROS 2 Test Suite (Docker, Dashing)"
+    container:
+      image: ubuntu:bionic
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - run: npm ci
+    - run: npm run build
+
+    - uses: ros-tooling/setup-ros@0.0.12
+      with:
+        required-ros-distributions: dashing
+
+    - uses: ./
+      name: "Test single package, default options"
+      with:
+        package-name: osrf_testing_tools_cpp
+        source-ros-binary-installation: dashing
+        vcs-repo-file-url: .github/workflows/repo_file_for_test_cpp_package.repos
+    - run: test -d "ros_ws/install/osrf_testing_tools_cpp"
+      name: "Check that ament_copyright install directory is present"
+      shell: bash
+
+  test_ros2_docker_eloquent:
+    name: "ROS 2 Test Suite (Docker, Eloquent)"
+    container:
+      image: ubuntu:bionic
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - run: npm ci
+    - run: npm run build
+
+    - uses: ros-tooling/setup-ros@0.0.12
+      with:
+        required-ros-distributions: eloquent
+
+    - uses: ./
+      name: "Test single package, default options"
+      with:
+        package-name: osrf_testing_tools_cpp
+        source-ros-binary-installation: eloquent
+        vcs-repo-file-url: .github/workflows/repo_file_for_test_cpp_package.repos
+    - run: test -d "ros_ws/install/osrf_testing_tools_cpp"
+      name: "Check that ament_copyright install directory is present"
+      shell: bash
