@@ -229,7 +229,7 @@ async function run() {
 		const colconLcovResultCmd = `colcon lcov-result --packages-select ${packageNameList.join(
 			" "
 		)}`;
-		await execBashCommand(colconLcovResultCmd, undefined, {
+		await execBashCommand(colconLcovResultCmd, commandPrefix, {
 			cwd: rosWorkspaceDir,
 			ignoreReturnCode: true
 		});
