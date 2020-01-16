@@ -4482,7 +4482,7 @@ function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
 function execBashCommand(commandLine, commandPrefix, options, log_message) {
     return __awaiter(this, void 0, void 0, function* () {
         const bashScript = `${commandPrefix}${commandLine}`;
-        const message = log_message || `Invoking "bash -c '${bashScript}'`;
+        const message = log_message || `Invoking "bash -c 'pwd; ${bashScript}'`;
         let toolRunnerCommandLine = "";
         let toolRunnerCommandLineArgs = [];
         if (process.platform == "win32") {
@@ -4605,14 +4605,14 @@ function run() {
             // ament_cmake should handle this automatically, but we are seeing cases
             // where this does not happen. See issue #26 for relevant CI logs.
             core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
-            const colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install --packages-up-to ${packageNameList.join(" ")} ${extra_options.join(" ")} --cmake-args ${extraCmakeArgs}`;
+            const colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install --packages-up-to ${packageNameList.join(" ")} ${extra_options.join(" ")} --cmake-args -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${extraCmakeArgs}`;
             yield execBashCommand(colconBuildCmd, commandPrefix, options);
             const colconTestCmd = `colcon test --event-handlers console_cohesion+ --pytest-args --cov=. --cov-report=xml --return-code-on-test-failure --packages-select ${packageNameList.join(" ")} ${extra_options.join(" ")}`;
             yield execBashCommand(colconTestCmd, commandPrefix, options);
             // ignoreReturnCode is set to true to avoid  having a lack of coverage
             // data fail the build.
             const colconLcovResultCmd = `colcon lcov-result --packages-select ${packageNameList.join(" ")}`;
-            yield execBashCommand(colconLcovResultCmd, undefined, {
+            yield execBashCommand(colconLcovResultCmd, commandPrefix, {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true
             });

@@ -42,7 +42,7 @@ export async function execBashCommand(
 	log_message?: string
 ): Promise<number> {
 	const bashScript = `${commandPrefix}${commandLine}`;
-	const message = log_message || `Invoking "bash -c '${bashScript}'`;
+	const message = log_message || `Invoking "bash -c 'pwd; ${bashScript}'`;
 
 	let toolRunnerCommandLine = "";
 	let toolRunnerCommandLineArgs: string[] = [];
@@ -217,7 +217,7 @@ async function run() {
 
 		const colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install --packages-up-to ${packageNameList.join(
 			" "
-		)} ${extra_options.join(" ")} --cmake-args ${extraCmakeArgs}`;
+		)} ${extra_options.join(" ")} --cmake-args -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ${extraCmakeArgs}`;
 		await execBashCommand(colconBuildCmd, commandPrefix, options);
 		const colconTestCmd = `colcon test --event-handlers console_cohesion+ --pytest-args --cov=. --cov-report=xml --return-code-on-test-failure --packages-select ${packageNameList.join(
 			" "
@@ -229,7 +229,7 @@ async function run() {
 		const colconLcovResultCmd = `colcon lcov-result --packages-select ${packageNameList.join(
 			" "
 		)}`;
-		await execBashCommand(colconLcovResultCmd, undefined, {
+		await execBashCommand(colconLcovResultCmd, commandPrefix, {
 			cwd: rosWorkspaceDir,
 			ignoreReturnCode: true
 		});
