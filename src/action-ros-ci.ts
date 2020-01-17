@@ -108,7 +108,7 @@ async function run() {
 				RegExp("\\s")
 			);
 			for (let rosDistribution of sourceRosBinaryInstallationList) {
-				commandPrefix += `source /opt/ros/${rosDistribution}/setup.sh && `;
+				commandPrefix += `source /opt/ros/${rosDistribution}/setup.sh && pwd && `;
 			}
 		}
 

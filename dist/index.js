@@ -4536,7 +4536,7 @@ function run() {
                 }
                 const sourceRosBinaryInstallationList = sourceRosBinaryInstallation.split(RegExp("\\s"));
                 for (let rosDistribution of sourceRosBinaryInstallationList) {
-                    commandPrefix += `source /opt/ros/${rosDistribution}/setup.sh && `;
+                    commandPrefix += `source /opt/ros/${rosDistribution}/setup.sh && pwd && `;
                 }
             }
             // rosdep on Windows does not reliably work on Windows, see
