@@ -4481,7 +4481,7 @@ function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
  */
 function execBashCommand(commandLine, commandPrefix, options, log_message) {
     return __awaiter(this, void 0, void 0, function* () {
-        const bashScript = `${commandPrefix}${commandLine}`;
+        const bashScript = `${commandPrefix} pwd && ${commandLine}`;
         const message = log_message || `Invoking "bash -c 'pwd; ${bashScript}'`;
         let toolRunnerCommandLine = "";
         let toolRunnerCommandLineArgs = [];

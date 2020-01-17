@@ -41,7 +41,7 @@ export async function execBashCommand(
 	options?: im.ExecOptions,
 	log_message?: string
 ): Promise<number> {
-	const bashScript = `${commandPrefix}${commandLine}`;
+	const bashScript = `${commandPrefix} pwd && ${commandLine}`;
 	const message = log_message || `Invoking "bash -c 'pwd; ${bashScript}'`;
 
 	let toolRunnerCommandLine = "";
