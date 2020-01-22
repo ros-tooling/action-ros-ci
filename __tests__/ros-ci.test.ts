@@ -23,4 +23,4 @@ describe('execBashCommand test suite', () => {
     expect(mockGroup).toBeCalled();
     expect(result).not.toEqual(0);
   })
-}) 
+})
