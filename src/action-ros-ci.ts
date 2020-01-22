@@ -226,10 +226,10 @@ async function run() {
 
 		// ignoreReturnCode is set to true to avoid  having a lack of coverage
 		// data fail the build.
-		const colconLcovResultCmd = `colcon lcov-result --packages-select ${packageNameList.join(
+		const colconLcovResultCmd = `colcon lcov-result --log-level debug --packages-select ${packageNameList.join(
 			" "
 		)}`;
-		await execBashCommand(colconLcovResultCmd, undefined, {
+		await execBashCommand(colconLcovResultCmd, commandPrefix, {
 			cwd: rosWorkspaceDir,
 			ignoreReturnCode: true
 		});
