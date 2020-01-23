@@ -1,11 +1,13 @@
 module.exports = {
   clearMocks: true,
-  moduleFileExtensions: ['js', 'ts'],
+  // Removing 'js' throws a Validation Error: moduleFileExtensions must include 'js'
+  moduleFileExtensions: ['ts', 'js'],
   testEnvironment: 'node',
-  testMatch: ['**/*.test.ts'],
+  testMatch: ['**/__tests__/*.test.ts','**/*.test.ts'],
   testRunner: 'jest-circus/runner',
   transform: {
     '^.+\\.ts$': 'ts-jest'
   },
+  transformIgnorePatterns: ['^.+\\.js$'],
   verbose: true
 }

@@ -1,7 +1,6 @@
 import * as core from "@actions/core";
-import * as exec from "@actions/exec";
 import * as github from "@actions/github";
-import * as im from "@actions/exec/lib/interfaces";
+import * as im from "@actions/exec/lib/interfaces"; // eslint-disable-line no-unused-vars
 import * as tr from "@actions/exec/lib/toolrunner";
 import * as io from "@actions/io";
 import * as os from "os";
@@ -41,6 +40,7 @@ export async function execBashCommand(
 	options?: im.ExecOptions,
 	log_message?: string
 ): Promise<number> {
+	commandPrefix = commandPrefix || "";
 	const bashScript = `${commandPrefix}${commandLine}`;
 	const message = log_message || `Invoking "bash -c '${bashScript}'`;
 
@@ -229,7 +229,7 @@ async function run() {
 		const colconLcovResultCmd = `colcon lcov-result --packages-select ${packageNameList.join(
 			" "
 		)}`;
-		await execBashCommand(colconLcovResultCmd, undefined, {
+		await execBashCommand(colconLcovResultCmd, commandPrefix, {
 			cwd: rosWorkspaceDir,
 			ignoreReturnCode: true
 		});
