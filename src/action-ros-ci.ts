@@ -215,16 +215,20 @@ async function run() {
 		// where this does not happen. See issue #26 for relevant CI logs.
 		core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
 
-		const colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install --packages-up-to ${packageNameList.join(
-			" "
-		)} ${extra_options.join(" ")} --cmake-args ${extraCmakeArgs}`;
+		let colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install \
+			--packages-up-to ${packageNameList.join(" ")} \
+			${extra_options.join(" ")} \
+			--cmake-args ${extraCmakeArgs}`;
+
 		await execBashCommand(colconBuildCmd, commandPrefix, options);
-		const colconTestCmd = `colcon test --event-handlers console_cohesion+ --pytest-args --cov=. --cov-report=xml --return-code-on-test-failure --packages-select ${packageNameList.join(
-			" "
-		)} ${extra_options.join(" ")}`;
+		
+		const colconTestCmd = `colcon test --event-handlers console_cohesion+ \
+			--pytest-args --cov=. --cov-report=xml --return-code-on-test-failure \
+			--packages-select ${packageNameList.join(" ")} \
+			${extra_options.join(" ")}`;
 		await execBashCommand(colconTestCmd, commandPrefix, options);
 
-		// ignoreReturnCode is set to true to avoid  having a lack of coverage
+		// ignoreReturnCode is set to true to avoid having a lack of coverage
 		// data fail the build.
 		const colconLcovResultCmd = `colcon lcov-result --packages-select ${packageNameList.join(
 			" "
