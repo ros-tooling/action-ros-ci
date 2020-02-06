@@ -221,7 +221,7 @@ async function run() {
 			--cmake-args ${extraCmakeArgs}`;
 
 		await execBashCommand(colconBuildCmd, commandPrefix, options);
-		
+
 		const colconTestCmd = `colcon test --event-handlers console_cohesion+ \
 			--pytest-args --cov=. --cov-report=xml --return-code-on-test-failure \
 			--packages-select ${packageNameList.join(" ")} \
