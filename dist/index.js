@@ -4526,7 +4526,8 @@ function run() {
             const extraCmakeArgs = core.getInput("extra-cmake-args");
             const packageName = core.getInput("package-name", { required: true });
             const packageNameList = packageName.split(RegExp("\\s"));
-            const rosWorkspaceDir = path.join(workspace, "ros_ws");
+            const rosWorkspaceName = "ros_ws";
+            const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
             const sourceRosBinaryInstallation = core.getInput("source-ros-binary-installation");
             const vcsRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("vcs-repo-file-url", { required: true }));
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
@@ -4626,6 +4627,7 @@ function run() {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true
             });
+            core.setOutput('ros-workspace-directory-name', rosWorkspaceName);
         }
         catch (error) {
             core.setFailed(error.message);

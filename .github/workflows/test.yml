@@ -34,12 +34,13 @@ jobs:
         required-ros-distributions: melodic
 
     - uses: ./
+      id: action-ros
       name: "Build and run tests for a single package (Melodic)"
       with:
         vcs-repo-file-url: .github/workflows/ros_tutorials.repos
         package-name: roscpp_tutorials
         source-ros-binary-installation: melodic
-    - run: test -d "ros_ws/install/roscpp_tutorials"
+    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
       name: "Check that roscpp_tutorials install directory is present"
 
   test_ros_docker_kinetic:
@@ -61,12 +62,13 @@ jobs:
         required-ros-distributions: kinetic
 
     - uses: ./
+      id: action-ros
       name: "Build and run tests for a single package (Kinetic)"
       with:
         vcs-repo-file-url: .github/workflows/ros_tutorials.repos
         package-name: roscpp_tutorials
         source-ros-binary-installation: kinetic
-    - run: test -d "ros_ws/install/roscpp_tutorials"
+    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
       name: "Check that roscpp_tutorials install directory is present"
 
   test_ros_docker_melodic:
@@ -88,12 +90,13 @@ jobs:
         required-ros-distributions: melodic
 
     - uses: ./
+      id: action-ros
       name: "Build and run tests for a single package (Kinetic)"
       with:
         vcs-repo-file-url: .github/workflows/ros_tutorials.repos
         package-name: roscpp_tutorials
         source-ros-binary-installation: melodic
-    - run: test -d "ros_ws/install/roscpp_tutorials"
+    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
       name: "Check that roscpp_tutorials install directory is present"
 
   test_ros2:
@@ -115,43 +118,48 @@ jobs:
     - uses: ros-tooling/setup-ros@0.0.12
 
     - uses: ./
+      id: action-ros
       name: "Test single package, default options"
       with:
         package-name: ament_copyright
-    - run: test -d "ros_ws/install/ament_copyright"
+    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
       shell: bash
 
     - uses: ./
+      id: action-ros2
       name: "Test multiple package, default options"
       with:
         package-name: ament_copyright ament_lint
-    - run: test -d "ros_ws/install/ament_copyright"
+    - run: test -d "${{ steps.action-ros2.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
       shell: bash
-    - run: test -d "ros_ws/install/ament_lint"
+    - run: test -d "${{ steps.action-ros2.outputs.ros-workspace-directory-name }}/install/ament_lint"
       name: "Check that ament_lint install directory is present"
       shell: bash
 
     - uses: ./
+      id: action-ros3
       name: "Test single package, with custom mixin"
       with:
         colcon-mixin-name: asan
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         package-name: ament_copyright
-    - run: test -d "ros_ws/install/ament_copyright"
+    - run: test -d "${{ steps.action-ros3.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
       shell: bash
 
     - uses: ./
+      id: action-ros4
       name: "Test single package, with custom repository file"
       with:
         vcs-repo-file-url: .github/workflows/repo_file_for_test.repos
         package-name: ament_copyright
-    - run: test -d "ros_ws/install/ament_copyright"
+    - run: test -d "${{ steps.action-ros4.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       shell: bash
 
     - uses: ./
+      id: action-ros5
       name: "Test single package, with coverage enabled (Linux only)"
       with:
         colcon-mixin-name: coverage-gcc
@@ -159,12 +167,13 @@ jobs:
         package-name: osrf_testing_tools_cpp
         vcs-repo-file-url: .github/workflows/repo_file_for_test_cpp_package.repos
       if: matrix.os != 'windows-latest'
-    - run: find ros_ws/build -name "*.gcda" | grep -q "."
+    - run: find ${{ steps.action-ros5.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
       name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
       shell: bash
       if: matrix.os != 'windows-latest'
 
     - uses: ./
+      id: action-ros6
       name: "Test single package, with extra cmake flags"
       with:
         package-name: osrf_testing_tools_cpp
@@ -176,7 +185,7 @@ jobs:
         # really exists in this package.
         extra-cmake-args: |
             -DADDITIONAL_CMAKE_OPTION_FOR_TEST:STR="9ae391a63628efe6d72ba34a1a1d9dc9"
-    - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./ros_ws/build/osrf_testing_tools_cpp/CMakeCache.txt
+    - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.action-ros6.outputs.ros-workspace-directory-name }}/build/osrf_testing_tools_cpp/CMakeCache.txt
       name: "Check that the additional extra flags has been correctly passed"
 
   test_ros2_docker_dashing:
@@ -198,12 +207,13 @@ jobs:
         required-ros-distributions: dashing
 
     - uses: ./
+      id: action-ros
       name: "Test single package, default options"
       with:
         package-name: osrf_testing_tools_cpp
         source-ros-binary-installation: dashing
         vcs-repo-file-url: .github/workflows/repo_file_for_test_cpp_package.repos
-    - run: test -d "ros_ws/install/osrf_testing_tools_cpp"
+    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
       name: "Check that ament_copyright install directory is present"
       shell: bash
 
@@ -226,11 +236,12 @@ jobs:
         required-ros-distributions: eloquent
 
     - uses: ./
+      id: action-ros
       name: "Test single package, default options"
       with:
         package-name: osrf_testing_tools_cpp
         source-ros-binary-installation: eloquent
         vcs-repo-file-url: .github/workflows/repo_file_for_test_cpp_package.repos
-    - run: test -d "ros_ws/install/osrf_testing_tools_cpp"
+    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
       name: "Check that ament_copyright install directory is present"
       shell: bash

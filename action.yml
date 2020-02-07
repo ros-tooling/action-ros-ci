@@ -47,6 +47,10 @@ inputs:
         in colcon-lcov-result --filter option. Useful for ignoring tests
         or examples in the coverage report.
     default: "*/test*"
+outputs:
+  ros-workspace-directory-name:
+    description: |
+        root directory name of the ROS workspace created for this CI code.
 runs:
   using: 'node12'
   main: 'dist/index.js'
