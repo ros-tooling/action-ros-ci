@@ -4530,7 +4530,6 @@ function run() {
             const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
             const sourceRosBinaryInstallation = core.getInput("source-ros-binary-installation");
             const vcsRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("vcs-repo-file-url", { required: true }));
-            const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
             let commandPrefix = "";
             if (sourceRosBinaryInstallation) {
                 if (process.platform !== "linux") {
@@ -4620,9 +4619,7 @@ function run() {
             yield execBashCommand(colconTestCmd, commandPrefix, options);
             // ignoreReturnCode is set to true to avoid having a lack of coverage
             // data fail the build.
-            const colconLcovResultCmd = `colcon lcov-result \
-	             --filter ${coverageIgnorePattern} \
-	             --packages-select ${packageNameList.join(" ")}`;
+            const colconLcovResultCmd = `colcon lcov-result --packages-select ${packageNameList.join(" ")}`;
             yield execBashCommand(colconLcovResultCmd, commandPrefix, {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true
