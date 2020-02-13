@@ -41,6 +41,12 @@ inputs:
         repo file URL passed to vcs to initialize the colcon workspace.
         The URL may point to a local file, such as file://path/to/file.txt
     default: "https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos"
+  coverage-ignore-pattern:
+    description: |
+        pattern for exclusion in the coverage report. It will be injected
+        in colcon-lcov-result --filter option. Useful for ignoring tests
+        or examples in the coverage report.
+    default: "*/test*"
 outputs:
   ros-workspace-directory-name:
     description: |
