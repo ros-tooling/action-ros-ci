@@ -16,13 +16,22 @@ The action first assembles a workspace, then run `colcon build`, and `colcon tes
 
 The workspace is built by running:
 * `vcs import` on the repo file specified through the `vcs-repo-file-url` argument (defaults to `https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos`).
-* checkout the code under test in the workspace
+* checkout the code under test in the workspace using `vcs`
 * run `colcon build` for all packages specified in `package-name`
 * run `colcon test` for all packages specified in `package-name`
 
+## Action Output
+
+This action defines [an output variable](https://help.github.com/en/actions/building-actions/metadata-syntax-for-github-actions#outputs) `ros-workspace-directory-name`.
+It contains the path to the root of the ROS workspace assembled by the action.
+
+The variable value should be used to retrieve logs, binaries, etc. after the action completes.
+
 ## Usage
 
-See [action.yml](action.yml)
+See [action.yml](action.yml) to get the list of flags supported by this action.
+
+### Build and run `ament_copyright` tests
 
 ```yaml
 steps:
@@ -31,6 +40,7 @@ steps:
   with:
     package-name: ament_copyright
 ```
+
 
 ## License
 
