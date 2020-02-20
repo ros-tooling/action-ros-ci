@@ -4562,7 +4562,8 @@ function run() {
             // We do not want to allow the "default" head state of the package to
             // to be present in the workspace, and colcon will fail stating it found twice
             // a package with an identical name.
-            yield execBashCommand(`find "${rosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`, commandPrefix);
+            const posixRosWorkspaceDir = process.platform !== 'win32' ? rosWorkspaceDir : rosWorkspaceDir.replace(/\\/g, '/');
+            yield execBashCommand(`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`, commandPrefix);
             // The repo file for the repository needs to be generated on-the-fly to
             // incorporate the custom repository URL and branch name, when a PR is
             // being built.
