@@ -18,6 +18,11 @@ inputs:
         Ignore all files matching this pattern in the coverage report.
         It will be injected in colcon-lcov-result --filter option.
         Useful for ignoring tests or examples in the coverage report.
+  coverage-config-file:
+    description: |
+        Path to config file for lcov.  It will be injected in
+        colcon-lcov-result --lcov-config-file'", Useful for customizing the
+        different coverage options.
   extra-cmake-args:
     default: ''
     description: |

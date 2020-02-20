@@ -4531,6 +4531,7 @@ function run() {
             const sourceRosBinaryInstallation = core.getInput("source-ros-binary-installation");
             const vcsRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("vcs-repo-file-url", { required: true }));
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
+            const coverageConfigFile = core.getInput("coverage-config-file");
             let commandPrefix = "";
             if (sourceRosBinaryInstallation) {
                 if (process.platform !== "linux") {
@@ -4594,6 +4595,10 @@ function run() {
             if (colconMixinName !== "") {
                 extra_options = extra_options.concat(["--mixin", colconMixinName]);
             }
+            let lcov_extra_options = [];
+            if (coverageConfigFile != "") {
+                lcov_extra_options = lcov_extra_options.concat(["--lcov-config-file", coverageConfigFile]);
+            }
             // Add the future install bin directory to PATH.
             // This enables cmake find_package to find packages installed in the
             // colcon install directory, even if local_setup.sh has not been sourced.
@@ -4615,7 +4620,8 @@ function run() {
             yield execBashCommand(colconBuildCmd, commandPrefix, options);
             // ignoreReturnCode is set to true to avoid having a lack of coverage
             // data fail the build.
-            const colconLcovInitialCmd = `colcon lcov-result --initial`;
+            const colconLcovInitialCmd = `colcon lcov-result --initial \
+		     ${lcov_extra_options.join(" ")}`;
             yield execBashCommand(colconLcovInitialCmd, commandPrefix, {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true
@@ -4625,10 +4631,13 @@ function run() {
 			--packages-select ${packageNameList.join(" ")} \
 			${extra_options.join(" ")}`;
             yield execBashCommand(colconTestCmd, commandPrefix, options);
+            if (coverageIgnorePattern != "") {
+                lcov_extra_options = lcov_extra_options.concat(["--filter", coverageIgnorePattern]);
+            }
             // ignoreReturnCode, check comment above in --initial
             const colconLcovResultCmd = `colcon lcov-result \
-	             --filter ${coverageIgnorePattern} \
-	             --packages-select ${packageNameList.join(" ")}`;
+	             --packages-select ${packageNameList.join(" ")} \
+		     ${lcov_extra_options.join(" ")}`;
             yield execBashCommand(colconLcovResultCmd, commandPrefix, {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true
