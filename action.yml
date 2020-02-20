@@ -13,6 +13,11 @@ inputs:
     default: 'https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml'
     description: 'Mixin repository containing the mixin specified in colcon-mixin-name'
     required: false
+  coverage-ignore-pattern:
+    description: |
+        Ignore all files matching this pattern in the coverage report.
+        It will be injected in colcon-lcov-result --filter option.
+        Useful for ignoring tests or examples in the coverage report.
   extra-cmake-args:
     default: ''
     description: |
