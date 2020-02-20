@@ -145,7 +145,7 @@ async function run() {
 		// to be present in the workspace, and colcon will fail stating it found twice
 		// a package with an identical name.
 		const posixRosWorkspaceDir =
-			process.platform !== 'win32' ? rosWorkspaceDir : rosWorkspaceDir.replace(/\\/g, '/');
+			process.platform === 'win32' ? rosWorkspaceDir.replace(/\\/g, '/') : rosWorkspaceDir;
 		await execBashCommand(
 			`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`,
 			commandPrefix
