@@ -14,6 +14,9 @@ on:
       # to whitelist those branches for CI run here.
       # See also https://greenkeeper.io/faq#no-initial-pr
       - 'greenkeeper**'
+  schedule:
+    # Run the CI automatically every hour to look for flakyness.
+    - cron:  '0 * * * *'
 
 jobs:
   test_ros:
@@ -21,7 +24,7 @@ jobs:
     # ROS 1 tests only run on Ubuntu
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
@@ -49,7 +52,7 @@ jobs:
       image: ubuntu:xenial
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
@@ -77,7 +80,7 @@ jobs:
       image: ubuntu:bionic
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
@@ -107,7 +110,7 @@ jobs:
       matrix:
           os: [macOS-latest, ubuntu-18.04, windows-latest]
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
@@ -194,7 +197,7 @@ jobs:
       image: ubuntu:bionic
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
@@ -223,7 +226,7 @@ jobs:
       image: ubuntu:bionic
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
