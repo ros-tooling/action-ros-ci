@@ -186,7 +186,7 @@ async function run() {
 		// For "latest" builds, rosdep often misses some keys, adding "|| true", to
 		// ignore those failures, as it is often non-critical.
 		await execBashCommand(
-			`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true`,
+			`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro melodic -y || true`,
 			commandPrefix,
 			options
 		);
