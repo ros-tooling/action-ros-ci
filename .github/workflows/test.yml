@@ -193,11 +193,10 @@ jobs:
 
   test_ros2_rosdep:
     name: "ROS 2 Test Suite (rosdep, Dashing binary)"
-    runs-on: ${{ matrix.os }}
+    # Sourcing binary installations is only available on Linux
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
-      matrix:
-          os: [macOS-latest, ubuntu-18.04, windows-latest]
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
