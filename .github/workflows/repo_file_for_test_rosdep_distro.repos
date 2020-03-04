@@ -1,0 +1,10 @@
+# repo file only containing rcl_interfaces
+# This repository has been chosen because it depends on other packages
+# e.g. test_interface_files
+#
+# https://github.com/ros2/rcl_interfaces/tree/0.8.0
+repositories:
+  rcl_interfaces:
+    type: git
+    url: https://github.com/ros2/rcl_interfaces.git
+    version: 0.8.0
