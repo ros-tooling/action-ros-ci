@@ -4584,9 +4584,15 @@ function run() {
             // Remove all repositories the package under test does not depend on, to
             // avoid having rosdep installing unrequired dependencies.
             yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, commandPrefix, options);
+            // Let Eloquent be the default distro used for rosdep
+            let rosdepRosdistro = "--rosdistro eloquent";
+            // If sourcing a binary installation, then we should use that distro instead
+            if (sourceRosBinaryInstallation) {
+                rosdepRosdistro = "";
+            }
             // For "latest" builds, rosdep often misses some keys, adding "|| true", to
             // ignore those failures, as it is often non-critical.
-            yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true`, commandPrefix, options);
+            yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src ${rosdepRosdistro} -y || true`, commandPrefix, options);
             if (colconMixinName !== "" && colconMixinRepo !== "") {
                 yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, commandPrefix);
                 yield execBashCommand("colcon mixin update default", commandPrefix);

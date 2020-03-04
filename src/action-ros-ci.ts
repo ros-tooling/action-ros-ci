@@ -183,10 +183,17 @@ async function run() {
 			options
 		);
 
+		// Let Eloquent be the default distro used for rosdep
+		let rosdepRosdistro = "--rosdistro eloquent";
+		// If sourcing a binary installation, then we should use that distro instead
+		if (sourceRosBinaryInstallation) {
+			rosdepRosdistro = "";
+		}
+
 		// For "latest" builds, rosdep often misses some keys, adding "|| true", to
 		// ignore those failures, as it is often non-critical.
 		await execBashCommand(
-			`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true`,
+			`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src ${rosdepRosdistro} -y || true`,
 			commandPrefix,
 			options
 		);
