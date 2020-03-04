@@ -41,6 +41,17 @@ steps:
     package-name: ament_copyright
 ```
 
+### Build with a custom `repos` or `rosinstall` file
+
+```yaml
+steps:
+- uses: actions/checkout@v2  # checkout rosinstall file
+- uses: ros-tooling/setup-ros@master
+- uses: ros-tooling/action-ros-ci@master
+  with:
+    package-name: my_package
+    vcs-repo-file-url: ${{ github.workspace }}/ci/deps.rosinstall
+```
 
 ## License
 
