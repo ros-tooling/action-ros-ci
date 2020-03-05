@@ -35,12 +35,23 @@ See [action.yml](action.yml) to get the list of flags supported by this action.
 
 ```yaml
 steps:
-- uses: ros-tooling/setup-ros@master
-- uses: ros-tooling/action-ros-ci@master
+- uses: ros-tooling/setup-ros@0.0.15
+- uses: ros-tooling/action-ros-ci@0.0.13
   with:
     package-name: ament_copyright
 ```
 
+### Build with a custom `repos` or `rosinstall` file
+
+```yaml
+steps:
+- uses: actions/checkout@v2  # checkout rosinstall file
+- uses: ros-tooling/setup-ros@0.0.15
+- uses: ros-tooling/action-ros-ci@0.0.13
+  with:
+    package-name: my_package
+    vcs-repo-file-url: ${{ github.workspace }}/ci/deps.rosinstall
+```
 
 ## License
 
