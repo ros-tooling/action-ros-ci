@@ -43,14 +43,22 @@ steps:
 
 ### Build with a custom `repos` or `rosinstall` file
 
+You can specify your own repos file using the `vcs-repo-file-url` input.
+You can also automatically generate your package's dependencies using the following workflow:
+
 ```yaml
 steps:
-- uses: actions/checkout@v2  # checkout rosinstall file
+- uses: actions/checkout@v2
 - uses: ros-tooling/setup-ros@0.0.15
+# Run the generator and output the results to a file.
+- run: |
+    rosinstall_generator <package-name> --rosdistro <target-distro> \
+    --deps-only --deps --upstream-development > /tmp/deps.repos
+# Pass the file to the action
 - uses: ros-tooling/action-ros-ci@0.0.13
   with:
     package-name: my_package
-    vcs-repo-file-url: ${{ github.workspace }}/ci/deps.rosinstall
+    vcs-repo-file-url: /tmp/deps.repos
 ```
 
 ## License
