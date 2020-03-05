@@ -93,6 +93,9 @@ async function run() {
 		const sourceRosBinaryInstallation = core.getInput(
 			"source-ros-binary-installation"
 		);
+		const sourceRosBinaryInstallationList = sourceRosBinaryInstallation ?
+			sourceRosBinaryInstallation.split(RegExp("\\s")) :
+			[];
 		const vcsRepoFileUrl = resolveVcsRepoFileUrl(
 			core.getInput("vcs-repo-file-url", { required: true })
 		);
@@ -106,9 +109,6 @@ async function run() {
 				);
 				return;
 			}
-			const sourceRosBinaryInstallationList = sourceRosBinaryInstallation.split(
-				RegExp("\\s")
-			);
 			for (let rosDistribution of sourceRosBinaryInstallationList) {
 				commandPrefix += `source /opt/ros/${rosDistribution}/setup.sh && `;
 			}
@@ -184,16 +184,16 @@ async function run() {
 		);
 
 		// Let Eloquent be the default distro used for rosdep
-		let rosdepRosdistro = "--rosdistro eloquent";
-		// If sourcing a binary installation, then we should use that distro instead
+		let rosdepRosdistro = "eloquent";
+		// If sourcing a binary installation, then we should use the last overlayed distro for rosdep
 		if (sourceRosBinaryInstallation) {
-			rosdepRosdistro = "";
+			rosdepRosdistro = sourceRosBinaryInstallationList[sourceRosBinaryInstallationList.length - 1];
 		}
 
 		// For "latest" builds, rosdep often misses some keys, adding "|| true", to
 		// ignore those failures, as it is often non-critical.
 		await execBashCommand(
-			`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src ${rosdepRosdistro} -y || true`,
+			`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${rosdepRosdistro} -y || true`,
 			commandPrefix,
 			options
 		);
