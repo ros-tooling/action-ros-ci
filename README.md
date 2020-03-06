@@ -31,6 +31,8 @@ The variable value should be used to retrieve logs, binaries, etc. after the act
 
 See [action.yml](action.yml) to get the list of flags supported by this action.
 
+[action-ros-ci-template](https://github.com/ros-tooling/action-ros-ci-template) offers a template for using `action-ros-ci`
+
 ### Build and run `ament_copyright` tests
 
 ```yaml
