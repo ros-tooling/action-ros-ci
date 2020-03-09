@@ -191,6 +191,35 @@ jobs:
     - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.action-ros6.outputs.ros-workspace-directory-name }}/build/osrf_testing_tools_cpp/CMakeCache.txt
       name: "Check that the additional extra flags has been correctly passed"
 
+  test_ros2_rosdep:
+    name: "ROS 2 Test Suite (rosdep, Dashing binary)"
+    # Sourcing binary installations is only available on Linux
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - run: npm ci
+    - run: npm run build
+
+    - uses: ros-tooling/setup-ros@0.0.15
+      with:
+        required-ros-distributions: dashing
+
+    - uses: ./
+      id: action-ros
+      name: "Test rosdep installs from correct distro"
+      with:
+        source-ros-binary-installation: dashing
+        vcs-repo-file-url: .github/workflows/repo_file_for_test_rosdep_distro.repos
+        # test_msgs depends on test_interface_files, which should be installed by rosdep
+        # If the dependencies are installed for the wrong distribution, then the build should fail
+        package-name: test_msgs
+
   test_ros2_docker_dashing:
     name: "ROS 2 Test Suite (Docker, Dashing)"
     container:

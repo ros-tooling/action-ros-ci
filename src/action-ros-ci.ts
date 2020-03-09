@@ -93,6 +93,9 @@ async function run() {
 		const sourceRosBinaryInstallation = core.getInput(
 			"source-ros-binary-installation"
 		);
+		const sourceRosBinaryInstallationList = sourceRosBinaryInstallation ?
+			sourceRosBinaryInstallation.split(RegExp("\\s")) :
+			[];
 		const vcsRepoFileUrl = resolveVcsRepoFileUrl(
 			core.getInput("vcs-repo-file-url", { required: true })
 		);
@@ -106,9 +109,6 @@ async function run() {
 				);
 				return;
 			}
-			const sourceRosBinaryInstallationList = sourceRosBinaryInstallation.split(
-				RegExp("\\s")
-			);
 			for (let rosDistribution of sourceRosBinaryInstallationList) {
 				commandPrefix += `source /opt/ros/${rosDistribution}/setup.sh && `;
 			}
@@ -183,13 +183,27 @@ async function run() {
 			options
 		);
 
-		// For "latest" builds, rosdep often misses some keys, adding "|| true", to
-		// ignore those failures, as it is often non-critical.
-		await execBashCommand(
-			`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true`,
-			commandPrefix,
-			options
-		);
+		// Install ROS dependencies for each distribution being sourced
+		for (let rosDistribution of sourceRosBinaryInstallationList) {
+			// For "latest" builds, rosdep often misses some keys, adding "|| true", to
+			// ignore those failures, as it is often non-critical.
+			await execBashCommand(
+				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${rosDistribution} -y || true`,
+				commandPrefix,
+				options
+			);
+		}
+
+		// If no distribution is being sourced, then install dependencies for the latest release
+		if (!sourceRosBinaryInstallation) {
+			// For "latest" builds, rosdep often misses some keys, adding "|| true", to
+			// ignore those failures, as it is often non-critical.
+			await execBashCommand(
+				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true`,
+				commandPrefix,
+				options
+			);
+		}
 
 		if (colconMixinName !== "" && colconMixinRepo !== "") {
 			await execBashCommand(
