@@ -4548,9 +4548,9 @@ function run() {
             }
             // rosdep on Windows does not reliably work on Windows, see
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
-            if (process.platform != "win32") {
-                yield execBashCommand("rosdep update", commandPrefix);
-            }
+            //if (process.platform != "win32") {
+            yield execBashCommand("rosdep update", commandPrefix);
+            //}
             // Reset colcon configuration.
             yield io.rmRF(path.join(os.homedir(), ".colcon"));
             // Wipe out the workspace directory to ensure the workspace is always
