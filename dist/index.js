@@ -4563,8 +4563,8 @@ function run() {
                 cwd: rosWorkspaceDir
             };
             yield execBashCommand(`curl '${vcsRepoFileUrl}' | vcs import src/`, commandPrefix, options);
-            if (additionalVCSRepoFileUrl.length() != 0) {
-                yield execBashCommand(`curl '${vcsRepoFileUrl}' | vcs import src/`, commandPrefix, options);
+            if (additionalVCSRepoFileUrl.length != 0) {
+                yield execBashCommand(`curl '${additionalVCSRepoFileUrl}' | vcs import src/`, commandPrefix, options);
             }
             // If the package under tests is part of ros.repos, remove it first.
             // We do not want to allow the "default" head state of the package to
