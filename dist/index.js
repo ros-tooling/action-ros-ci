@@ -4535,6 +4535,7 @@ function run() {
                 sourceRosBinaryInstallation.split(RegExp("\\s")) :
                 [];
             const vcsRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("vcs-repo-file-url", { required: true }));
+            const additionalVCSRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("additional-vcs-repo-file-url", { required: false }));
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
             let commandPrefix = "";
             if (sourceRosBinaryInstallation) {
@@ -4562,6 +4563,9 @@ function run() {
                 cwd: rosWorkspaceDir
             };
             yield execBashCommand(`curl '${vcsRepoFileUrl}' | vcs import src/`, commandPrefix, options);
+            if (additionalVCSRepoFileUrl.length() != 0) {
+                yield execBashCommand(`curl '${vcsRepoFileUrl}' | vcs import src/`, commandPrefix, options);
+            }
             // If the package under tests is part of ros.repos, remove it first.
             // We do not want to allow the "default" head state of the package to
             // to be present in the workspace, and colcon will fail stating it found twice
