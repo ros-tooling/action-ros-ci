@@ -4563,9 +4563,6 @@ function run() {
                 cwd: rosWorkspaceDir
             };
             yield execBashCommand(`curl '${vcsRepoFileUrl}' | vcs import src/`, commandPrefix, options);
-            if (additionalVCSRepoFileUrl.length != 0) {
-                yield execBashCommand(`curl '${additionalVCSRepoFileUrl}' | vcs import src/`, commandPrefix, options);
-            }
             // If the package under tests is part of ros.repos, remove it first.
             // We do not want to allow the "default" head state of the package to
             // to be present in the workspace, and colcon will fail stating it found twice
@@ -4589,6 +4586,9 @@ function run() {
     version: '${commitRef}'`;
             fs_1.default.writeFileSync(repoFilePath, repoFileContent);
             yield execBashCommand("vcs import src/ < package.repo", commandPrefix, options);
+            if (additionalVCSRepoFileUrl.length != 0) {
+                yield execBashCommand(`curl '${additionalVCSRepoFileUrl}' | vcs import src/`, commandPrefix, options);
+            }
             // Remove all repositories the package under test does not depend on, to
             // avoid having rosdep installing unrequired dependencies.
             yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, commandPrefix, options);
