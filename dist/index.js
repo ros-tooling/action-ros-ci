@@ -4535,7 +4535,6 @@ function run() {
                 sourceRosBinaryInstallation.split(RegExp("\\s")) :
                 [];
             const vcsRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("vcs-repo-file-url", { required: true }));
-            const additionalVCSRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("additional-vcs-repo-file-url", { required: false }));
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
             let commandPrefix = "";
             if (sourceRosBinaryInstallation) {
@@ -4586,9 +4585,11 @@ function run() {
     version: '${commitRef}'`;
             fs_1.default.writeFileSync(repoFilePath, repoFileContent);
             yield execBashCommand("vcs import src/ < package.repo", commandPrefix, options);
+
+            const additionalVCSRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("additional-vcs-repo-file-url", { required: false }));
             if (additionalVCSRepoFileUrl.length != 0) {
                 yield execBashCommand(`echo '${additionalVCSRepoFileUrl}'`);
-                yield execBashCommand(`ls -la '${additionalVCSRepoFileUrl}'`);
+                // yield execBashCommand(`ls -la '${additionalVCSRepoFileUrl}'`);
                 yield execBashCommand(`curl '${additionalVCSRepoFileUrl}' | vcs import src/`, commandPrefix, options);
             }
             // Remove all repositories the package under test does not depend on, to
