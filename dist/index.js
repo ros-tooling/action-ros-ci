@@ -4587,6 +4587,7 @@ function run() {
             fs_1.default.writeFileSync(repoFilePath, repoFileContent);
             yield execBashCommand("vcs import src/ < package.repo", commandPrefix, options);
             if (additionalVCSRepoFileUrl.length != 0) {
+                yield execBashCommand(`echo '${additionalVCSRepoFileUrl}'`);
                 yield execBashCommand(`curl '${additionalVCSRepoFileUrl}' | vcs import src/`, commandPrefix, options);
             }
             // Remove all repositories the package under test does not depend on, to
