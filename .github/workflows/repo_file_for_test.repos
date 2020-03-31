@@ -1,5 +1,5 @@
 # repo file only containing ament_cmake, and ament_lint
-# These repositories has been chosen because they do not depend on anything.
+# These repositories have been chosen because they do not depend on anything.
 #
 # Version is pinned to 0.8.1, to avoid updates to those packages creating
 # failures.
