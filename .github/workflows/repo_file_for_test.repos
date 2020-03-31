@@ -1,10 +1,22 @@
-# repo file only containing ament_lint
-# This repository has been chosen because it does depend on anything, as of
-# 0.8.1.
+# repo file only containing ament_cmake, and ament_lint
+# These repositories has been chosen because they do not depend on anything.
 #
-# https://github.com/ament/ament_lint/tree/0.8.1
+# Version is pinned to 0.8.1, to avoid updates to those packages creating
+# failures.
+
 repositories:
-  cross_compile:
+# https://github.com/ament/ament_cmake/tree/0.8.1
+  ament_cmake:
+    type: git
+    url: https://github.com/ament/ament_cmake.git
+    version: 0.8.1
+# https://github.com/ament/ament_lint/tree/0.8.1
+  ament_lint:
     type: git
     url: https://github.com/ament/ament_lint.git
+    version: 0.8.1
+# https://github.com/ament/ament_package/tree/0.8.1
+  ament_package:
+    type: git
+    url: https://github.com/ament/ament_package.git
     version: 0.8.1
