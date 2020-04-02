@@ -38,7 +38,7 @@ See [action.yml](action.yml) to get the list of flags supported by this action.
 ```yaml
 steps:
 - uses: ros-tooling/setup-ros@0.0.16
-- uses: ros-tooling/action-ros-ci@0.0.14
+- uses: ros-tooling/action-ros-ci@0.0.15
   with:
     package-name: ament_copyright
 ```
@@ -57,7 +57,7 @@ steps:
     rosinstall_generator <package-name> --rosdistro <target-distro> \
     --deps-only --deps --upstream-development > /tmp/deps.repos
 # Pass the file to the action
-- uses: ros-tooling/action-ros-ci@0.0.14
+- uses: ros-tooling/action-ros-ci@0.0.15
   with:
     package-name: my_package
     vcs-repo-file-url: /tmp/deps.repos
