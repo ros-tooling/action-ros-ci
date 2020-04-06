@@ -152,6 +152,24 @@ jobs:
     - run: test -d "${{ steps.action-ros4.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       shell: bash
 
+    # The second repo file is ignored, but will get vcs-import'ed anyway.
+    # This test case just run basic testing on the action logic, making
+    # sure the for-loop is implemented correctly.
+    - uses: ./
+      id: action-ros-multiple-repo-files
+      name: "Test single package, with multiple custom repository files"
+      with:
+        vcs-repo-file-url: |
+            ${{ github.workspace }}/.github/workflows/repo_file_for_test.repos
+            ${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos
+        package-name: ament_copyright
+    - run: test -d "${{ steps.action-ros-multiple-repo-files.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+      shell: bash
+    - run: test -d "${{ steps.action-ros-multiple-repo-files.outputs.ros-workspace-directory-name }}/src/ament_lint"
+      shell: bash
+    - run: test -d "${{ steps.action-ros-multiple-repo-files.outputs.ros-workspace-directory-name }}/src/osrf_testing_tools_cpp"
+      shell: bash
+
     - uses: ./
       id: action-ros5
       name: "Test single package, with coverage enabled (Linux only)"
