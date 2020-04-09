@@ -23,7 +23,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: melodic
 
@@ -51,7 +51,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: kinetic
 
@@ -79,7 +79,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: melodic
 
@@ -109,7 +109,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
 
     - uses: ./
       id: action-ros
@@ -215,7 +215,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: dashing
 
@@ -243,7 +243,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: dashing
 
@@ -272,7 +272,7 @@ jobs:
     - run: npm ci
     - run: npm run build
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: eloquent
 
