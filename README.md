@@ -38,7 +38,7 @@ See [action.yml](action.yml) to get the list of flags supported by this action.
 
 ```yaml
 steps:
-- uses: ros-tooling/setup-ros@0.0.17
+- uses: ros-tooling/setup-ros@0.0.18
 - uses: ros-tooling/action-ros-ci@0.0.15
   with:
     package-name: ament_copyright
@@ -52,7 +52,7 @@ You can also automatically generate your package's dependencies using the follow
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: ros-tooling/setup-ros@0.0.17
+- uses: ros-tooling/setup-ros@0.0.18
 # Run the generator and output the results to a file.
 - run: |
     rosinstall_generator <package-name> --rosdistro <target-distro> \
