@@ -9,6 +9,9 @@ on:
     # Run the CI automatically every hour to look for flakyness.
     - cron:  '0 * * * *'
 
+env:
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
 jobs:
   test_ros:
     name: "ROS Test Suite"
@@ -20,8 +23,8 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
     - uses: ros-tooling/setup-ros@0.0.18
       with:
@@ -48,8 +51,8 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
     - uses: ros-tooling/setup-ros@0.0.18
       with:
@@ -76,8 +79,8 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
     - uses: ros-tooling/setup-ros@0.0.18
       with:
@@ -106,8 +109,8 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
     - uses: ros-tooling/setup-ros@0.0.18
 
@@ -212,8 +215,8 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
     - uses: ros-tooling/setup-ros@0.0.18
       with:
@@ -240,8 +243,8 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
     - uses: ros-tooling/setup-ros@0.0.18
       with:
@@ -269,8 +272,8 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
     - uses: ros-tooling/setup-ros@0.0.18
       with:
