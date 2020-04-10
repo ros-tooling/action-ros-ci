@@ -14,167 +14,214 @@ env:
 
 jobs:
   test_ros:
-    name: "ROS Test Suite"
-    # ROS 1 tests only run on Ubuntu
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
-
-    - run: .github/workflows/build-and-test.sh
-      shell: bash  # Ensure bash is used on Windows platform too<Paste>
-
-    - uses: ros-tooling/setup-ros@0.0.18
-      with:
-        required-ros-distributions: melodic
-
-    - uses: ./
-      id: action-ros
-      name: "Build and run tests for a single package (Melodic)"
-      with:
-        vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/ros_tutorials.repos"
-        package-name: roscpp_tutorials
-        source-ros-binary-installation: melodic
-    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
-      name: "Check that roscpp_tutorials install directory is present"
-
-  test_ros_docker_kinetic:
-    name: "ROS Test Suite (Docker, Kinetic)"
-    container:
-      image: ubuntu:xenial
+    name: "Test ROS package"
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distribution:  # ROS 1 tests only run on Ubuntu
+          - kinetic
+          - melodic
 
-    - run: .github/workflows/build-and-test.sh
-      shell: bash  # Ensure bash is used on Windows platform too<Paste>
+        # Define the Docker image(s) associated with each ROS distribution.
+        # The include syntax allows additional variables to be defined, like
+        # docker_image in this case. See documentation:
+        # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
+        #
+        # Platforms are defined in REP 3: https://ros.org/reps/rep-0003.html
+        include:
+          # Kinetic Kame (May 2016 - May 2021)
+          - docker_image: ubuntu:xenial
+            ros_distribution: kinetic
 
-    - uses: ros-tooling/setup-ros@0.0.18
-      with:
-        required-ros-distributions: kinetic
-
-    - uses: ./
-      id: action-ros
-      name: "Build and run tests for a single package (Kinetic)"
-      with:
-        vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/ros_tutorials.repos"
-        package-name: roscpp_tutorials
-        source-ros-binary-installation: kinetic
-    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
-      name: "Check that roscpp_tutorials install directory is present"
-
-  test_ros_docker_melodic:
-    name: "ROS Test Suite (Docker, Melodic)"
+          # Melodic Morenia (May 2018 - May 2023)
+          - docker_image: ubuntu:bionic
+            ros_distribution: melodic
     container:
-      image: ubuntu:bionic
-    runs-on: ubuntu-latest
+      image: ${{ matrix.docker_image }}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-
     - run: .github/workflows/build-and-test.sh
       shell: bash  # Ensure bash is used on Windows platform too<Paste>
-
     - uses: ros-tooling/setup-ros@0.0.18
       with:
-        required-ros-distributions: melodic
-
+        required-ros-distributions: ${{ matrix.ros_distribution }}
     - uses: ./
-      id: action-ros
-      name: "Build and run tests for a single package (Kinetic)"
+      id: action-ros-ci
       with:
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/ros_tutorials.repos"
         package-name: roscpp_tutorials
-        source-ros-binary-installation: melodic
-    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
+        source-ros-binary-installation: ${{ matrix.ros_distribution }}
+    - run: test -d "${{ steps.action-ros-ci.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
       name: "Check that roscpp_tutorials install directory is present"
 
   test_ros2:
-    name: "ROS 2 Test Suite"
+    name: "Test ROS 2 package"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-          os: [macOS-latest, ubuntu-18.04, windows-latest]
+          os: [macOS-latest, windows-latest]
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-
     - run: .github/workflows/build-and-test.sh
       shell: bash  # Ensure bash is used on Windows platform too<Paste>
-
     - uses: ros-tooling/setup-ros@0.0.18
-
+      with:
+        required-ros-distributions: ${{ matrix.ros_distribution }}
     - uses: ./
-      id: action-ros
+      id: test_single_package
       name: "Test single package, default options"
       with:
+        package-name: osrf_testing_tools_cpp
+        source-ros-binary-installation: ${{ matrix.ros_distribution }}
+        vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+      # TODO(tmoulard): re-enable this test once it passes on Windows
+      if: matrix.os != 'windows-latest'
+    - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
+      shell: bash
+      # TODO(tmoulard): re-enable this test once it passes on Windows
+      if: matrix.os != 'windows-latest'
+
+  test_ros2_docker:
+    name: "Test ROS 2 package"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distribution:  # ROS 1 tests only run on Ubuntu
+          - dashing
+          - eloquent
+
+        # Define the Docker image(s) associated with each ROS distribution.
+        # The include syntax allows additional variables to be defined, like
+        # docker_image in this case. See documentation:
+        # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
+        #
+        # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
+        include:
+          # Dashing Diademata (May 2019 - May 2021)
+          - docker_image: ubuntu:bionic
+            ros_distribution: dashing
+
+          # Eloquent Elusor (November 2019 - November 2020)
+          - docker_image: ubuntu:bionic
+            ros_distribution: eloquent
+    container:
+      image: ${{ matrix.docker_image }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
+    - uses: ros-tooling/setup-ros@0.0.18
+      with:
+        required-ros-distributions: ${{ matrix.ros_distribution }}
+
+    - uses: ./
+      name: "Test rosdep installs from correct distro"
+      with:
+        source-ros-binary-installation: ${{ matrix.ros_distribution }}
+        vcs-repo-file-url: .github/workflows/repo_file_for_test_rosdep_distro.repos
+        # test_msgs depends on test_interface_files, which should be installed by rosdep
+        # If the dependencies are installed for the wrong distribution, then the build should fail
+        package-name: test_msgs
+    # Verify that rosdep installed the required Debian package
+    - run: dpkg -s ros-${{ matrix.ros_distribution }}-test-interface-files
+
+    - uses: ./
+      id: test_single_package
+      name: "Test single package, default options"
+      with:
+        package-name: osrf_testing_tools_cpp
+        source-ros-binary-installation: ${{ matrix.ros_distribution }}
+        vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+    - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
+      shell: bash
+
+  test_ros2_from_source:
+    name: "Test ROS 2 package"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+          os: [macOS-latest, windows-latest]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too
+    - uses: ros-tooling/setup-ros@0.0.18
+    - uses: ./
+      id: test_single_package
+      with:
         package-name: ament_copyright
-    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+    - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
       shell: bash
 
     - uses: ./
-      id: action-ros2
+      id: test_multiple_packages
       name: "Test multiple package, default options"
       with:
         package-name: ament_copyright ament_lint
-    - run: test -d "${{ steps.action-ros2.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+    - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
       shell: bash
-    - run: test -d "${{ steps.action-ros2.outputs.ros-workspace-directory-name }}/install/ament_lint"
+    - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
       name: "Check that ament_lint install directory is present"
       shell: bash
 
     - uses: ./
-      id: action-ros3
+      id: test_mixin
       name: "Test single package, with custom mixin"
       with:
         colcon-mixin-name: asan
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         package-name: ament_copyright
-    - run: test -d "${{ steps.action-ros3.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+    - run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
       shell: bash
 
     - uses: ./
-      id: action-ros4
+      id: test_repo
       name: "Test single package, with custom repository file"
       with:
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
         package-name: ament_copyright
-    - run: test -d "${{ steps.action-ros4.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+    - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       shell: bash
 
     # The second repo file is ignored, but will get vcs-import'ed anyway.
     # This test case just run basic testing on the action logic, making
     # sure the for-loop is implemented correctly.
     - uses: ./
-      id: action-ros-multiple-repo-files
+      id: test_multiple_repos
       name: "Test single package, with multiple custom repository files"
       with:
         vcs-repo-file-url: |
-            ${{ github.workspace }}/.github/workflows/repo_file_for_test.repos
-            ${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos
+            .github/workflows/repo_file_for_test.repos
+            .github/workflows/repo_file_for_test_cpp_package.repos
         package-name: ament_copyright
-    - run: test -d "${{ steps.action-ros-multiple-repo-files.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+    - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       shell: bash
-    - run: test -d "${{ steps.action-ros-multiple-repo-files.outputs.ros-workspace-directory-name }}/src/ament_lint"
+    - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/ament_lint"
       shell: bash
-    - run: test -d "${{ steps.action-ros-multiple-repo-files.outputs.ros-workspace-directory-name }}/src/osrf_testing_tools_cpp"
+    - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/osrf_testing_tools_cpp"
       shell: bash
 
     - uses: ./
-      id: action-ros5
+      id: test_coverage
       name: "Test single package, with coverage enabled (Linux only)"
       with:
         colcon-mixin-name: coverage-gcc
@@ -182,13 +229,13 @@ jobs:
         package-name: osrf_testing_tools_cpp
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
       if: matrix.os != 'windows-latest'
-    - run: find ${{ steps.action-ros5.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
+    - run: find ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
       name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
       shell: bash
       if: matrix.os != 'windows-latest'
 
     - uses: ./
-      id: action-ros6
+      id: test_extra_cmake
       name: "Test single package, with extra cmake flags"
       with:
         package-name: ament_cmake_core
@@ -200,92 +247,126 @@ jobs:
         # really exists in this package.
         extra-cmake-args: |
             -DADDITIONAL_CMAKE_OPTION_FOR_TEST:STR="9ae391a63628efe6d72ba34a1a1d9dc9"
-    - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.action-ros6.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
+    - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
       name: "Check that the additional extra flags has been correctly passed"
 
-  test_ros2_rosdep:
-    name: "ROS 2 Test Suite (rosdep, Dashing binary)"
-    # Sourcing binary installations is only available on Linux
-    runs-on: ubuntu-18.04
+  test_ros2_from_source_docker:
+    name: "Test ROS 2 package"
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
+      matrix:
+        ros_distribution:  # ROS 1 tests only run on Ubuntu
+          - dashing
+          - eloquent
 
-    - run: .github/workflows/build-and-test.sh
-      shell: bash  # Ensure bash is used on Windows platform too<Paste>
+        # Define the Docker image(s) associated with each ROS distribution.
+        # The include syntax allows additional variables to be defined, like
+        # docker_image in this case. See documentation:
+        # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
+        #
+        # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
+        include:
+          # Dashing Diademata (May 2019 - May 2021)
+          - docker_image: ubuntu:bionic
+            ros_distribution: dashing
 
-    - uses: ros-tooling/setup-ros@0.0.18
-      with:
-        required-ros-distributions: dashing
-
-    - uses: ./
-      id: action-ros
-      name: "Test rosdep installs from correct distro"
-      with:
-        source-ros-binary-installation: dashing
-        vcs-repo-file-url: .github/workflows/repo_file_for_test_rosdep_distro.repos
-        # test_msgs depends on test_interface_files, which should be installed by rosdep
-        # If the dependencies are installed for the wrong distribution, then the build should fail
-        package-name: test_msgs
-
-  test_ros2_docker_dashing:
-    name: "ROS 2 Test Suite (Docker, Dashing)"
+          # Eloquent Elusor (November 2019 - November 2020)
+          - docker_image: ubuntu:bionic
+            ros_distribution: eloquent
     container:
-      image: ubuntu:bionic
-    runs-on: ubuntu-latest
+      image: ${{ matrix.docker_image }}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-
     - run: .github/workflows/build-and-test.sh
-      shell: bash  # Ensure bash is used on Windows platform too<Paste>
-
+      shell: bash  # Ensure bash is used on Windows platform too
     - uses: ros-tooling/setup-ros@0.0.18
-      with:
-        required-ros-distributions: dashing
-
     - uses: ./
-      id: action-ros
-      name: "Test single package, default options"
+      id: test_single_package
       with:
-        package-name: osrf_testing_tools_cpp
-        source-ros-binary-installation: dashing
-        vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
-    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
+        package-name: ament_copyright
+    - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
       shell: bash
 
-  test_ros2_docker_eloquent:
-    name: "ROS 2 Test Suite (Docker, Eloquent)"
-    container:
-      image: ubuntu:bionic
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
-
-    - run: .github/workflows/build-and-test.sh
-      shell: bash  # Ensure bash is used on Windows platform too<Paste>
-
-    - uses: ros-tooling/setup-ros@0.0.18
-      with:
-        required-ros-distributions: eloquent
-
     - uses: ./
-      id: action-ros
-      name: "Test single package, default options"
+      id: test_multiple_packages
+      name: "Test multiple package, default options"
       with:
-        package-name: osrf_testing_tools_cpp
-        source-ros-binary-installation: eloquent
-        vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
-    - run: test -d "${{ steps.action-ros.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
+        package-name: ament_copyright ament_lint
+    - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
       shell: bash
+    - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
+      name: "Check that ament_lint install directory is present"
+      shell: bash
+
+    - uses: ./
+      id: test_mixin
+      name: "Test single package, with custom mixin"
+      with:
+        colcon-mixin-name: asan
+        colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+        package-name: ament_copyright
+    - run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+      name: "Check that ament_copyright install directory is present"
+      shell: bash
+
+    - uses: ./
+      id: test_repo
+      name: "Test single package, with custom repository file"
+      with:
+        vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
+        package-name: ament_copyright
+    - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+      shell: bash
+
+    # The second repo file is ignored, but will get vcs-import'ed anyway.
+    # This test case just run basic testing on the action logic, making
+    # sure the for-loop is implemented correctly.
+    - uses: ./
+      id: test_multiple_repos
+      name: "Test single package, with multiple custom repository files"
+      with:
+        vcs-repo-file-url: |
+            .github/workflows/repo_file_for_test.repos
+            .github/workflows/repo_file_for_test_cpp_package.repos
+        package-name: ament_copyright
+    - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+      shell: bash
+    - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/ament_lint"
+      shell: bash
+    - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/osrf_testing_tools_cpp"
+      shell: bash
+
+    - uses: ./
+      id: test_coverage
+      name: "Test single package, with coverage enabled (Linux only)"
+      with:
+        colcon-mixin-name: coverage-gcc
+        colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+        package-name: osrf_testing_tools_cpp
+        vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+    - run: find ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
+      name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
+      shell: bash
+
+    - uses: ./
+      id: test_extra_cmake
+      name: "Test single package, with extra cmake flags"
+      with:
+        package-name: ament_cmake_core
+        vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
+        # We use a long unique string here to make sure that if this string
+        # is found in CMakeCache.txt, it means the additional CMake flag has
+        # been passed successfully. Non recognized flags are also written by
+        # cmake into CMakeCache.txt, so this does not need to be a flag that
+        # really exists in this package.
+        extra-cmake-args: |
+            -DADDITIONAL_CMAKE_OPTION_FOR_TEST:STR="9ae391a63628efe6d72ba34a1a1d9dc9"
+    - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
+      name: "Check that the additional extra flags has been correctly passed"
+
