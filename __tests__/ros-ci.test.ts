@@ -9,6 +9,7 @@ describe('execBashCommand test suite', () => {
       expect(result).toEqual(0);
   });
   it('uses a prefix', async () => {
+    jest.setTimeout(10000);  // in milliseconds
     const mockGroup = jest.spyOn(core, 'group');
     const result = await execBashCommand('Hello World', 'echo ');
     expect(mockGroup).toBeCalled();
