@@ -4793,6 +4793,33 @@ const io = __importStar(__webpack_require__(1));
 const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
 const fs_1 = __importDefault(__webpack_require__(747));
+// All command line flags passed to curl when invoked as a command.
+const curlFlagsArray = [
+    // (HTTP)  Fail  silently  (no  output at all) on server errors. This is mostly done to better enable
+    // scripts etc to better deal with failed attempts. In normal cases  when  a  HTTP  server  fails  to
+    // deliver  a  document,  it  returns an HTML document stating so (which often also describes why and
+    // more). This flag will prevent curl from outputting that and return error 22.
+    // This method is not fail-safe and there are occasions where non-successful response codes will slip
+    // through, especially when authentication is involved (response codes 401 and 407).
+    "--fail",
+    // Silent or quiet mode. Don't show progress meter or error messages.  Makes Curl mute.
+    "--silent",
+    // When used with -s it makes curl show an error message if it fails.
+    "--show-error",
+    // (HTTP/HTTPS) If the server reports that the requested page  has  moved  to  a  different  location
+    // (indicated  with  a Location: header and a 3XX response code), this option will make curl redo the
+    // request on the new place. If used together with -i, --include or  -I,  --head,  headers  from  all
+    // requested pages will be shown. When authentication is used, curl only sends its credentials to the
+    // initial host. If a redirect takes curl to a different host, it won't  be  able  to  intercept  the
+    // user+password.  See  also  --location-trusted  on  how to change this. You can limit the amount of
+    // redirects to follow by using the --max-redirs option.
+    //
+    // When curl follows a redirect and the request is not a plain GET (for example POST or PUT), it will
+    // do  the  following  request  with a GET if the HTTP response was 301, 302, or 303. If the response
+    // code was any other 3xx code, curl will re-send the following request  using  the  same  unmodified
+    // method.
+    "--location"
+];
 /**
  * Convert local paths to URLs.
  *
@@ -4872,10 +4899,15 @@ function run() {
             const rosWorkspaceName = "ros_ws";
             const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
             const sourceRosBinaryInstallation = core.getInput("source-ros-binary-installation");
-            const sourceRosBinaryInstallationList = sourceRosBinaryInstallation ?
-                sourceRosBinaryInstallation.split(RegExp("\\s")) :
-                [];
-            const vcsRepoFileUrl = resolveVcsRepoFileUrl(core.getInput("vcs-repo-file-url", { required: true }));
+            const sourceRosBinaryInstallationList = sourceRosBinaryInstallation
+                ? sourceRosBinaryInstallation.split(RegExp("\\s"))
+                : [];
+            const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url", {
+                required: true
+            });
+            const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
+            const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(x => x != "");
+            const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map(x => resolveVcsRepoFileUrl(x));
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
             let commandPrefix = "";
             if (sourceRosBinaryInstallation) {
@@ -4902,12 +4934,17 @@ function run() {
             const options = {
                 cwd: rosWorkspaceDir
             };
-            yield execBashCommand(`curl '${vcsRepoFileUrl}' | vcs import src/`, commandPrefix, options);
+            const curlFlags = curlFlagsArray.join(" ");
+            for (let vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
+                yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import src/`, commandPrefix, options);
+            }
             // If the package under tests is part of ros.repos, remove it first.
             // We do not want to allow the "default" head state of the package to
             // to be present in the workspace, and colcon will fail stating it found twice
             // a package with an identical name.
-            const posixRosWorkspaceDir = process.platform === 'win32' ? rosWorkspaceDir.replace(/\\/g, '/') : rosWorkspaceDir;
+            const posixRosWorkspaceDir = process.platform === "win32"
+                ? rosWorkspaceDir.replace(/\\/g, "/")
+                : rosWorkspaceDir;
             yield execBashCommand(`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`, commandPrefix);
             // The repo file for the repository needs to be generated on-the-fly to
             // incorporate the custom repository URL and branch name, when a PR is
@@ -4970,7 +5007,7 @@ function run() {
             yield execBashCommand(colconBuildCmd, commandPrefix, options);
             // ignoreReturnCode is set to true to avoid having a lack of coverage
             // data fail the build.
-            const colconLcovInitialCmd = `colcon lcov-result --initial`;
+            const colconLcovInitialCmd = "colcon lcov-result --initial";
             yield execBashCommand(colconLcovInitialCmd, commandPrefix, {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true
@@ -4988,7 +5025,7 @@ function run() {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true
             });
-            core.setOutput('ros-workspace-directory-name', rosWorkspaceName);
+            core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
         }
         catch (error) {
             core.setFailed(error.message);

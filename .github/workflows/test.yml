@@ -5,18 +5,12 @@ on:
     branches:
       - master
       - 'releases/*'
-      # Greenkeeper provides automated dependency management
-      # for this repository. It will automatically create
-      # new branches with updated npm versions, and send
-      # PRs for those automatically, if they build.
-      # Greenkeeper relies on this CI to determine if a
-      # PR needs to be open or not, and as such we need
-      # to whitelist those branches for CI run here.
-      # See also https://greenkeeper.io/faq#no-initial-pr
-      - 'greenkeeper**'
   schedule:
     # Run the CI automatically every hour to look for flakyness.
     - cron:  '0 * * * *'
+
+env:
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
   test_ros:
@@ -29,10 +23,10 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: melodic
 
@@ -57,10 +51,10 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: kinetic
 
@@ -85,10 +79,10 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: melodic
 
@@ -115,10 +109,10 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
 
     - uses: ./
       id: action-ros
@@ -159,6 +153,24 @@ jobs:
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
         package-name: ament_copyright
     - run: test -d "${{ steps.action-ros4.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+      shell: bash
+
+    # The second repo file is ignored, but will get vcs-import'ed anyway.
+    # This test case just run basic testing on the action logic, making
+    # sure the for-loop is implemented correctly.
+    - uses: ./
+      id: action-ros-multiple-repo-files
+      name: "Test single package, with multiple custom repository files"
+      with:
+        vcs-repo-file-url: |
+            ${{ github.workspace }}/.github/workflows/repo_file_for_test.repos
+            ${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos
+        package-name: ament_copyright
+    - run: test -d "${{ steps.action-ros-multiple-repo-files.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+      shell: bash
+    - run: test -d "${{ steps.action-ros-multiple-repo-files.outputs.ros-workspace-directory-name }}/src/ament_lint"
+      shell: bash
+    - run: test -d "${{ steps.action-ros-multiple-repo-files.outputs.ros-workspace-directory-name }}/src/osrf_testing_tools_cpp"
       shell: bash
 
     - uses: ./
@@ -203,10 +215,10 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: dashing
 
@@ -231,10 +243,10 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: dashing
 
@@ -260,10 +272,10 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: npm ci
-    - run: npm run build
+    - run: .github/workflows/build-and-test.sh
+      shell: bash  # Ensure bash is used on Windows platform too<Paste>
 
-    - uses: ros-tooling/setup-ros@0.0.16
+    - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: eloquent
 

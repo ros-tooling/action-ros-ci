@@ -1,6 +1,7 @@
 # `action-ros-ci`
 
-[![GitHub Action Status](https://github.com/ros-tooling/action-ros-ci/workflows/Test%20action-ros-ci/badge.svg)](https://github.com/ros-tooling/action-ros-ci) [![Greenkeeper badge](https://badges.greenkeeper.io/ros-tooling/action-ros-ci.svg)](https://greenkeeper.io/)
+[![GitHub Action Status](https://github.com/ros-tooling/action-ros-ci/workflows/Test%20action-ros-ci/badge.svg)](https://github.com/ros-tooling/action-ros-ci)
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ros-tooling/action-ros-ci)](https://dependabot.com)
 
 This action builds a [ROS, or ROS 2](https://index.ros.org/doc/ros/) workspace from source, and run colon-test on the package under test.
 
@@ -46,8 +47,8 @@ See [action.yml](action.yml) to get the list of flags supported by this action.
 
 ```yaml
 steps:
-- uses: ros-tooling/setup-ros@0.0.16
-- uses: ros-tooling/action-ros-ci@0.0.14
+- uses: ros-tooling/setup-ros@0.0.18
+- uses: ros-tooling/action-ros-ci@0.0.15
   with:
     package-name: ament_copyright
 ```
@@ -60,13 +61,13 @@ You can also automatically generate your package's dependencies using the follow
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: ros-tooling/setup-ros@0.0.16
+- uses: ros-tooling/setup-ros@0.0.18
 # Run the generator and output the results to a file.
 - run: |
     rosinstall_generator <package-name> --rosdistro <target-distro> \
     --deps-only --deps --upstream-development > /tmp/deps.repos
 # Pass the file to the action
-- uses: ros-tooling/action-ros-ci@0.0.14
+- uses: ros-tooling/action-ros-ci@0.0.15
   with:
     package-name: my_package
     vcs-repo-file-url: /tmp/deps.repos
