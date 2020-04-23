@@ -89,6 +89,16 @@ jobs:
       # TODO(tmoulard): re-enable this test once it passes on Windows
       if: matrix.os != 'windows-latest'
 
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+      if: always()
+    - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
+      if: always()
+
   test_ros2_docker:
     name: "Test ROS 2 package"
     runs-on: ubuntu-latest
@@ -146,6 +156,16 @@ jobs:
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
     - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
       shell: bash
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+      if: always()
+    - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
+      if: always()
 
   test_ros2_from_source:
     name: "Test ROS 2 package"
@@ -249,6 +269,16 @@ jobs:
             -DADDITIONAL_CMAKE_OPTION_FOR_TEST:STR="9ae391a63628efe6d72ba34a1a1d9dc9"
     - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
       name: "Check that the additional extra flags has been correctly passed"
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+      if: always()
+    - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
+      if: always()
 
   test_ros2_from_source_docker:
     name: "Test ROS 2 package"
@@ -370,3 +400,12 @@ jobs:
     - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
       name: "Check that the additional extra flags has been correctly passed"
 
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+      if: always()
+    - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
+      if: always()
