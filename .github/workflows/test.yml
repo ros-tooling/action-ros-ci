@@ -96,8 +96,15 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
       if: always()
+      # Allow build reports to fail on pull requests.
+      # When a contribution is made on a fork, the secrets will not be available,
+      # and this step will be failing. This is acceptable.
+      # On the other end, we want to be notified if this happens on merge, or
+      # on schedule.
+      continue-on-error: ${{ github.event_name == 'pull_request'}}
     - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
       if: always()
+      continue-on-error: ${{ github.event_name == 'pull_request'}}
 
   test_ros2_docker:
     name: "Test ROS 2 package"
@@ -164,8 +171,15 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
       if: always()
+      # Allow build reports to fail on pull requests.
+      # When a contribution is made on a fork, the secrets will not be available,
+      # and this step will be failing. This is acceptable.
+      # On the other end, we want to be notified if this happens on merge, or
+      # on schedule.
+      continue-on-error: ${{ github.event_name == 'pull_request'}}
     - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
       if: always()
+      continue-on-error: ${{ github.event_name == 'pull_request'}}
 
   test_ros2_from_source:
     name: "Test ROS 2 package"
@@ -277,8 +291,15 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
       if: always()
+      # Allow build reports to fail on pull requests.
+      # When a contribution is made on a fork, the secrets will not be available,
+      # and this step will be failing. This is acceptable.
+      # On the other end, we want to be notified if this happens on merge, or
+      # on schedule.
+      continue-on-error: ${{ github.event_name == 'pull_request'}}
     - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
       if: always()
+      continue-on-error: ${{ github.event_name == 'pull_request'}}
 
   test_ros2_from_source_docker:
     name: "Test ROS 2 package"
@@ -407,5 +428,12 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
       if: always()
+      # Allow build reports to fail on pull requests.
+      # When a contribution is made on a fork, the secrets will not be available,
+      # and this step will be failing. This is acceptable.
+      # On the other end, we want to be notified if this happens on merge, or
+      # on schedule.
+      continue-on-error: ${{ github.event_name == 'pull_request'}}
     - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
       if: always()
+      continue-on-error: ${{ github.event_name == 'pull_request'}}
