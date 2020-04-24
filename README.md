@@ -7,7 +7,16 @@ This action builds a [ROS, or ROS 2](https://index.ros.org/doc/ros/) workspace f
 
 ## Requirements
 
-This action requires ROS development tools (`colcon`, `rosdep`, `vcs`) to be installed on the CI worker instance.
+This action requires the following ROS development tools to be installed (and initialized if applicable) on the CI worker instance:
+
+```
+curl
+colcon-common-extensions
+colcon-lcov-result  # Optional
+colcon-mixin
+rosdep
+vcstool
+```
 
 On Linux, the setup can be done through [`ros-tooling/setup-ros`](https://github.com/ros-tooling/setup-ros), or by running the action in a Docker image containing the appropriate binaries.
 
