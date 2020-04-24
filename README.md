@@ -73,6 +73,108 @@ steps:
     vcs-repo-file-url: /tmp/deps.repos
 ```
 
+### Enable Address Sanitizer to automatically report memory issues
+
+[ASan][AddressSanitizer] is an open-source tool developed to automatically report
+memory corruption bugs.
+
+```yaml
+    steps:
+    - uses: ros-tooling/setup-ros@0.0.19
+    - uses: ros-tooling/action-ros-ci@0.0.15
+      with:
+        colcon-mixin-name: asan
+        colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/3e627e0fa30db85aea05a50e2c61a9832664d236/index.yaml
+        package-name: my_package
+```
+
+To look for detected memory errors, check the build logs for entries containing `ERROR: AddressSanitizer`. Example:
+
+```
+==9442== ERROR: AddressSanitizer heap-use-after-free on address 0x7f7ddab8c084 at pc 0x403c8c bp 0x7fff87fb82d0 sp 0x7fff87fb82c8
+```
+
+ASan is analyzing memory issues at runtime. ASan diagnostic messages will be emitted by the package tests when they run.
+
+### Generate, and processing code coverage data
+
+#### Generate code coverage information using `lcov` and `colcon-lcov-result`
+
+If the compiler is invoked with the appropriate flags, `action-ros-ci` will use
+[`colcon-lcov-result`](https://github.com/colcon/colcon-lcov-result) to generate
+coverage information.
+
+Flags can be passed manually using, for instance, `extra-cmake-args`, but it is
+preferable to use a `colcon` mixin to pass the appropriate flags automatically.
+
+```yaml
+    steps:
+    - uses: ros-tooling/setup-ros@0.0.19
+    - uses: ros-tooling/action-ros-ci@0.0.15
+      with:
+        package-name: my_package
+        colcon-mixin-name: coverage-gcc
+        # If possible, pin the repository in the workflow to a specific commit to avoid
+        # changes in colcon-mixin-repository from breaking your tests.
+        colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/5c45b95018788deff62202aaa831ad4c20ebe2c6/index.yaml
+```
+
+#### Integrate `action-ros-ci` with `codecov`
+
+The generated code coverage information can be uploaded to [codecov.io](https://codecov.io/).
+In this case, you will need to setup a secret `CODECOV_TOKEN` in [your repository settings][creating-encrypted-secrets].
+
+See [action/codecov-action](https://github.com/codecov/codecov-action) documentation for more information about how to setup the action.
+
+```yaml
+    steps:
+    - uses: ros-tooling/setup-ros@0.0.19
+    - uses: ros-tooling/action-ros-ci@0.0.15
+      with:
+        package-name: my_package
+        colcon-mixin-name: coverage-gcc
+        # If possible, pin the repository in the workflow to a specific commit to avoid
+        # changes in colcon-mixin-repository from breaking your tests.
+        colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/5c45b95018788deff62202aaa831ad4c20ebe2c6/index.yaml
+    - uses: codecov/codecov-action@v1.0.6
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ros_ws/lcov/total_coverage.info
+        flags: unittests
+        name: codecov-umbrella
+        yml: ./codecov.yml
+```
+
+You will also need to add a `codecov.yaml` configuration file:
+
+```yaml
+fixes:
+  - "ros_ws/src/my_package/::"
+```
+
+The configuration file is required to let codecov map the workspace directory structure, to the Git repository structure, and setup the links between codecov and GitHub properly.
+
+### Store `colcon` logs as build artifacts
+
+GitHub workflows can persist data generated in workers during the build using [artifacts](persisting-workflow-data-using-artifacts). `action-ros-ci` generated colcon logs can be saved as follow:
+
+```yaml
+    - uses: ros-tooling/action-ros-ci@0.0.15
+      id: action_ros_ci_step
+      with:
+        package-name: ament_copyright
+    - uses: actions/upload-artifact@v1
+      with:
+        name: colcon-logs
+        path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
+    - if: always()  # upload the logs even when the build fails
+```
+
+
 ## License
 
 The scripts and documentation in this project are released under the [Apache 2](LICENSE)
+
+[creating-encrypted-secrets]: https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets
+[persisting-workflow-data-using-artifacts]: https://help.github.com/en/actions/configuring-and-managing-workflows/persisting-workflow-data-using-artifacts
+[AddressSanitizer]: https://en.wikipedia.org/wiki/AddressSanitizer

@@ -213,7 +213,7 @@ async function run() {
     version: '${commitRef}'`;
 		fs.writeFileSync(repoFilePath, repoFileContent);
 		await execBashCommand(
-			"vcs import src/ < package.repo",
+			"vcs import --recursive src/ < package.repo",
 			commandPrefix,
 			options
 		);

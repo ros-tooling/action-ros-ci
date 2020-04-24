@@ -1,6 +1,8 @@
 import * as core from '@actions/core'
 import {execBashCommand} from '../src/action-ros-ci'
 
+jest.setTimeout(10000);  // in milliseconds
+
 describe('execBashCommand test suite', () => {
   it('calls coreGroup', async () => {
       const mockGroup = jest.spyOn(core, 'group');
