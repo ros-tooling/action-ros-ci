@@ -9,6 +9,10 @@ on:
     # Run the CI automatically every hour to look for flakyness.
     - cron:  '0 * * * *'
 
+defaults:
+  run:
+    shell: bash
+
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -45,7 +49,6 @@ jobs:
       with:
         node-version: '12.x'
     - run: .github/workflows/build-and-test.sh
-      shell: bash  # Ensure bash is used on Windows platform too<Paste>
     - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: ${{ matrix.ros_distribution }}
@@ -71,7 +74,6 @@ jobs:
       with:
         node-version: '12.x'
     - run: .github/workflows/build-and-test.sh
-      shell: bash  # Ensure bash is used on Windows platform too<Paste>
     - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: ${{ matrix.ros_distribution }}
@@ -85,26 +87,8 @@ jobs:
       # TODO(tmoulard): re-enable this test once it passes on Windows
       if: matrix.os != 'windows-latest'
     - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
-      shell: bash
       # TODO(tmoulard): re-enable this test once it passes on Windows
       if: matrix.os != 'windows-latest'
-
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
-      if: always()
-      # Allow build reports to fail on pull requests.
-      # When a contribution is made on a fork, the secrets will not be available,
-      # and this step will be failing. This is acceptable.
-      # On the other end, we want to be notified if this happens on merge, or
-      # on schedule.
-      continue-on-error: ${{ github.event_name == 'pull_request'}}
-    - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
-      if: always()
-      continue-on-error: ${{ github.event_name == 'pull_request'}}
 
   test_ros2_docker:
     name: "Test ROS 2 package"
@@ -138,7 +122,6 @@ jobs:
       with:
         node-version: '12.x'
     - run: .github/workflows/build-and-test.sh
-      shell: bash  # Ensure bash is used on Windows platform too<Paste>
     - uses: ros-tooling/setup-ros@0.0.18
       with:
         required-ros-distributions: ${{ matrix.ros_distribution }}
@@ -162,24 +145,6 @@ jobs:
         source-ros-binary-installation: ${{ matrix.ros_distribution }}
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
     - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
-      shell: bash
-
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
-      if: always()
-      # Allow build reports to fail on pull requests.
-      # When a contribution is made on a fork, the secrets will not be available,
-      # and this step will be failing. This is acceptable.
-      # On the other end, we want to be notified if this happens on merge, or
-      # on schedule.
-      continue-on-error: ${{ github.event_name == 'pull_request'}}
-    - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
-      if: always()
-      continue-on-error: ${{ github.event_name == 'pull_request'}}
 
   test_ros2_from_source:
     name: "Test ROS 2 package"
@@ -194,7 +159,6 @@ jobs:
       with:
         node-version: '12.x'
     - run: .github/workflows/build-and-test.sh
-      shell: bash  # Ensure bash is used on Windows platform too
     - uses: ros-tooling/setup-ros@0.0.18
     - uses: ./
       id: test_single_package
@@ -202,7 +166,6 @@ jobs:
         package-name: ament_copyright
     - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
-      shell: bash
 
     - uses: ./
       id: test_multiple_packages
@@ -211,10 +174,8 @@ jobs:
         package-name: ament_copyright ament_lint
     - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
-      shell: bash
     - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
       name: "Check that ament_lint install directory is present"
-      shell: bash
 
     - uses: ./
       id: test_mixin
@@ -225,7 +186,6 @@ jobs:
         package-name: ament_copyright
     - run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
-      shell: bash
 
     - uses: ./
       id: test_repo
@@ -234,7 +194,6 @@ jobs:
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
         package-name: ament_copyright
     - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
-      shell: bash
 
     # The second repo file is ignored, but will get vcs-import'ed anyway.
     # This test case just run basic testing on the action logic, making
@@ -248,11 +207,8 @@ jobs:
             .github/workflows/repo_file_for_test_cpp_package.repos
         package-name: ament_copyright
     - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/install/ament_copyright"
-      shell: bash
     - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/ament_lint"
-      shell: bash
     - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/osrf_testing_tools_cpp"
-      shell: bash
 
     - uses: ./
       id: test_coverage
@@ -265,7 +221,6 @@ jobs:
       if: matrix.os != 'windows-latest'
     - run: find ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
       name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
-      shell: bash
       if: matrix.os != 'windows-latest'
 
     - uses: ./
@@ -283,23 +238,6 @@ jobs:
             -DADDITIONAL_CMAKE_OPTION_FOR_TEST:STR="9ae391a63628efe6d72ba34a1a1d9dc9"
     - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
       name: "Check that the additional extra flags has been correctly passed"
-
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
-      if: always()
-      # Allow build reports to fail on pull requests.
-      # When a contribution is made on a fork, the secrets will not be available,
-      # and this step will be failing. This is acceptable.
-      # On the other end, we want to be notified if this happens on merge, or
-      # on schedule.
-      continue-on-error: ${{ github.event_name == 'pull_request'}}
-    - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
-      if: always()
-      continue-on-error: ${{ github.event_name == 'pull_request'}}
 
   test_ros2_from_source_docker:
     name: "Test ROS 2 package"
@@ -333,7 +271,6 @@ jobs:
       with:
         node-version: '12.x'
     - run: .github/workflows/build-and-test.sh
-      shell: bash  # Ensure bash is used on Windows platform too
     - uses: ros-tooling/setup-ros@0.0.18
     - uses: ./
       id: test_single_package
@@ -341,7 +278,6 @@ jobs:
         package-name: ament_copyright
     - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
-      shell: bash
 
     - uses: ./
       id: test_multiple_packages
@@ -350,10 +286,8 @@ jobs:
         package-name: ament_copyright ament_lint
     - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
-      shell: bash
     - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
       name: "Check that ament_lint install directory is present"
-      shell: bash
 
     - uses: ./
       id: test_mixin
@@ -364,7 +298,6 @@ jobs:
         package-name: ament_copyright
     - run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
-      shell: bash
 
     - uses: ./
       id: test_repo
@@ -373,7 +306,6 @@ jobs:
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
         package-name: ament_copyright
     - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
-      shell: bash
 
     # The second repo file is ignored, but will get vcs-import'ed anyway.
     # This test case just run basic testing on the action logic, making
@@ -387,11 +319,8 @@ jobs:
             .github/workflows/repo_file_for_test_cpp_package.repos
         package-name: ament_copyright
     - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/install/ament_copyright"
-      shell: bash
     - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/ament_lint"
-      shell: bash
     - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/osrf_testing_tools_cpp"
-      shell: bash
 
     - uses: ./
       id: test_coverage
@@ -403,7 +332,6 @@ jobs:
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
     - run: find ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
       name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
-      shell: bash
 
     - uses: ./
       id: test_extra_cmake
@@ -421,19 +349,36 @@ jobs:
     - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
       name: "Check that the additional extra flags has been correctly passed"
 
+  log_workflow_status_to_cloudwatch:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:bionic
+    needs:
+    - test_ros
+    - test_ros2
+    - test_ros2_docker
+    - test_ros2_from_source
+    - test_ros2_from_source_docker
+    if: always()  # run even if the dependent jobs have failed to log failures
+    # Allow build reports to fail on pull requests.
+    # When a contribution is made on a fork, the secrets will not be available,
+    # and this step will be failing. This is acceptable.
+    # On the other end, we want to be notified if this happens on merge, or
+    # on schedule.
+    continue-on-error: ${{ github.event_name == 'pull_request'}}
+    steps:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
-      if: always()
-      # Allow build reports to fail on pull requests.
-      # When a contribution is made on a fork, the secrets will not be available,
-      # and this step will be failing. This is acceptable.
-      # On the other end, we want to be notified if this happens on merge, or
-      # on schedule.
-      continue-on-error: ${{ github.event_name == 'pull_request'}}
     - uses: ros-tooling/action-cloudwatch-metrics@0.0.4
-      if: always()
-      continue-on-error: ${{ github.event_name == 'pull_request'}}
+      with:
+        # Checks if any of the jobs have failed.
+        #
+        # needs.*.result is returns the list of all success statuses as an
+        # array, i.e. ['success', 'failure, 'success']
+        # join() converts the array to a string 'successfailuresuccess'
+        # contains() checks whether the string contains failure
+        metric-value: ${{ ! contains(join(needs.*.result, ''), 'failure') && ! contains(join(needs.*.result, ''), 'cancelled') }}
