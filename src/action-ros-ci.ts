@@ -106,7 +106,7 @@ export async function execBashCommand(
 		toolRunnerCommandLineArgs,
 		options
 	);
-	return core.group(message, async () => {
+	return core.group(message, () => {
 		return runner.exec();
 	});
 }
