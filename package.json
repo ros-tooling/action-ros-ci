@@ -49,7 +49,7 @@
     "jest-circus": "^25.5.4",
     "prettier": "2.0.5",
     "ts-jest": "^25.4.0",
-    "typescript": "^3.5.1"
+    "typescript": "^3.9.2"
   },
   "husky": {
     "hooks": {
