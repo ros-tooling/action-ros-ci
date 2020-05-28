@@ -4880,9 +4880,9 @@ function execBashCommand(commandLine, commandPrefix, options, log_message) {
             toolRunnerCommandLineArgs = ["-c", bashScript];
         }
         const runner = new tr.ToolRunner(toolRunnerCommandLine, toolRunnerCommandLineArgs, options);
-        return core.group(message, () => __awaiter(this, void 0, void 0, function* () {
+        return core.group(message, () => {
             return runner.exec();
-        }));
+        });
     });
 }
 exports.execBashCommand = execBashCommand;
