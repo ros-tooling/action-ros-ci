@@ -4966,6 +4966,10 @@ function run() {
   //   version: '${commitRef}'`;
   //           fs_1.default.writeFileSync(repoFilePath, repoFileContent);
   //           yield execBashCommand("vcs import --force --recursive src/ < package.repo", commandPrefix, options);
+            yield execBashCommand(`mv ../target src/"${repo["repo"]}"`, commandPrefix, options);
+            yield execBashCommand(`ls ../`, commandPrefix, options);
+            yield execBashCommand(`ls`, commandPrefix, options);
+            yield execBashCommand(`ls src/`, commandPrefix, options);
             // Remove all repositories the package under test does not depend on, to
             // avoid having rosdep installing unrequired dependencies.
             yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, commandPrefix, options);

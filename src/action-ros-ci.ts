@@ -221,6 +221,10 @@ async function run() {
 		// 	commandPrefix,
 		// 	options
 		// );
+		await execBashCommand(`mv ../target src/"${repo["repo"]}"`, commandPrefix, options);
+		await execBashCommand(`ls ../`, commandPrefix, options);
+		await execBashCommand(`ls`, commandPrefix, options);
+		await execBashCommand(`ls src/`, commandPrefix, options);
 
 		// Remove all repositories the package under test does not depend on, to
 		// avoid having rosdep installing unrequired dependencies.
