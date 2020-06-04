@@ -183,6 +183,10 @@ async function run() {
 			);
 		}
 
+		await execBashCommand(`ls ../`, commandPrefix, options);
+		await execBashCommand(`ls`, commandPrefix, options);
+		await execBashCommand(`ls src/`, commandPrefix, options);
+
 		// If the package under tests is part of ros.repos, remove it first.
 		// We do not want to allow the "default" head state of the package to
 		// to be present in the workspace, and colcon will fail stating it found twice

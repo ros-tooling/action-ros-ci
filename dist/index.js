@@ -4938,6 +4938,9 @@ function run() {
             for (let vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
                 yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force src/`, commandPrefix, options);
             }
+            yield execBashCommand(`ls ../`, commandPrefix, options);
+            yield execBashCommand(`ls`, commandPrefix, options);
+            yield execBashCommand(`ls src/`, commandPrefix, options);
             // If the package under tests is part of ros.repos, remove it first.
             // We do not want to allow the "default" head state of the package to
             // to be present in the workspace, and colcon will fail stating it found twice
