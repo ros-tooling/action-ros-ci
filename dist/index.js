@@ -4949,20 +4949,20 @@ function run() {
             // The repo file for the repository needs to be generated on-the-fly to
             // incorporate the custom repository URL and branch name, when a PR is
             // being built.
-            let repoFullName = process.env.GITHUB_REPOSITORY;
-            if (github.context.payload.pull_request) {
-                repoFullName = github.context.payload.pull_request.head.repo.full_name;
-            }
-            const headRef = process.env.GITHUB_HEAD_REF;
-            const commitRef = headRef || github.context.sha;
-            const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
-            const repoFileContent = `repositories:
-  ${repo["repo"]}:
-    type: git
-    url: 'https://github.com/${repoFullName}.git'
-    version: '${commitRef}'`;
-            fs_1.default.writeFileSync(repoFilePath, repoFileContent);
-            yield execBashCommand("vcs import --force --recursive src/ < package.repo", commandPrefix, options);
+  //           let repoFullName = process.env.GITHUB_REPOSITORY;
+  //           if (github.context.payload.pull_request) {
+  //               repoFullName = github.context.payload.pull_request.head.repo.full_name;
+  //           }
+  //           const headRef = process.env.GITHUB_HEAD_REF;
+  //           const commitRef = headRef || github.context.sha;
+  //           const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
+  //           const repoFileContent = `repositories:
+  // ${repo["repo"]}:
+  //   type: git
+  //   url: 'https://github.com/${repoFullName}.git'
+  //   version: '${commitRef}'`;
+  //           fs_1.default.writeFileSync(repoFilePath, repoFileContent);
+  //           yield execBashCommand("vcs import --force --recursive src/ < package.repo", commandPrefix, options);
             // Remove all repositories the package under test does not depend on, to
             // avoid having rosdep installing unrequired dependencies.
             yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, commandPrefix, options);
