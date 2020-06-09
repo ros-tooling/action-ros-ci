@@ -43,13 +43,11 @@ jobs:
             ros_distribution: melodic
     container:
       image: ${{ matrix.docker_image }}
+    env:
+      GITHUB_REPOSITORY: ros/ros_tutorials
+      GITHUB_HEAD_REF: ${{ matrix.ros_distribution }}-devel
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/checkout@v2
-      with:
-        repository: ros/ros_tutorials
-        ref: ${{ matrix.ros_distribution }}-devel
-        path: ros_ws/src/ros_tutorials
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
