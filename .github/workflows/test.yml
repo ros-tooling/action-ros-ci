@@ -17,53 +17,6 @@ env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
-  test_no_repos_file:
-    name: "Test ROS package"
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ros_distribution:  # ROS 1 tests only run on Ubuntu
-          - kinetic
-          - melodic
-
-        # Define the Docker image(s) associated with each ROS distribution.
-        # The include syntax allows additional variables to be defined, like
-        # docker_image in this case. See documentation:
-        # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
-        #
-        # Platforms are defined in REP 3: https://ros.org/reps/rep-0003.html
-        include:
-          # Kinetic Kame (May 2016 - May 2021)
-          - docker_image: ubuntu:xenial
-            ros_distribution: kinetic
-
-          # Melodic Morenia (May 2018 - May 2023)
-          - docker_image: ubuntu:bionic
-            ros_distribution: melodic
-    container:
-      image: ${{ matrix.docker_image }}
-    env:
-      GITHUB_REPOSITORY: ros/ros_tutorials
-      GITHUB_HEAD_REF: ${{ matrix.ros_distribution }}-devel
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
-    - run: .github/workflows/build-and-test.sh
-    - uses: ros-tooling/setup-ros@0.0.18
-      with:
-        required-ros-distributions: ${{ matrix.ros_distribution }}
-    - uses: ./
-      id: action-ros-ci
-      with:
-        source-ros-binary-installation: ${{ matrix.ros_distribution }}
-        vcs-repo-file-url: ""
-        package-name: roscpp_tutorials
-    - run: test -d "${{ steps.action-ros-ci.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
-      name: "Check that roscpp_tutorials install directory is present"
-
   test_ros:
     name: "Test ROS package"
     runs-on: ubuntu-latest
