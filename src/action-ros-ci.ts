@@ -130,9 +130,7 @@ async function run() {
 			? sourceRosBinaryInstallation.split(RegExp("\\s"))
 			: [];
 
-		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url", {
-			required: true
-		});
+		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
 		const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
 		const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(x => x != "");
 		const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map(x =>
