@@ -127,7 +127,7 @@ jobs:
       with:
         node-version: '12.x'
     - run: .github/workflows/build-and-test.sh
-    - uses: ros-tooling/setup-ros@0.0.18
+    - uses: ros-tooling/setup-ros@0.0.20
       with:
         required-ros-distributions: ${{ matrix.ros_distribution }}
 
