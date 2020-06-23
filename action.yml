@@ -23,6 +23,11 @@ inputs:
     description: |
         Additional flags passed to CMake (using colcon build --cmake-args)
     required: false
+  colcon-extra-args:
+    default: ''
+    description: |
+        Arbitrary space-separated additional flags to pass to colcon.
+    required: false
   package-name:
     description: |
         Name of the package(s) under test, as expected by colcon.
