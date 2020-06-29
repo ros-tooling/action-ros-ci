@@ -4988,6 +4988,10 @@ function run() {
             if (colconExtraArgs !== "") {
                 extra_options = extra_options.concat(colconExtraArgs);
             }
+            if (process.platform !== "win32") {
+                extra_options = extra_options.concat("--symlink-install");
+            }
+
             // Add the future install bin directory to PATH.
             // This enables cmake find_package to find packages installed in the
             // colcon install directory, even if local_setup.sh has not been sourced.
@@ -5002,7 +5006,7 @@ function run() {
             // ament_cmake should handle this automatically, but we are seeing cases
             // where this does not happen. See issue #26 for relevant CI logs.
             core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
-            let colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install \
+            let colconBuildCmd = `colcon build --event-handlers console_cohesion+ \
 			--packages-up-to ${packageNameList.join(" ")} \
 			${extra_options.join(" ")} \
 			--cmake-args ${extraCmakeArgs}`;
