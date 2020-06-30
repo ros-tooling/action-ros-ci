@@ -37,12 +37,12 @@
     "@actions/io": "^1.0.1"
   },
   "devDependencies": {
-    "@types/jest": "^25.2.1",
+    "@types/jest": "^26.0.3",
     "@types/node": "^13.13.4",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
     "@zeit/ncc": "^0.22.1",
-    "acorn": "^7.1.1",
+    "acorn": "^7.3.1",
     "eslint": "^6.5.1",
     "husky": "^4.2.5",
     "jest": "^25.5.4",
