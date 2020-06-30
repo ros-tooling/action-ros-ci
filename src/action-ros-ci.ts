@@ -35,7 +35,7 @@ const curlFlagsArray = [
 	// do  the  following  request  with a GET if the HTTP response was 301, 302, or 303. If the response
 	// code was any other 3xx code, curl will re-send the following request  using  the  same  unmodified
 	// method.
-	"--location"
+	"--location",
 ];
 
 /**
@@ -95,7 +95,7 @@ export async function execBashCommand(
 			"&",
 			"C:\\Program Files\\Git\\bin\\bash.exe",
 			"-c",
-			bashScript
+			bashScript,
 		];
 	} else {
 		toolRunnerCommandLine = "bash";
@@ -133,10 +133,14 @@ async function run() {
 
 		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
 		const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
-		const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(x => x != "");
-		const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map(x =>
+		const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(
+			(x) => x != ""
+		);
+		const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) =>
 			resolveVcsRepoFileUrl(x)
 		);
+
+		const rosdepRosDistribution = core.getInput("rosdep-ros-distribution");
 
 		const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
 
@@ -170,7 +174,7 @@ async function run() {
 		await io.mkdirP(rosWorkspaceDir + "/src");
 
 		const options = {
-			cwd: rosWorkspaceDir
+			cwd: rosWorkspaceDir,
 		};
 
 		const curlFlags = curlFlagsArray.join(" ");
@@ -238,12 +242,12 @@ async function run() {
 			);
 		}
 
-		// If no distribution is being sourced, then install dependencies for the latest release
+		// If no distribution is being sourced, then install dependencies for user input distribution
 		if (!sourceRosBinaryInstallation) {
 			// For "latest" builds, rosdep often misses some keys, adding "|| true", to
 			// ignore those failures, as it is often non-critical.
 			await execBashCommand(
-				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true`,
+				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${rosdepRosDistribution} -y || true`,
 				commandPrefix,
 				options
 			);
@@ -291,7 +295,7 @@ async function run() {
 		const colconLcovInitialCmd = "colcon lcov-result --initial";
 		await execBashCommand(colconLcovInitialCmd, commandPrefix, {
 			cwd: rosWorkspaceDir,
-			ignoreReturnCode: true
+			ignoreReturnCode: true,
 		});
 
 		const colconTestCmd = `colcon test --event-handlers console_cohesion+ \
@@ -306,7 +310,7 @@ async function run() {
 	             --packages-select ${packageNameList.join(" ")}`;
 		await execBashCommand(colconLcovResultCmd, commandPrefix, {
 			cwd: rosWorkspaceDir,
-			ignoreReturnCode: true
+			ignoreReturnCode: true,
 		});
 
 		core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
