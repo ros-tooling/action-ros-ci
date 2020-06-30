@@ -106,7 +106,7 @@ export async function execBashCommand(
 		toolRunnerCommandLineArgs,
 		options
 	);
-	return core.group(message, async () => {
+	return core.group(message, () => {
 		return runner.exec();
 	});
 }
@@ -119,6 +119,7 @@ async function run() {
 		const colconMixinName = core.getInput("colcon-mixin-name");
 		const colconMixinRepo = core.getInput("colcon-mixin-repository");
 		const extraCmakeArgs = core.getInput("extra-cmake-args");
+		const colconExtraArgs = core.getInput("colcon-extra-args");
 		const packageName = core.getInput("package-name", { required: true });
 		const packageNameList = packageName.split(RegExp("\\s"));
 		const rosWorkspaceName = "ros_ws";
@@ -130,9 +131,7 @@ async function run() {
 			? sourceRosBinaryInstallation.split(RegExp("\\s"))
 			: [];
 
-		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url", {
-			required: true
-		});
+		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
 		const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
 		const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(x => x != "");
 		const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map(x =>
@@ -177,7 +176,7 @@ async function run() {
 		const curlFlags = curlFlagsArray.join(" ");
 		for (let vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
 			await execBashCommand(
-				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import src/`,
+				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force src/`,
 				commandPrefix,
 				options
 			);
@@ -213,7 +212,7 @@ async function run() {
     version: '${commitRef}'`;
 		fs.writeFileSync(repoFilePath, repoFileContent);
 		await execBashCommand(
-			"vcs import --recursive src/ < package.repo",
+			"vcs import --force --recursive src/ < package.repo",
 			commandPrefix,
 			options
 		);
@@ -261,6 +260,9 @@ async function run() {
 		let extra_options: string[] = [];
 		if (colconMixinName !== "") {
 			extra_options = extra_options.concat(["--mixin", colconMixinName]);
+		}
+		if (colconExtraArgs !== "") {
+			extra_options = extra_options.concat(colconExtraArgs);
 		}
 
 		// Add the future install bin directory to PATH.
