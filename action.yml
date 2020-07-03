@@ -28,6 +28,13 @@ inputs:
     description: |
         Arbitrary space-separated additional flags to pass to colcon.
     required: false
+  import-token:
+    default: ''
+    description: |
+        GitHub personal access token (PAT) to use to import the repository.
+        Useful if the repo is private.
+        The PAT should have the "repo" scope.
+    required: false
   package-name:
     description: |
         Name of the package(s) under test, as expected by colcon.
