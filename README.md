@@ -131,7 +131,7 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
 
 ```yaml
     steps:
-    - uses: ros-tooling/setup-ros@0.0.23
+    - uses: ros-tooling/setup-ros@0.0.25
     - uses: ros-tooling/action-ros-ci@0.0.15
       with:
         package-name: my_package
