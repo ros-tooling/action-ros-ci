@@ -22,7 +22,7 @@ On Linux, the setup can be done through [`ros-tooling/setup-ros`](https://github
 
 ## Overview
 
-The action first assembles a workspace, then run `colcon build`, and `colcon test` in it.
+The action first assembles a workspace, then runs `colcon build`, and `colcon test` in it.
 
 The workspace is built by running:
 * `vcs import` on the repo file specified through the `vcs-repo-file-url` argument (defaults to `https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos`).
@@ -41,7 +41,7 @@ The variable value should be used to retrieve logs, binaries, etc. after the act
 
 See [action.yml](action.yml) to get the list of flags supported by this action.
 
-[action-ros-ci-template](https://github.com/ros-tooling/action-ros-ci-template) offers a template for using `action-ros-ci`
+[action-ros-ci-template](https://github.com/ros-tooling/action-ros-ci-template) offers a template for using `action-ros-ci`.
 
 ### Build and run `ament_copyright` tests
 
@@ -96,7 +96,7 @@ To look for detected memory errors, check the build logs for entries containing 
 
 ASan is analyzing memory issues at runtime. ASan diagnostic messages will be emitted by the package tests when they run.
 
-### Generate, and processing code coverage data
+### Generate and process code coverage data
 
 #### Generate code coverage information using `lcov` and `colcon-lcov-result`
 
@@ -155,7 +155,7 @@ The configuration file is required to let codecov map the workspace directory st
 
 ### Store `colcon` logs as build artifacts
 
-GitHub workflows can persist data generated in workers during the build using [artifacts](persisting-workflow-data-using-artifacts). `action-ros-ci` generated colcon logs can be saved as follow:
+GitHub workflows can persist data generated in workers during the build using [artifacts](persisting-workflow-data-using-artifacts). `action-ros-ci` generated colcon logs can be saved as follows:
 
 ```yaml
     - uses: ros-tooling/action-ros-ci@0.0.15
@@ -172,7 +172,7 @@ GitHub workflows can persist data generated in workers during the build using [a
 
 ## License
 
-The scripts and documentation in this project are released under the [Apache 2](LICENSE)
+The scripts and documentation in this project are released under the [Apache 2](LICENSE) license.
 
 [creating-encrypted-secrets]: https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets
 [persisting-workflow-data-using-artifacts]: https://help.github.com/en/actions/configuring-and-managing-workflows/persisting-workflow-data-using-artifacts
