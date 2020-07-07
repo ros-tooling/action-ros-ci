@@ -119,6 +119,7 @@ async function run() {
 		const colconMixinName = core.getInput("colcon-mixin-name");
 		const colconMixinRepo = core.getInput("colcon-mixin-repository");
 		const extraCmakeArgs = core.getInput("extra-cmake-args");
+		const colconExtraArgs = core.getInput("colcon-extra-args");
 		const packageName = core.getInput("package-name", { required: true });
 		const packageNameList = packageName.split(RegExp("\\s"));
 		const rosWorkspaceName = "ros_ws";
@@ -130,9 +131,7 @@ async function run() {
 			? sourceRosBinaryInstallation.split(RegExp("\\s"))
 			: [];
 
-		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url", {
-			required: true
-		});
+		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
 		const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
 		const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(x => x != "");
 		const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map(x =>
@@ -261,6 +260,9 @@ async function run() {
 		let extra_options: string[] = [];
 		if (colconMixinName !== "") {
 			extra_options = extra_options.concat(["--mixin", colconMixinName]);
+		}
+		if (colconExtraArgs !== "") {
+			extra_options = extra_options.concat(colconExtraArgs);
 		}
 
 		// Add the future install bin directory to PATH.
