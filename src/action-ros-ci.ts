@@ -312,6 +312,10 @@ async function run() {
 			ignoreReturnCode: true
 		});
 
+		const colconCoveragepyResultCmd = `colcon coveragepy-result \
+				--packages-select ${packageNameList.join(" ")}`;
+		await execBashCommand(colconCoveragepyResultCmd, commandPrefix, options);
+
 		core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
 	} catch (error) {
 		core.setFailed(error.message);

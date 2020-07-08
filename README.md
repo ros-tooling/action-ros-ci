@@ -13,6 +13,7 @@ This action requires the following ROS development tools to be installed (and in
 curl
 colcon-common-extensions
 colcon-lcov-result  # Optional
+colcon-coveragepy-result  # Optional
 colcon-mixin
 rosdep
 vcstool
@@ -114,6 +115,27 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
       with:
         package-name: my_package
         colcon-mixin-name: coverage-gcc
+        # If possible, pin the repository in the workflow to a specific commit to avoid
+        # changes in colcon-mixin-repository from breaking your tests.
+        colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/5c45b95018788deff62202aaa831ad4c20ebe2c6/index.yaml
+```
+
+#### Generate code coverage information using `coveragepy` and `colcon-coveragepy-result`
+
+If `colcon` is invoked with the `coverage-pytest` mixin, `action-ros-ci` will use
+[`colcon-coveragepy-result`](https://github.com/colcon/colcon-coveragepy-result) to generate
+coverage information.
+
+Flags can be passed manually using, for instance, `extra-cmake-args`, but it is
+preferable to use a `colcon` mixin to pass the appropriate flags automatically.
+
+```yaml
+    steps:
+    - uses: ros-tooling/setup-ros@0.0.25
+    - uses: ros-tooling/action-ros-ci@0.0.15
+      with:
+        package-name: my_package
+        colcon-mixin-name: coverage-pytest
         # If possible, pin the repository in the workflow to a specific commit to avoid
         # changes in colcon-mixin-repository from breaking your tests.
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/5c45b95018788deff62202aaa831ad4c20ebe2c6/index.yaml
