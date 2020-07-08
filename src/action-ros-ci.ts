@@ -176,7 +176,7 @@ async function run() {
 		const curlFlags = curlFlagsArray.join(" ");
 		for (let vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
 			await execBashCommand(
-				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force src/`,
+				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`,
 				commandPrefix,
 				options
 			);
@@ -264,6 +264,9 @@ async function run() {
 		if (colconExtraArgs !== "") {
 			extra_options = extra_options.concat(colconExtraArgs);
 		}
+		if (process.platform !== "win32") {
+			extra_options = extra_options.concat("--symlink-install");
+		}
 
 		// Add the future install bin directory to PATH.
 		// This enables cmake find_package to find packages installed in the
@@ -280,7 +283,7 @@ async function run() {
 		// where this does not happen. See issue #26 for relevant CI logs.
 		core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
 
-		let colconBuildCmd = `colcon build --event-handlers console_cohesion+ --symlink-install \
+		let colconBuildCmd = `colcon build --event-handlers console_cohesion+ \
 			--packages-up-to ${packageNameList.join(" ")} \
 			${extra_options.join(" ")} \
 			--cmake-args ${extraCmakeArgs}`;
@@ -308,6 +311,10 @@ async function run() {
 			cwd: rosWorkspaceDir,
 			ignoreReturnCode: true
 		});
+
+		const colconCoveragepyResultCmd = `colcon coveragepy-result \
+				--packages-select ${packageNameList.join(" ")}`;
+		await execBashCommand(colconCoveragepyResultCmd, commandPrefix, options);
 
 		core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
 	} catch (error) {
