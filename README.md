@@ -136,16 +136,15 @@ See [action/codecov-action](https://github.com/codecov/codecov-action) documenta
         # If possible, pin the repository in the workflow to a specific commit to avoid
         # changes in colcon-mixin-repository from breaking your tests.
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/5c45b95018788deff62202aaa831ad4c20ebe2c6/index.yaml
-    - uses: codecov/codecov-action@v1.0.6
+    - uses: codecov/codecov-action@v1.0.7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ros_ws/lcov/total_coverage.info
         flags: unittests
         name: codecov-umbrella
-        yml: ./codecov.yml
 ```
 
-You will also need to add a `codecov.yaml` configuration file:
+You will also need to add a `codecov.yaml` configuration file (at the root of your repo):
 
 ```yaml
 fixes:
