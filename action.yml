@@ -43,7 +43,7 @@ inputs:
         characters are allowed. This is typically used to setup a ROS and
         a ROS 2 distribution to build packages relying on both, such as
         the ros1_bridge.
-        Example of valid values include "", "dashing", "melodic dashing".
+        Examples of valid values include "", "dashing", "melodic dashing".
     required: false
     default: ""
   vcs-repo-file-url:
