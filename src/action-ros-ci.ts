@@ -264,9 +264,6 @@ async function run() {
 		if (colconExtraArgs !== "") {
 			extra_options = extra_options.concat(colconExtraArgs);
 		}
-		if (process.platform !== "win32") {
-			extra_options = extra_options.concat("--symlink-install");
-		}
 
 		// Add the future install bin directory to PATH.
 		// This enables cmake find_package to find packages installed in the
@@ -287,6 +284,9 @@ async function run() {
 			--packages-up-to ${packageNameList.join(" ")} \
 			${extra_options.join(" ")} \
 			--cmake-args ${extraCmakeArgs}`;
+		if (process.platform !== "win32") {
+			colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
+		}
 		await execBashCommand(colconBuildCmd, commandPrefix, options);
 
 		// ignoreReturnCode is set to true to avoid having a lack of coverage
