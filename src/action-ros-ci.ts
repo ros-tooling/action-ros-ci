@@ -298,7 +298,7 @@ async function run() {
 		});
 
 		const colconTestCmd = `colcon test --event-handlers console_cohesion+ \
-			--pytest-args --cov=. --cov-report=xml --return-code-on-test-failure \
+			--pytest-with-coverage --return-code-on-test-failure \
 			--packages-select ${packageNameList.join(" ")} \
 			${extra_options.join(" ")}`;
 		await execBashCommand(colconTestCmd, commandPrefix, options);
