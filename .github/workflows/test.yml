@@ -259,10 +259,12 @@ jobs:
           # Dashing Diademata (May 2019 - May 2021)
           - docker_image: ubuntu:bionic
             ros_distribution: dashing
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/dashing/ros2.repos
 
           # Eloquent Elusor (November 2019 - November 2020)
           - docker_image: ubuntu:bionic
             ros_distribution: eloquent
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/eloquent/ros2.repos
     container:
       image: ${{ matrix.docker_image }}
     steps:
@@ -276,6 +278,7 @@ jobs:
       id: test_single_package
       with:
         package-name: ament_copyright
+        vcs-repo-file-url: ${{ matrix.distro_repos_url }}
     - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
 
@@ -284,6 +287,7 @@ jobs:
       name: "Test multiple package, default options"
       with:
         package-name: ament_copyright ament_lint
+        vcs-repo-file-url: ${{ matrix.distro_repos_url }}
     - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
     - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
@@ -296,6 +300,7 @@ jobs:
         colcon-mixin-name: asan
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         package-name: ament_copyright
+        vcs-repo-file-url: ${{ matrix.distro_repos_url }}
     - run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
 
