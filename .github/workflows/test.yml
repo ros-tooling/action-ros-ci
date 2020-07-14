@@ -278,7 +278,7 @@ jobs:
       id: test_single_package
       with:
         package-name: ament_copyright
-        vcs-repo-file-url: ${{ distro_repos_url }}
+        vcs-repo-file-url: ${{ matrix.distro_repos_url }}
     - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
 
@@ -287,7 +287,7 @@ jobs:
       name: "Test multiple package, default options"
       with:
         package-name: ament_copyright ament_lint
-        vcs-repo-file-url: ${{ distro_repos_url }}
+        vcs-repo-file-url: ${{ matrix.distro_repos_url }}
     - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
     - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
@@ -300,7 +300,7 @@ jobs:
         colcon-mixin-name: asan
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         package-name: ament_copyright
-        vcs-repo-file-url: ${{ distro_repos_url }}
+        vcs-repo-file-url: ${{ matrix.distro_repos_url }}
     - run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
 
