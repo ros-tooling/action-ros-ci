@@ -4907,7 +4907,6 @@ function run() {
             const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
             const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
             const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) => resolveVcsRepoFileUrl(x));
-            const rosdepRosDistribution = core.getInput("rosdep-ros-distribution");
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
             let commandPrefix = "";
             if (sourceRosBinaryInstallation) {
@@ -4976,7 +4975,7 @@ function run() {
             if (!sourceRosBinaryInstallation) {
                 // For "latest" builds, rosdep often misses some keys, adding "|| true", to
                 // ignore those failures, as it is often non-critical.
-                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${rosdepRosDistribution} -y || true`, commandPrefix, options);
+                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src -y || true`, commandPrefix, options);
             }
             if (colconMixinName !== "" && colconMixinRepo !== "") {
                 yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, commandPrefix);
