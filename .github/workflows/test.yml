@@ -239,6 +239,38 @@ jobs:
     - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
       name: "Check that the additional extra flags has been correctly passed"
 
+  test_ros2_source_not_defined:
+    name: "Test ROS 2 package without defined source"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Dashing Diademata (May 2019 - May 2021)
+          - docker_image: ubuntu:bionic
+            ros_distribution: dashing
+
+          # Eloquent Elusor (November 2019 - November 2020)
+          - docker_image: ubuntu:bionic
+            ros_distribution: eloquent
+    container:
+      image: ${{ matrix.docker_image }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+    - run: .github/workflows/build-and-test.sh
+    - uses: ros-tooling/setup-ros@0.0.25
+    - uses: ./
+      id: test_correct_distro
+      name: "Test rosdep installs from correct distro"
+      with:
+        vcs-repo-file-url: .github/workflows/FIXME.repos
+        package-name: ament_lint
+    # Verify that rosdep installed the required Debian package
+    - run: dpkg -s ros-${{ matrix.ros_distribution }}-ament-python
+
   test_ros2_from_source_docker:
     name: "Test ROS 2 package"
     runs-on: ubuntu-latest
