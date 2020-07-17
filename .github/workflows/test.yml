@@ -245,6 +245,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        ros_distribution:
+          - dashing
+          - eloquent
+
         include:
           # Dashing Diademata (May 2019 - May 2021)
           - docker_image: ubuntu:bionic
@@ -262,8 +266,9 @@ jobs:
         node-version: '12.x'
     - run: .github/workflows/build-and-test.sh
     - uses: ros-tooling/setup-ros@0.0.25
+      with:
+        required-ros-distributions: ${{ matrix.ros_distribution }}
     - uses: ./
-      id: test_correct_distro
       name: "Test rosdep installs from correct distro"
       with:
         vcs-repo-file-url: .github/workflows/FIXME.repos
