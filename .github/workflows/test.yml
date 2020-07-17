@@ -272,8 +272,6 @@ jobs:
         node-version: '12.x'
     - run: .github/workflows/build-and-test.sh
     - uses: ros-tooling/setup-ros@0.0.25
-      with:
-        required-ros-distributions: ${{ matrix.ros_distribution }}
 
     - uses: ./
       name: "Test rosdep installs from correct distro"
