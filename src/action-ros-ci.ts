@@ -120,6 +120,7 @@ async function run() {
 		const colconMixinRepo = core.getInput("colcon-mixin-repository");
 		const extraCmakeArgs = core.getInput("extra-cmake-args");
 		const colconExtraArgs = core.getInput("colcon-extra-args");
+		const importToken = core.getInput("import-token");
 		const packageName = core.getInput("package-name", { required: true });
 		const packageNameList = packageName.split(RegExp("\\s"));
 		const rosWorkspaceName = "ros_ws";
@@ -202,13 +203,17 @@ async function run() {
 		if (github.context.payload.pull_request) {
 			repoFullName = github.context.payload.pull_request.head.repo.full_name;
 		}
+		let tokenAuth = importToken;
+		if (tokenAuth !== "") {
+			tokenAuth = tokenAuth.concat("@");
+		}
 		const headRef = process.env.GITHUB_HEAD_REF as string;
 		const commitRef = headRef || github.context.sha;
 		const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
 		const repoFileContent = `repositories:
   ${repo["repo"]}:
     type: git
-    url: 'https://github.com/${repoFullName}.git'
+    url: 'https://${tokenAuth}github.com/${repoFullName}.git'
     version: '${commitRef}'`;
 		fs.writeFileSync(repoFilePath, repoFileContent);
 		await execBashCommand(
