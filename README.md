@@ -13,7 +13,7 @@ This action requires the following ROS development tools to be installed (and in
 curl
 colcon-common-extensions
 colcon-lcov-result  # Optional
-colcon-coveragepy-result  # Optional
+colcon-coveragepy-result
 colcon-mixin
 rosdep
 vcstool
