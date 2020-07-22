@@ -111,6 +111,17 @@ export async function execBashCommand(
 	});
 }
 
+//list of valid ROS distributions
+const validDistro: string[] = [
+	"kinetic",
+	"lunar",
+	"melodic",
+	"noetic",
+	"dashing",
+	"eloquent",
+	"foxy",
+];
+
 async function run() {
 	try {
 		const repo = github.context.repo;
@@ -148,6 +159,9 @@ async function run() {
 				);
 				return;
 			}
+			if (validDistro.indexOf(targetRos1Distro) <= -1) {
+				return false;
+			}
 			commandPrefix += `source /opt/ros/${targetRos1Distro}/setup.sh && `;
 		}
 		if(targetRos2Distro){
@@ -156,6 +170,9 @@ async function run() {
 					"sourcing binary installation is only available on Linux"
 				);
 				return;
+			}
+			if (validDistro.indexOf(targetRos2Distro) <= -1) {
+				return false;
 			}
 			commandPrefix += `source /opt/ros/${targetRos2Distro}/setup.sh && `;
 		}
