@@ -141,7 +141,7 @@ async function run() {
 		const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
 
 		let commandPrefix = "";
-		if(targetRos1Distro || targetRos2Distro){
+		if(targetRos1Distro){
 			if (process.platform !== "linux") {
 				core.setFailed(
 					"sourcing binary installation is only available on Linux"
@@ -149,6 +149,14 @@ async function run() {
 				return;
 			}
 			commandPrefix += `source /opt/ros/${targetRos1Distro}/setup.sh && `;
+		}
+		if(targetRos2Distro){
+			if (process.platform !== "linux") {
+				core.setFailed(
+					"sourcing binary installation is only available on Linux"
+				);
+				return;
+			}
 			commandPrefix += `source /opt/ros/${targetRos2Distro}/setup.sh && `;
 		}
 
