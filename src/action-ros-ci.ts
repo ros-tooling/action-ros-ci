@@ -125,13 +125,12 @@ async function run() {
 		const packageNameList = packageName.split(RegExp("\\s"));
 		const rosWorkspaceName = "ros_ws";
 		const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
-		const sourceRosBinaryInstallation = core.getInput(
-			"source-ros-binary-installation"
+		const targetRos1Distro = core.getInput(
+			"target-ros1-distro"
 		);
-		const sourceRosBinaryInstallationList = sourceRosBinaryInstallation
-			? sourceRosBinaryInstallation.split(RegExp("\\s"))
-			: [];
-
+		const targetRos2Distro = core.getInput(
+			"target-ros2-distro"
+		);
 		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
 		const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
 		const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(x => x != "");
@@ -142,16 +141,15 @@ async function run() {
 		const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
 
 		let commandPrefix = "";
-		if (sourceRosBinaryInstallation) {
+		if(targetRos1Distro || targetRos2Distro){
 			if (process.platform !== "linux") {
 				core.setFailed(
 					"sourcing binary installation is only available on Linux"
 				);
 				return;
 			}
-			for (let rosDistribution of sourceRosBinaryInstallationList) {
-				commandPrefix += `source /opt/ros/${rosDistribution}/setup.sh && `;
-			}
+			commandPrefix += `source /opt/ros/${targetRos1Distro}/setup.sh && `;
+			commandPrefix += `source /opt/ros/${targetRos2Distro}/setup.sh && `;
 		}
 
 		// rosdep on Windows does not reliably work on Windows, see
@@ -233,22 +231,16 @@ async function run() {
 		);
 
 		// Install ROS dependencies for each distribution being sourced
-		for (let rosDistribution of sourceRosBinaryInstallationList) {
-			// For "latest" builds, rosdep often misses some keys, adding "|| true", to
-			// ignore those failures, as it is often non-critical.
+		if(targetRos1Distro){
 			await execBashCommand(
-				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${rosDistribution} -y || true`,
+				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos1Distro} -y || true`,
 				commandPrefix,
 				options
 			);
 		}
-
-		// If no distribution is being sourced, then install dependencies for the latest release
-		if (!sourceRosBinaryInstallation) {
-			// For "latest" builds, rosdep often misses some keys, adding "|| true", to
-			// ignore those failures, as it is often non-critical.
+		if(targetRos2Distro){
 			await execBashCommand(
-				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true`,
+				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos2Distro} -y || true`,
 				commandPrefix,
 				options
 			);
