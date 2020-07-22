@@ -41,18 +41,24 @@ inputs:
         Passing multiple package names is allowed.
         Package names can be separated by any whitespace character.
     required: true
-  source-ros-binary-installation:
+  target-ros1-distro:
     description: |
-        Source setup.sh from one or more binary ROS installations (Linux only).
-        For instance, if dashing is passed, /opt/ros/dashing/setup.sh will
+        Source setup.sh from one or more binary ROS1 installations (Linux only).
+        For instance, if melodic is passed, /opt/ros/dashing/setup.sh will
         be sourced before running colcon.
-        Multiple ROS distributions separated by one or more whitespace\
-        characters are allowed. This is typically used to setup a ROS and
-        a ROS 2 distribution to build packages relying on both, such as
-        the ros1_bridge.
-        Examples of valid values include "", "dashing", "melodic dashing".
+        Defining both target-ros1-distro and target-ros2-distro is allowed. 
+        This is typically used to setup a ROS and a ROS 2 distribution to 
+        build packages relying on both, such as the ros1_bridge.
     required: false
-    default: ""
+  target-ros2-distro:
+    description: |
+        Source setup.sh from one or more binary ROS1 installations (Linux only).
+        For instance, if melodic is passed, /opt/ros/dashing/setup.sh will
+        be sourced before running colcon.
+        Defining both target-ros1-distro and target-ros2-distro is allowed. 
+        This is typically used to setup a ROS and a ROS 2 distribution to 
+        build packages relying on both, such as the ros1_bridge.
+    required: false
   vcs-repo-file-url:
     description: |
         repo file URL passed to vcs to initialize the colcon workspace.
