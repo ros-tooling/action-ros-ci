@@ -254,6 +254,17 @@ async function run() {
 			);
 		}
 
+		// If no distribution is being sourced, then install dependencies for the latest release
+		if (!targetRos1Distro && !targetRos2Distro) {
+			// For "latest" builds, rosdep often misses some keys, adding "|| true", to
+			// ignore those failures, as it is often non-critical.
+			await execBashCommand(
+				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true`,
+				commandPrefix,
+				options
+			);
+		}
+
 		if (colconMixinName !== "" && colconMixinRepo !== "") {
 			await execBashCommand(
 				`colcon mixin add default '${colconMixinRepo}'`,
