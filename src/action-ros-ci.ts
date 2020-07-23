@@ -177,6 +177,15 @@ async function run() {
 			commandPrefix += `source /opt/ros/${targetRos2Distro}/setup.sh && `;
 		}
 
+		if(process.platform == "linux"){
+			if(!targetRos1Distro && !targetRos2Distro){
+				core.setFailed(
+					"must specific target ROS1 or ROS2 binary installation on Linux"
+				);
+				return;
+			}
+		}
+
 		// rosdep on Windows does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
 		if (process.platform != "win32") {
