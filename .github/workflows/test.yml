@@ -68,22 +68,6 @@ jobs:
       fail-fast: false
       matrix:
           os: [macOS-latest, windows-latest]
-          ros_distribution:  # ROS 1 tests only run on Ubuntu
-            - dashing
-            - eloquent
-
-          # Define the Docker image(s) associated with each ROS distribution.
-          # The include syntax allows additional variables to be defined, like
-          # docker_image in this case. See documentation:
-          # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
-          #
-          # Platforms are defined in REP 3: https://ros.org/reps/rep-0003.html
-          include:
-            # Kinetic Kame (May 2016 - May 2021)
-            - ros_distribution: dashing
-
-            # Melodic Morenia (May 2018 - May 2023)
-            - ros_distribution: eloquent
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -98,7 +82,7 @@ jobs:
       name: "Test single package, default options"
       with:
         package-name: osrf_testing_tools_cpp
-        target-ros2-distro: ${{ matrix.ros_distribution }}
+        target-ros1-distro: ${{ matrix.ros_distribution }}
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
       # TODO(tmoulard): re-enable this test once it passes on Windows
       if: matrix.os != 'windows-latest'
@@ -169,9 +153,6 @@ jobs:
       fail-fast: false
       matrix:
           os: [macOS-latest, windows-latest]
-          ros_distribution:  # ROS 1 tests only run on Ubuntu
-            - dashing
-            - eloquent
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -183,7 +164,7 @@ jobs:
       id: test_single_package
       with:
         package-name: ament_copyright
-        target-ros2-distro: ${{ matrix.ros_distribution }}
+        target-ros1-distro: ${{ matrix.ros_distribution }}
     - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
 
@@ -192,7 +173,7 @@ jobs:
       name: "Test multiple package, default options"
       with:
         package-name: ament_copyright ament_lint
-        target-ros2-distro: ${{ matrix.ros_distribution }}
+        target-ros1-distro: ${{ matrix.ros_distribution }}
     - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
     - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
@@ -205,7 +186,7 @@ jobs:
         colcon-mixin-name: asan
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         package-name: ament_copyright
-        target-ros2-distro: ${{ matrix.ros_distribution }}
+        target-ros1-distro: ${{ matrix.ros_distribution }}
     - run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
 
@@ -215,7 +196,7 @@ jobs:
       with:
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
         package-name: ament_copyright
-        target-ros2-distro: ${{ matrix.ros_distribution }}
+        target-ros1-distro: ${{ matrix.ros_distribution }}
     - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
 
     # The second repo file is ignored, but will get vcs-import'ed anyway.
@@ -229,7 +210,7 @@ jobs:
             .github/workflows/repo_file_for_test.repos
             .github/workflows/repo_file_for_test_cpp_package.repos
         package-name: ament_copyright
-        target-ros2-distro: ${{ matrix.ros_distribution }}
+        target-ros1-distro: ${{ matrix.ros_distribution }}
     - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/install/ament_copyright"
     - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/ament_lint"
     - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/osrf_testing_tools_cpp"
@@ -241,7 +222,7 @@ jobs:
         colcon-mixin-name: coverage-gcc
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
         package-name: osrf_testing_tools_cpp
-        target-ros2-distro: ${{ matrix.ros_distribution }}
+        target-ros1-distro: ${{ matrix.ros_distribution }}
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
       if: matrix.os != 'windows-latest'
     - run: find ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
@@ -253,7 +234,7 @@ jobs:
       name: "Test single package, with extra cmake flags"
       with:
         package-name: ament_cmake_core
-        target-ros2-distro: ${{ matrix.ros_distribution }}
+        target-ros1-distro: ${{ matrix.ros_distribution }}
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
         # We use a long unique string here to make sure that if this string
         # is found in CMakeCache.txt, it means the additional CMake flag has
