@@ -164,6 +164,7 @@ jobs:
       id: test_single_package
       with:
         package-name: ament_copyright
+        target-ros2-distro: ${{ matrix.ros_distribution }}
     - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       name: "Check that ament_copyright install directory is present"
 
@@ -391,6 +392,7 @@ jobs:
             ros_distribution: crystal
     container:
       image: ${{ matrix.docker_image }}
+    continue-on-error: ${{ github.event_name == 'pull_request'}}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
