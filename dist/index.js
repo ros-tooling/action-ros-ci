@@ -3315,23 +3315,33 @@ function run() {
             const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) => resolveVcsRepoFileUrl(x));
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
             let commandPrefix = "";
-            if (process.platform == "linux") {
-                if (!targetRos1Distro && !targetRos2Distro) {
-                    core.setFailed("No ROS1 or ROS2 distribution target specified for the build.");
-                    return;
-                }
+            if (!targetRos1Distro && !targetRos2Distro) {
+                core.setFailed("No ROS1 or ROS2 distribution target specified for the build.");
+                return;
             }
             if (targetRos1Distro) {
-                if (validROS1Distro.indexOf(targetRos1Distro) <= -1) {
-                    return false;
+                if (validROS1Distros.indexOf(targetRos1Distro) <= -1) {
+                    core.setFailed("Input " +
+                        targetRos1Distro +
+                        "was not a valid ROS 1 distribution. Valid values: " +
+                        validROS1Distros);
+                    return;
                 }
-                commandPrefix += `source /opt/ros/${targetRos1Distro}/setup.sh && `;
+                if (process.platform == "linux") {
+                    commandPrefix += `mkdir -p /opt/ros/${targetRos1Distro} && touch /opt/ros/${targetRos1Distro}/setup.sh} && source /opt/ros/${targetRos1Distro}/setup.sh && `;
+                }
             }
             if (targetRos2Distro) {
-                if (validROS2Distro.indexOf(targetRos2Distro) <= -1) {
-                    return false;
+                if (validROS2Distros.indexOf(targetRos2Distro) <= -1) {
+                    core.setFailed("Input " +
+                        targetRos2Distro +
+                        "was not a valid ROS 2 distribution. Valid values: " +
+                        validROS2Distros);
+                    return;
                 }
-                commandPrefix += `source /opt/ros/${targetRos2Distro}/setup.sh && `;
+                if (process.platform == "linux") {
+                    commandPrefix += `mkdir -p /opt/ros/${targetRos2Distro} && touch /opt/ros/${targetRos2Distro}/setup.sh} && source /opt/ros/${targetRos2Distro}/setup.sh && `;
+                }
             }
             // rosdep on Windows does not reliably work on Windows, see
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
@@ -3385,10 +3395,6 @@ function run() {
             // avoid having rosdep installing unrequired dependencies.
             yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, commandPrefix, options);
             // Install ROS dependencies for each distribution being sourced
-            if (process.platform == "linux") {
-                yield execBashCommand(`mkdir -p /opt/ros/$DISTRO`, commandPrefix, options);
-                yield execBashCommand(`touch /opt/ros/$DISTRO/setup.bash`, commandPrefix, options);
-            }
             if (targetRos1Distro) {
                 yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos1Distro} -y || true`, commandPrefix, options);
             }
