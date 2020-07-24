@@ -3291,8 +3291,8 @@ function execBashCommand(commandLine, commandPrefix, options, log_message) {
 }
 exports.execBashCommand = execBashCommand;
 //list of valid ROS distributions
-const validROS1Distro = ["kinetic", "lunar", "melodic", "noetic"];
-const validROS2Distro = ["dashing", "eloquent", "foxy"];
+const validROS1Distros = ["kinetic", "lunar", "melodic", "noetic"];
+const validROS2Distros = ["dashing", "eloquent", "foxy"];
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
