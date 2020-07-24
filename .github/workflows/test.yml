@@ -68,6 +68,22 @@ jobs:
       fail-fast: false
       matrix:
           os: [macOS-latest, windows-latest]
+          ros_distribution:  # ROS 1 tests only run on Ubuntu
+            - kinetic
+            - melodic
+
+          # Define the Docker image(s) associated with each ROS distribution.
+          # The include syntax allows additional variables to be defined, like
+          # docker_image in this case. See documentation:
+          # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
+          #
+          # Platforms are defined in REP 3: https://ros.org/reps/rep-0003.html
+          include:
+            # Kinetic Kame (May 2016 - May 2021)
+            - ros_distribution: kinetic
+
+            # Melodic Morenia (May 2018 - May 2023)
+            - ros_distribution: melodic
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -153,6 +169,9 @@ jobs:
       fail-fast: false
       matrix:
           os: [macOS-latest, windows-latest]
+          ros_distribution:  # ROS 1 tests only run on Ubuntu
+            - kinetic
+            - melodic
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
