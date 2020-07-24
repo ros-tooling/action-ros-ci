@@ -69,8 +69,8 @@ jobs:
       matrix:
           os: [macOS-latest, windows-latest]
           ros_distribution:  # ROS 1 tests only run on Ubuntu
-            - kinetic
-            - melodic
+            - dashing
+            - eloquent
 
           # Define the Docker image(s) associated with each ROS distribution.
           # The include syntax allows additional variables to be defined, like
@@ -80,10 +80,10 @@ jobs:
           # Platforms are defined in REP 3: https://ros.org/reps/rep-0003.html
           include:
             # Kinetic Kame (May 2016 - May 2021)
-            - ros_distribution: kinetic
+            - ros_distribution: dashing
 
             # Melodic Morenia (May 2018 - May 2023)
-            - ros_distribution: melodic
+            - ros_distribution: eloquent
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -170,8 +170,8 @@ jobs:
       matrix:
           os: [macOS-latest, windows-latest]
           ros_distribution:  # ROS 1 tests only run on Ubuntu
-            - kinetic
-            - melodic
+            - dashing
+            - eloquent
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -300,17 +300,8 @@ jobs:
         node-version: '12.x'
     - run: .github/workflows/build-and-test.sh
     - uses: ros-tooling/setup-ros@0.0.25
-
-    - uses: ./
-      name: "Test rosdep installs from correct distro"
       with:
-        target-ros2-distro: ${{ matrix.ros_distribution }}
-        vcs-repo-file-url: .github/workflows/repo_file_for_test_rosdep_distro.repos
-        # test_msgs depends on test_interface_files, which should be installed by rosdep
-        # If the dependencies are installed for the wrong distribution, then the build should fail
-        package-name: test_msgs
-    # Verify that rosdep installed the required Debian package
-    - run: dpkg -s ros-${{ matrix.ros_distribution }}-test-interface-files
+        required-ros-distributions: ${{ matrix.ros_distribution }}
     
     - uses: ./
       id: test_single_package
