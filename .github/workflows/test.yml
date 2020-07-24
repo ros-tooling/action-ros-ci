@@ -300,6 +300,18 @@ jobs:
         node-version: '12.x'
     - run: .github/workflows/build-and-test.sh
     - uses: ros-tooling/setup-ros@0.0.25
+
+    - uses: ./
+      name: "Test rosdep installs from correct distro"
+      with:
+        target-ros2-distro: ${{ matrix.ros_distribution }}
+        vcs-repo-file-url: .github/workflows/repo_file_for_test_rosdep_distro.repos
+        # test_msgs depends on test_interface_files, which should be installed by rosdep
+        # If the dependencies are installed for the wrong distribution, then the build should fail
+        package-name: test_msgs
+    # Verify that rosdep installed the required Debian package
+    - run: dpkg -s ros-${{ matrix.ros_distribution }}-test-interface-files
+    
     - uses: ./
       id: test_single_package
       with:
