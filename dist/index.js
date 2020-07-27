@@ -3335,7 +3335,7 @@ function run() {
                 if (validROS2Distros.indexOf(targetRos2Distro) <= -1) {
                     core.setFailed("Input " +
                         targetRos2Distro +
-                        "was not a valid ROS 2 distribution. Valid values: " +
+                        "was not a valid ROS 2 distribution for `target_ros2_distro`. Valid values: " +
                         validROS2Distros);
                     return;
                 }
