@@ -68,6 +68,7 @@ jobs:
       fail-fast: false
       matrix:
           os: [macOS-latest, windows-latest]
+          include: [eloquent, foxy]
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -82,7 +83,6 @@ jobs:
       name: "Test single package, default options"
       with:
         package-name: osrf_testing_tools_cpp
-        target-ros1-distro: ${{ matrix.ros_distribution }}
         target-ros2-distro: ${{ matrix.ros_distribution }}
         vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
       # TODO(tmoulard): re-enable this test once it passes on Windows
@@ -379,61 +379,6 @@ jobs:
     - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
       name: "Check that the additional extra flags has been correctly passed"
 
-  test_ros2_outdated:
-    name: "Test outdated ROS 2 packages"
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ros_distribution:  # ROS 1 tests only run on Ubuntu
-          - bouncy
-          - crystal
-
-        # Define the Docker image(s) associated with each ROS distribution.
-        # The include syntax allows additional variables to be defined, like
-        # docker_image in this case. See documentation:
-        # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
-        #
-        # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
-        include:
-          - docker_image: ubuntu:bionic
-            ros_distribution: bouncy
-
-          - docker_image: ubuntu:bionic
-            ros_distribution: crystal
-    container:
-      image: ${{ matrix.docker_image }}
-    continue-on-error: ${{ github.event_name == 'pull_request'}}
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
-    - run: .github/workflows/build-and-test.sh
-    - uses: ros-tooling/setup-ros@0.0.25
-      with:
-        required-ros-distributions: ${{ matrix.ros_distribution }}
-
-    - uses: ./
-      name: "Test rosdep installs from correct distro"
-      with:
-        target-ros2-distro: ${{ matrix.ros_distribution }}
-        vcs-repo-file-url: .github/workflows/repo_file_for_test_rosdep_distro.repos
-        # test_msgs depends on test_interface_files, which should be installed by rosdep
-        # If the dependencies are installed for the wrong distribution, then the build should fail
-        package-name: test_msgs
-    # Verify that rosdep installed the required Debian package
-    - run: dpkg -s ros-${{ matrix.ros_distribution }}-test-interface-files
-
-    - uses: ./
-      id: test_single_package
-      name: "Test single package, default options"
-      with:
-        package-name: osrf_testing_tools_cpp
-        target-ros2-distro: ${{ matrix.ros_distribution }}
-        vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
-    - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
-      
   log_workflow_status_to_cloudwatch:
     runs-on: ubuntu-latest
     container:
