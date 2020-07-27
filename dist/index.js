@@ -3316,14 +3316,14 @@ function run() {
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
             let commandPrefix = "";
             if (!targetRos1Distro && !targetRos2Distro) {
-                core.setFailed("No ROS1 or ROS2 distribution target specified for the build.");
+                core.setFailed("Neither `target_ros1_distro` or `target_ros2_distro` inputs were set, at least one is required.");
                 return;
             }
             if (targetRos1Distro) {
                 if (validROS1Distros.indexOf(targetRos1Distro) <= -1) {
                     core.setFailed("Input " +
                         targetRos1Distro +
-                        "was not a valid ROS 1 distribution. Valid values: " +
+                        "was not a valid ROS 1 distribution for `target_ros1_distro`. Valid values: " +
                         validROS1Distros);
                     return;
                 }

@@ -145,7 +145,7 @@ async function run() {
 		let commandPrefix = "";
 		if (!targetRos1Distro && !targetRos2Distro) {
 			core.setFailed(
-				"No ROS1 or ROS2 distribution target specified for the build."
+				"Neither `target_ros1_distro` or `target_ros2_distro` inputs were set, at least one is required."
 			);
 			return;
 		}
@@ -154,7 +154,7 @@ async function run() {
 				core.setFailed(
 					"Input " +
 						targetRos1Distro +
-						"was not a valid ROS 1 distribution. Valid values: " +
+						"was not a valid ROS 1 distribution for `target_ros1_distro`. Valid values: " +
 						validROS1Distros
 				);
 				return;
@@ -168,7 +168,7 @@ async function run() {
 				core.setFailed(
 					"Input " +
 						targetRos2Distro +
-						"was not a valid ROS 2 distribution. Valid values: " +
+						"was not a valid ROS 2 distribution for `target_ros2_distro`. Valid values: " +
 						validROS2Distros
 				);
 				return;
