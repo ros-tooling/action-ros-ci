@@ -68,7 +68,7 @@ jobs:
       fail-fast: false
       matrix:
           os: [macOS-latest, windows-latest]
-          include: [eloquent, foxy]
+          ros_distribution: [eloquent, foxy]
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
