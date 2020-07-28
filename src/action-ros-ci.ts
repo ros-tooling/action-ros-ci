@@ -116,37 +116,31 @@ const validROS1Distros: string[] = ["kinetic", "lunar", "melodic", "noetic"];
 const validROS2Distros: string[] = ["dashing", "eloquent", "foxy"];
 
 //Determine whether all inputs name supported ROS distributions.
-export function validateDistro(
-	targetRos1Distro,
-	targetRos2Distro,
-	cmdIn
-): boolean {
-	if (!targetRos1Distro && !targetRos2Distro) {
-		core.setFailed(
-			"Neither `target_ros1_distro` or `target_ros2_distro` inputs were set, at least one is required."
-		);
+export function validateDistro(obj: { t1; t2; cmd }): boolean {
+	if (!obj.t1 && !obj.t2) {
+		obj.cmd +=
+			"Neither `target_ros1_distro` or `target_ros2_distro` inputs were set, at least one is required.";
+
 		return false;
 	}
-	if (targetRos1Distro) {
-		if (validROS1Distros.indexOf(targetRos1Distro) <= -1) {
-			core.setFailed(
-				`Input ${targetRos1Distro}was not a valid ROS 1 distribution for \`target_ros1_distro\`. Valid values: ${validROS1Distros}`
-			);
+	if (obj.t1) {
+		if (validROS1Distros.indexOf(obj.t1) <= -1) {
+			obj.cmd += `Input ${obj.t1} was not a valid ROS 1 distribution for \`target_ros1_distro\`.' Valid values: ${validROS1Distros}`;
+
 			return false;
 		}
 		if (process.platform == "linux") {
-			cmdIn.str += `mkdir -p /opt/ros/${targetRos1Distro} && touch /opt/ros/${targetRos1Distro}/setup.sh} && source /opt/ros/${targetRos1Distro}/setup.sh && `;
+			obj.cmd += `mkdir -p /opt/ros/${obj.t1} && touch /opt/ros/${obj.t1}/setup.sh} && source /opt/ros/${obj.t1}/setup.sh && `;
 		}
 	}
-	if (targetRos2Distro) {
-		if (validROS2Distros.indexOf(targetRos2Distro) <= -1) {
-			core.setFailed(
-				`Input ${targetRos2Distro}was not a valid ROS 2 distribution for \`target_ros2_distro\`. Valid values: ${validROS2Distros}`
-			);
+	if (obj.t2) {
+		if (validROS2Distros.indexOf(obj.t2) <= -1) {
+			obj.cmd += `Input ${obj.t2} was not a valid ROS 2 distribution for \`target_ros2_distro\`. Valid values: ${validROS2Distros}`;
+
 			return false;
 		}
 		if (process.platform == "linux") {
-			cmdIn.str += `mkdir -p /opt/ros/${targetRos2Distro} && touch /opt/ros/${targetRos2Distro}/setup.sh} && source /opt/ros/${targetRos2Distro}/setup.sh && `;
+			obj.cmd += `mkdir -p /opt/ros/${obj.t2} && touch /opt/ros/${obj.t2}/setup.sh} && source /opt/ros/${obj.t2}/setup.sh && `;
 		}
 	}
 
@@ -182,13 +176,18 @@ async function run() {
 
 		let commandPrefix = "";
 
-		let cmdIn = { str: "" };
+		const obj = {
+			t1: targetRos1Distro,
+			t2: targetRos2Distro,
+			cmd: commandPrefix,
+		};
 
-		if (!validateDistro(targetRos1Distro, targetRos2Distro, cmdIn)) {
+		if (!validateDistro(obj)) {
+			core.setFailed(obj.cmd);
 			return;
 		}
 
-		commandPrefix += cmdIn.str;
+		commandPrefix = obj.cmd;
 
 		// rosdep on Windows does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
