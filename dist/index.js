@@ -3189,7 +3189,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.execBashCommand = void 0;
+exports.validateDistro = exports.execBashCommand = void 0;
 const core = __importStar(__webpack_require__(470));
 const github = __importStar(__webpack_require__(469));
 const tr = __importStar(__webpack_require__(686));
@@ -3293,6 +3293,34 @@ exports.execBashCommand = execBashCommand;
 //list of valid ROS distributions
 const validROS1Distros = ["kinetic", "lunar", "melodic", "noetic"];
 const validROS2Distros = ["dashing", "eloquent", "foxy"];
+//Determine whether all inputs name supported ROS distributions.
+function validateDistro({ targetRos1Distro, targetRos2Distro, commandPrefix, }) {
+    if (!targetRos1Distro && !targetRos2Distro) {
+        core.setFailed("Neither `target_ros1_distro` or `target_ros2_distro` inputs were set, at least one is required.");
+        return false;
+    }
+    if (targetRos1Distro) {
+        if (validROS1Distros.indexOf(targetRos1Distro) <= -1) {
+            core.setFailed(`Input ${targetRos1Distro}was not a valid ROS 1 distribution for \`target_ros1_distro\`. Valid values: ${validROS1Distros}`);
+            return false;
+        }
+        if (process.platform == "linux") {
+            commandPrefix += `mkdir -p /opt/ros/${targetRos1Distro} && touch /opt/ros/${targetRos1Distro}/setup.sh} && source /opt/ros/${targetRos1Distro}/setup.sh && `;
+        }
+    }
+    if (targetRos2Distro) {
+        if (validROS2Distros.indexOf(targetRos2Distro) <= -1) {
+            core.setFailed(`Input ${targetRos2Distro}was not a valid ROS 2 distribution for \`target_ros2_distro\`. Valid values: ${validROS2Distros}`);
+            return false;
+        }
+        if (process.platform == "linux") {
+            commandPrefix += `mkdir -p /opt/ros/${targetRos2Distro} && touch /opt/ros/${targetRos2Distro}/setup.sh} && source /opt/ros/${targetRos2Distro}/setup.sh && `;
+        }
+    }
+    console.log(commandPrefix);
+    return true;
+}
+exports.validateDistro = validateDistro;
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -3315,33 +3343,8 @@ function run() {
             const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) => resolveVcsRepoFileUrl(x));
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
             let commandPrefix = "";
-            if (!targetRos1Distro && !targetRos2Distro) {
-                core.setFailed("Neither `target_ros1_distro` or `target_ros2_distro` inputs were set, at least one is required.");
+            if (!validateDistro({ targetRos1Distro, targetRos2Distro, commandPrefix })) {
                 return;
-            }
-            if (targetRos1Distro) {
-                if (validROS1Distros.indexOf(targetRos1Distro) <= -1) {
-                    core.setFailed("Input " +
-                        targetRos1Distro +
-                        "was not a valid ROS 1 distribution for `target_ros1_distro`. Valid values: " +
-                        validROS1Distros);
-                    return;
-                }
-                if (process.platform == "linux") {
-                    commandPrefix += `mkdir -p /opt/ros/${targetRos1Distro} && touch /opt/ros/${targetRos1Distro}/setup.sh} && source /opt/ros/${targetRos1Distro}/setup.sh && `;
-                }
-            }
-            if (targetRos2Distro) {
-                if (validROS2Distros.indexOf(targetRos2Distro) <= -1) {
-                    core.setFailed("Input " +
-                        targetRos2Distro +
-                        "was not a valid ROS 2 distribution for `target_ros2_distro`. Valid values: " +
-                        validROS2Distros);
-                    return;
-                }
-                if (process.platform == "linux") {
-                    commandPrefix += `mkdir -p /opt/ros/${targetRos2Distro} && touch /opt/ros/${targetRos2Distro}/setup.sh} && source /opt/ros/${targetRos2Distro}/setup.sh && `;
-                }
             }
             // rosdep on Windows does not reliably work on Windows, see
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
