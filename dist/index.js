@@ -3294,7 +3294,7 @@ exports.execBashCommand = execBashCommand;
 const validROS1Distros = ["kinetic", "lunar", "melodic", "noetic"];
 const validROS2Distros = ["dashing", "eloquent", "foxy"];
 //Determine whether all inputs name supported ROS distributions.
-function validateDistro({ targetRos1Distro, targetRos2Distro, commandPrefix, }) {
+function validateDistro(targetRos1Distro, targetRos2Distro, cmdIn) {
     if (!targetRos1Distro && !targetRos2Distro) {
         core.setFailed("Neither `target_ros1_distro` or `target_ros2_distro` inputs were set, at least one is required.");
         return false;
@@ -3305,7 +3305,7 @@ function validateDistro({ targetRos1Distro, targetRos2Distro, commandPrefix, }) 
             return false;
         }
         if (process.platform == "linux") {
-            commandPrefix += `mkdir -p /opt/ros/${targetRos1Distro} && touch /opt/ros/${targetRos1Distro}/setup.sh} && source /opt/ros/${targetRos1Distro}/setup.sh && `;
+            cmdIn.str += `mkdir -p /opt/ros/${targetRos1Distro} && touch /opt/ros/${targetRos1Distro}/setup.sh} && source /opt/ros/${targetRos1Distro}/setup.sh && `;
         }
     }
     if (targetRos2Distro) {
@@ -3314,10 +3314,9 @@ function validateDistro({ targetRos1Distro, targetRos2Distro, commandPrefix, }) 
             return false;
         }
         if (process.platform == "linux") {
-            commandPrefix += `mkdir -p /opt/ros/${targetRos2Distro} && touch /opt/ros/${targetRos2Distro}/setup.sh} && source /opt/ros/${targetRos2Distro}/setup.sh && `;
+            cmdIn.str += `mkdir -p /opt/ros/${targetRos2Distro} && touch /opt/ros/${targetRos2Distro}/setup.sh} && source /opt/ros/${targetRos2Distro}/setup.sh && `;
         }
     }
-    console.log(commandPrefix);
     return true;
 }
 exports.validateDistro = validateDistro;
@@ -3343,9 +3342,11 @@ function run() {
             const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) => resolveVcsRepoFileUrl(x));
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
             let commandPrefix = "";
-            if (!validateDistro({ targetRos1Distro, targetRos2Distro, commandPrefix })) {
+            let cmdIn = { str: "" };
+            if (!validateDistro(targetRos1Distro, targetRos2Distro, cmdIn)) {
                 return;
             }
+            commandPrefix += cmdIn.str;
             // rosdep on Windows does not reliably work on Windows, see
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
             if (process.platform != "win32") {
