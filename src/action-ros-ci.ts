@@ -35,7 +35,7 @@ const curlFlagsArray = [
 	// do  the  following  request  with a GET if the HTTP response was 301, 302, or 303. If the response
 	// code was any other 3xx code, curl will re-send the following request  using  the  same  unmodified
 	// method.
-	"--location"
+	"--location",
 ];
 
 /**
@@ -95,7 +95,7 @@ export async function execBashCommand(
 			"&",
 			"C:\\Program Files\\Git\\bin\\bash.exe",
 			"-c",
-			bashScript
+			bashScript,
 		];
 	} else {
 		toolRunnerCommandLine = "bash";
@@ -109,6 +109,42 @@ export async function execBashCommand(
 	return core.group(message, () => {
 		return runner.exec();
 	});
+}
+
+//list of valid ROS distributions
+const validROS1Distros: string[] = ["kinetic", "lunar", "melodic", "noetic"];
+const validROS2Distros: string[] = ["dashing", "eloquent", "foxy"];
+
+//Determine whether all inputs name supported ROS distributions.
+export function validateDistro(obj: { t1; t2; cmd }): boolean {
+	if (!obj.t1 && !obj.t2) {
+		obj.cmd +=
+			"Neither `target_ros1_distro` or `target_ros2_distro` inputs were set, at least one is required.";
+
+		return false;
+	}
+	if (obj.t1) {
+		if (validROS1Distros.indexOf(obj.t1) <= -1) {
+			obj.cmd += `Input ${obj.t1} was not a valid ROS 1 distribution for \`target_ros1_distro\`.' Valid values: ${validROS1Distros}`;
+
+			return false;
+		}
+		if (process.platform == "linux") {
+			obj.cmd += `mkdir -p /opt/ros/${obj.t1} && touch /opt/ros/${obj.t1}/setup.sh} && source /opt/ros/${obj.t1}/setup.sh && `;
+		}
+	}
+	if (obj.t2) {
+		if (validROS2Distros.indexOf(obj.t2) <= -1) {
+			obj.cmd += `Input ${obj.t2} was not a valid ROS 2 distribution for \`target_ros2_distro\`. Valid values: ${validROS2Distros}`;
+
+			return false;
+		}
+		if (process.platform == "linux") {
+			obj.cmd += `mkdir -p /opt/ros/${obj.t2} && touch /opt/ros/${obj.t2}/setup.sh} && source /opt/ros/${obj.t2}/setup.sh && `;
+		}
+	}
+
+	return true;
 }
 
 async function run() {
@@ -125,34 +161,33 @@ async function run() {
 		const packageNameList = packageName.split(RegExp("\\s"));
 		const rosWorkspaceName = "ros_ws";
 		const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
-		const sourceRosBinaryInstallation = core.getInput(
-			"source-ros-binary-installation"
-		);
-		const sourceRosBinaryInstallationList = sourceRosBinaryInstallation
-			? sourceRosBinaryInstallation.split(RegExp("\\s"))
-			: [];
-
+		const targetRos1Distro = core.getInput("target-ros1-distro");
+		const targetRos2Distro = core.getInput("target-ros2-distro");
 		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
 		const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
-		const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(x => x != "");
-		const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map(x =>
+		const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(
+			(x) => x != ""
+		);
+		const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) =>
 			resolveVcsRepoFileUrl(x)
 		);
 
 		const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
 
 		let commandPrefix = "";
-		if (sourceRosBinaryInstallation) {
-			if (process.platform !== "linux") {
-				core.setFailed(
-					"sourcing binary installation is only available on Linux"
-				);
-				return;
-			}
-			for (let rosDistribution of sourceRosBinaryInstallationList) {
-				commandPrefix += `source /opt/ros/${rosDistribution}/setup.sh && `;
-			}
+
+		const obj = {
+			t1: targetRos1Distro,
+			t2: targetRos2Distro,
+			cmd: commandPrefix,
+		};
+
+		if (!validateDistro(obj)) {
+			core.setFailed(obj.cmd);
+			return;
 		}
+
+		commandPrefix = obj.cmd;
 
 		// rosdep on Windows does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
@@ -171,7 +206,7 @@ async function run() {
 		await io.mkdirP(rosWorkspaceDir + "/src");
 
 		const options = {
-			cwd: rosWorkspaceDir
+			cwd: rosWorkspaceDir,
 		};
 
 		const curlFlags = curlFlagsArray.join(" ");
@@ -233,22 +268,16 @@ async function run() {
 		);
 
 		// Install ROS dependencies for each distribution being sourced
-		for (let rosDistribution of sourceRosBinaryInstallationList) {
-			// For "latest" builds, rosdep often misses some keys, adding "|| true", to
-			// ignore those failures, as it is often non-critical.
+		if (targetRos1Distro) {
 			await execBashCommand(
-				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${rosDistribution} -y || true`,
+				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos1Distro} -y || true`,
 				commandPrefix,
 				options
 			);
 		}
-
-		// If no distribution is being sourced, then install dependencies for the latest release
-		if (!sourceRosBinaryInstallation) {
-			// For "latest" builds, rosdep often misses some keys, adding "|| true", to
-			// ignore those failures, as it is often non-critical.
+		if (targetRos2Distro) {
 			await execBashCommand(
-				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro eloquent -y || true`,
+				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos2Distro} -y || true`,
 				commandPrefix,
 				options
 			);
@@ -299,7 +328,7 @@ async function run() {
 		const colconLcovInitialCmd = "colcon lcov-result --initial";
 		await execBashCommand(colconLcovInitialCmd, commandPrefix, {
 			cwd: rosWorkspaceDir,
-			ignoreReturnCode: true
+			ignoreReturnCode: true,
 		});
 
 		const colconTestCmd = `colcon test --event-handlers console_cohesion+ \
@@ -314,7 +343,7 @@ async function run() {
 	             --packages-select ${packageNameList.join(" ")}`;
 		await execBashCommand(colconLcovResultCmd, commandPrefix, {
 			cwd: rosWorkspaceDir,
-			ignoreReturnCode: true
+			ignoreReturnCode: true,
 		});
 
 		const colconCoveragepyResultCmd = `colcon coveragepy-result \
