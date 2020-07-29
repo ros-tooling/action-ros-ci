@@ -33,7 +33,7 @@ The workspace is built by running:
 * run `colcon test` for all packages specified in `package-name`
 
 This action requires targeting a ROS or ROS 2 distribution explicitly.
-This is provided via the `target_ros1_distro` or `target_ros2_distro` inputs.
+This is provided via the `target-ros1-distro` or `target-ros2-distro` inputs.
 Either or both may be specified, if neither is provided an error will be raised.
 This input is used to `source setup.sh` for any installed ROS binary installations, as well as used as an argument to `rosdep install`.
 
@@ -58,7 +58,7 @@ steps:
 - uses: ros-tooling/action-ros-ci@0.0.15
   with:
     package-name: ament_copyright
-    target_ros2_distro: foxy
+    target-ros2-distro: foxy
 ```
 
 ### Build with a custom `repos` or `rosinstall` file
@@ -78,8 +78,24 @@ steps:
 - uses: ros-tooling/action-ros-ci@0.0.15
   with:
     package-name: my_package
-    target_ros2_distro: foxy
+    target-ros2-distro: foxy
     vcs-repo-file-url: /tmp/deps.repos
+```
+
+### Build a ROS 1 workspace
+
+This tool supports building for both ROS and ROS 2 - to target ROS use `target-ros1-distro`
+
+```yaml
+steps:
+- uses: actions/checkout@v2
+- uses: ros-tooling/setup-ros@0.0.25
+  with:
+    required-ros-distributions: melodic
+- uses: ros-tooling/action-ros-ci@0.0.15
+  with:
+    package-name: my_package
+    target-ros1-distro: melodic
 ```
 
 ### Enable Address Sanitizer to automatically report memory issues
@@ -95,7 +111,7 @@ memory corruption bugs.
         colcon-mixin-name: asan
         colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/3e627e0fa30db85aea05a50e2c61a9832664d236/index.yaml
         package-name: my_package
-        target_ros2_distro: foxy
+        target-ros2-distro: foxy
 ```
 
 To look for detected memory errors, check the build logs for entries containing `ERROR: AddressSanitizer`. Example:
@@ -123,7 +139,7 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
     - uses: ros-tooling/action-ros-ci@0.0.15
       with:
         package-name: my_package
-        target_ros2_distro: foxy
+        target-ros2-distro: foxy
         colcon-mixin-name: coverage-gcc
         # If possible, pin the repository in the workflow to a specific commit to avoid
         # changes in colcon-mixin-repository from breaking your tests.
@@ -145,7 +161,7 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
     - uses: ros-tooling/action-ros-ci@0.0.15
       with:
         package-name: my_package
-        target_ros2_distro: foxy
+        target-ros2-distro: foxy
         colcon-mixin-name: coverage-pytest
         # If possible, pin the repository in the workflow to a specific commit to avoid
         # changes in colcon-mixin-repository from breaking your tests.
@@ -165,7 +181,7 @@ See [action/codecov-action](https://github.com/codecov/codecov-action) documenta
     - uses: ros-tooling/action-ros-ci@0.0.15
       with:
         package-name: my_package
-        target_ros2_distro: foxy
+        target-ros2-distro: foxy
         colcon-mixin-name: coverage-gcc
         # If possible, pin the repository in the workflow to a specific commit to avoid
         # changes in colcon-mixin-repository from breaking your tests.
@@ -196,7 +212,7 @@ GitHub workflows can persist data generated in workers during the build using [a
       id: action_ros_ci_step
       with:
         package-name: ament_copyright
-        target_ros2_distro: foxy
+        target-ros2-distro: foxy
     - uses: actions/upload-artifact@v1
       with:
         name: colcon-logs
