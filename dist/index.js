@@ -3226,16 +3226,16 @@ const curlFlagsArray = [
 ];
 const validROS1Distros = ["kinetic", "lunar", "melodic", "noetic"];
 const validROS2Distros = ["dashing", "eloquent", "foxy"];
-const target_ros1_distro_input = "target-ros1-distro";
-const target_ros2_distro_input = "target-ros2-distro";
-const is_linux = process.platform == "linux";
-const is_windows = process.platform == "win32";
+const targetROS1DistroInput = "target-ros1-distro";
+const targetROS2DistroInput = "target-ros2-distro";
+const isLinux = process.platform == "linux";
+const isWindows = process.platform == "win32";
 /**
  * Convert local paths to URLs.
  *
  * The user can pass the VCS repo file either as a URL or a path.
  * If it is a path, this function will convert it into a URL (file://...).
- * If the file is already passed as an URL, this function does nothing.
+
  *
  * @param   vcsRepoFileUrl     path or URL to the repo file
  * @returns                    URL to the repo file
@@ -3264,7 +3264,7 @@ function execBashCommand(commandLine, commandPrefix, options, log_message) {
         const message = log_message || `Invoking "bash -c '${bashScript}'`;
         let toolRunnerCommandLine = "";
         let toolRunnerCommandLineArgs = [];
-        if (is_windows) {
+        if (isWindows) {
             toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
             // This passes the same flags to cmd.exe that "run:" in a workflow.
             // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
@@ -3300,24 +3300,24 @@ exports.execBashCommand = execBashCommand;
 function validateDistro(obj) {
     if (!obj.t1 && !obj.t2) {
         obj.cmd +=
-            `Neither '${target_ros1_distro_input}' or '${target_ros2_distro_input}' inputs were set, at least one is required.`;
+            `Neither '${targetROS1DistroInput}' or '${targetROS2DistroInput}' inputs were set, at least one is required.`;
         return false;
     }
     if (obj.t1) {
         if (validROS1Distros.indexOf(obj.t1) <= -1) {
-            obj.cmd += `Input ${obj.t1} was not a valid ROS 1 distribution for '${target_ros1_distro_input}'. Valid values: ${validROS1Distros}`;
+            obj.cmd += `Input ${obj.t1} was not a valid ROS 1 distribution for '${targetROS1DistroInput}'. Valid values: ${validROS1Distros}`;
             return false;
         }
-        if (is_linux) {
+        if (isLinux) {
             obj.cmd += `mkdir -p /opt/ros/${obj.t1} && touch /opt/ros/${obj.t1}/setup.sh} && source /opt/ros/${obj.t1}/setup.sh && `;
         }
     }
     if (obj.t2) {
         if (validROS2Distros.indexOf(obj.t2) <= -1) {
-            obj.cmd += `Input ${obj.t2} was not a valid ROS 2 distribution for '${target_ros2_distro_input}'. Valid values: ${validROS2Distros}`;
+            obj.cmd += `Input ${obj.t2} was not a valid ROS 2 distribution for '${targetROS2DistroInput}'. Valid values: ${validROS2Distros}`;
             return false;
         }
-        if (is_linux) {
+        if (isLinux) {
             obj.cmd += `mkdir -p /opt/ros/${obj.t2} && touch /opt/ros/${obj.t2}/setup.sh} && source /opt/ros/${obj.t2}/setup.sh && `;
         }
     }
@@ -3338,8 +3338,8 @@ function run() {
             const packageNameList = packageName.split(RegExp("\\s"));
             const rosWorkspaceName = "ros_ws";
             const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
-            const targetRos1Distro = core.getInput(target_ros1_distro_input);
-            const targetRos2Distro = core.getInput(target_ros2_distro_input);
+            const targetRos1Distro = core.getInput(targetROS1DistroInput);
+            const targetRos2Distro = core.getInput(targetROS2DistroInput);
             const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
             const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
             const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
@@ -3358,7 +3358,7 @@ function run() {
             commandPrefix = obj.cmd;
             // rosdep on Windows does not reliably work on Windows, see
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
-            if (is_windows) {
+            if (!isWindows) {
                 yield execBashCommand("rosdep update", commandPrefix);
             }
             // Reset colcon configuration.
@@ -3379,7 +3379,7 @@ function run() {
             // We do not want to allow the "default" head state of the package to
             // to be present in the workspace, and colcon will fail stating it found twice
             // a package with an identical name.
-            const posixRosWorkspaceDir = is_windows
+            const posixRosWorkspaceDir = isWindows
                 ? rosWorkspaceDir.replace(/\\/g, "/")
                 : rosWorkspaceDir;
             yield execBashCommand(`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`, commandPrefix);
@@ -3443,7 +3443,7 @@ function run() {
 			--packages-up-to ${packageNameList.join(" ")} \
 			${extra_options.join(" ")} \
 			--cmake-args ${extraCmakeArgs}`;
-            if (process.platform !== "win32") {
+            if (!isWindows) {
                 colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
             }
             yield execBashCommand(colconBuildCmd, commandPrefix, options);
