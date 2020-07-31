@@ -38,6 +38,13 @@ const curlFlagsArray = [
 	"--location",
 ];
 
+const validROS1Distros: string[] = ["kinetic", "lunar", "melodic", "noetic"];
+const validROS2Distros: string[] = ["dashing", "eloquent", "foxy"];
+const target_ros1_distro_input: string = "target-ros1-distro";
+const target_ros2_distro_input: string = "target-ros2-distro";
+const is_linux: boolean = process.platform == "linux";
+const is_windows: boolean = process.platform == "win32";
+
 /**
  * Convert local paths to URLs.
  *
@@ -77,7 +84,7 @@ export async function execBashCommand(
 
 	let toolRunnerCommandLine = "";
 	let toolRunnerCommandLineArgs: string[] = [];
-	if (process.platform == "win32") {
+	if (is_windows) {
 		toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
 		// This passes the same flags to cmd.exe that "run:" in a workflow.
 		// https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
@@ -111,35 +118,32 @@ export async function execBashCommand(
 	});
 }
 
-//list of valid ROS distributions
-const validROS1Distros: string[] = ["kinetic", "lunar", "melodic", "noetic"];
-const validROS2Distros: string[] = ["dashing", "eloquent", "foxy"];
 
 //Determine whether all inputs name supported ROS distributions.
 export function validateDistro(obj: { t1; t2; cmd }): boolean {
 	if (!obj.t1 && !obj.t2) {
 		obj.cmd +=
-			"Neither `target_ros1_distro` or `target_ros2_distro` inputs were set, at least one is required.";
+			`Neither '${target_ros1_distro_input}' or '${target_ros2_distro_input}' inputs were set, at least one is required.`;
 
 		return false;
 	}
 	if (obj.t1) {
 		if (validROS1Distros.indexOf(obj.t1) <= -1) {
-			obj.cmd += `Input ${obj.t1} was not a valid ROS 1 distribution for \`target_ros1_distro\`.' Valid values: ${validROS1Distros}`;
+			obj.cmd += `Input ${obj.t1} was not a valid ROS 1 distribution for '${target_ros1_distro_input}'. Valid values: ${validROS1Distros}`;
 
 			return false;
 		}
-		if (process.platform == "linux") {
+		if (is_linux) {
 			obj.cmd += `mkdir -p /opt/ros/${obj.t1} && touch /opt/ros/${obj.t1}/setup.sh} && source /opt/ros/${obj.t1}/setup.sh && `;
 		}
 	}
 	if (obj.t2) {
 		if (validROS2Distros.indexOf(obj.t2) <= -1) {
-			obj.cmd += `Input ${obj.t2} was not a valid ROS 2 distribution for \`target_ros2_distro\`. Valid values: ${validROS2Distros}`;
+			obj.cmd += `Input ${obj.t2} was not a valid ROS 2 distribution for '${target_ros2_distro_input}'. Valid values: ${validROS2Distros}`;
 
 			return false;
 		}
-		if (process.platform == "linux") {
+		if (is_linux) {
 			obj.cmd += `mkdir -p /opt/ros/${obj.t2} && touch /opt/ros/${obj.t2}/setup.sh} && source /opt/ros/${obj.t2}/setup.sh && `;
 		}
 	}
@@ -161,8 +165,8 @@ async function run() {
 		const packageNameList = packageName.split(RegExp("\\s"));
 		const rosWorkspaceName = "ros_ws";
 		const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
-		const targetRos1Distro = core.getInput("target-ros1-distro");
-		const targetRos2Distro = core.getInput("target-ros2-distro");
+		const targetRos1Distro = core.getInput(target_ros1_distro_input);
+		const targetRos2Distro = core.getInput(target_ros2_distro_input);
 		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
 		const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
 		const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(
@@ -191,7 +195,7 @@ async function run() {
 
 		// rosdep on Windows does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
-		if (process.platform != "win32") {
+		if (is_windows) {
 			await execBashCommand("rosdep update", commandPrefix);
 		}
 
@@ -223,7 +227,7 @@ async function run() {
 		// to be present in the workspace, and colcon will fail stating it found twice
 		// a package with an identical name.
 		const posixRosWorkspaceDir =
-			process.platform === "win32"
+			is_windows
 				? rosWorkspaceDir.replace(/\\/g, "/")
 				: rosWorkspaceDir;
 		await execBashCommand(
