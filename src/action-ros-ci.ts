@@ -50,7 +50,7 @@ const isWindows: boolean = process.platform == "win32";
  *
  * The user can pass the VCS repo file either as a URL or a path.
  * If it is a path, this function will convert it into a URL (file://...).
-
+ * If the file is already passed as an URL, this function does nothing.
  *
  * @param   vcsRepoFileUrl     path or URL to the repo file
  * @returns                    URL to the repo file
@@ -118,36 +118,20 @@ export async function execBashCommand(
 	});
 }
 
-
 //Determine whether all inputs name supported ROS distributions.
-export function validateDistro(obj: { t1; t2; cmd }): boolean {
-	if (!obj.t1 && !obj.t2) {
-		obj.cmd +=
-			`Neither '${targetROS1DistroInput}' or '${targetROS2DistroInput}' inputs were set, at least one is required.`;
-
+export function validateDistros(ros1Distro: string, ros2Distro: string): boolean {
+	if (!ros1Distro && !ros2Distro) {
+		core.setFailed(`Neither '${targetROS1DistroInput}' or '${targetROS2DistroInput}' inputs were set, at least one is required.`);
 		return false;
 	}
-	if (obj.t1) {
-		if (validROS1Distros.indexOf(obj.t1) <= -1) {
-			obj.cmd += `Input ${obj.t1} was not a valid ROS 1 distribution for '${targetROS1DistroInput}'. Valid values: ${validROS1Distros}`;
-
-			return false;
-		}
-		if (isLinux) {
-			obj.cmd += `mkdir -p /opt/ros/${obj.t1} && touch /opt/ros/${obj.t1}/setup.sh} && source /opt/ros/${obj.t1}/setup.sh && `;
-		}
+	if (ros1Distro && validROS1Distros.indexOf(ros1Distro) <= -1) {
+		core.setFailed(`Input ${ros1Distro} was not a valid ROS 1 distribution for '${targetROS1DistroInput}'. Valid values: ${validROS1Distros}`);
+		return false;
 	}
-	if (obj.t2) {
-		if (validROS2Distros.indexOf(obj.t2) <= -1) {
-			obj.cmd += `Input ${obj.t2} was not a valid ROS 2 distribution for '${targetROS2DistroInput}'. Valid values: ${validROS2Distros}`;
-
-			return false;
-		}
-		if (isLinux) {
-			obj.cmd += `mkdir -p /opt/ros/${obj.t2} && touch /opt/ros/${obj.t2}/setup.sh} && source /opt/ros/${obj.t2}/setup.sh && `;
-		}
+	if (ros2Distro && validROS2Distros.indexOf(ros2Distro) <= -1) {
+		core.setFailed(`Input ${ros2Distro} was not a valid ROS 2 distribution for '${targetROS2DistroInput}'. Valid values: ${validROS2Distros}`);
+		return false;
 	}
-
 	return true;
 }
 
@@ -178,20 +162,20 @@ async function run() {
 
 		const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
 
-		let commandPrefix = "";
-
-		const obj = {
-			t1: targetRos1Distro,
-			t2: targetRos2Distro,
-			cmd: commandPrefix,
-		};
-
-		if (!validateDistro(obj)) {
-			core.setFailed(obj.cmd);
+		if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
 			return;
 		}
 
-		commandPrefix = obj.cmd;
+		// Source any installed ROS binary distribution, safely creating an empty setup file if it is not present
+		let commandPrefix = "";
+		if (isLinux) {
+			if (targetRos1Distro) {
+				commandPrefix += `mkdir -p /opt/ros/${targetRos1Distro} && touch /opt/ros/${targetRos1Distro}/setup.sh && source /opt/ros/${targetRos1Distro}/setup.sh && `;
+			}
+			if (targetRos2Distro) {
+				commandPrefix += `mkdir -p /opt/ros/${targetRos2Distro} && touch /opt/ros/${targetRos2Distro}/setup.sh && source /opt/ros/${targetRos2Distro}/setup.sh && `;
+			}
+		}
 
 		// rosdep on Windows does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
