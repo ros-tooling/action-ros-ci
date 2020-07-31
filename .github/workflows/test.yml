@@ -148,13 +148,13 @@ jobs:
     - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
 
   test_ros2_from_source:
-    name: "Test ROS 2 package"
+    name: "Test ROS 2 package from source"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-          os: [macOS-latest, windows-latest]
-          ros_distribution: [eloquent, foxy]
+          os: [macOS-latest, windows-latest, ubuntu-latest]
+          ros_distribution: [foxy]
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -285,7 +285,7 @@ jobs:
     - uses: ros-tooling/setup-ros@0.0.25
       with:
         required-ros-distributions: ${{ matrix.ros_distribution }}
-    
+
     - uses: ./
       id: test_single_package
       with:

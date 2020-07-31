@@ -29,8 +29,13 @@ describe('execBashCommand test suite', () => {
 })
 
 describe("validate distribution test", () => {
-	it("test valid", async () => {
-		const obj = {t1: "kinetic", t2: "", cmd: ""};
-		await expect(actionRosCi.validateDistro(obj)).toBe(true);
-	});
+  it("validates that the ros distribution validator acts correctly", async () => {
+  expect(actionRosCi.validateDistros("kinetic", "")).toBe(true);
+    expect(actionRosCi.validateDistros("melodic", "dashing")).toBe(true);
+    expect(actionRosCi.validateDistros("", "eloquent")).toBe(true);
+    expect(actionRosCi.validateDistros("", "")).toBe(false);
+    expect(actionRosCi.validateDistros("groovy", "")).toBe(false);
+    expect(actionRosCi.validateDistros("", "bouncy")).toBe(false);
+    expect(actionRosCi.validateDistros("apples", "bananas")).toBe(false);
+  });
 });

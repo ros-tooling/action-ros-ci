@@ -3189,7 +3189,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateDistro = exports.execBashCommand = void 0;
+exports.validateDistros = exports.execBashCommand = void 0;
 const core = __importStar(__webpack_require__(470));
 const github = __importStar(__webpack_require__(469));
 const tr = __importStar(__webpack_require__(686));
@@ -3224,6 +3224,12 @@ const curlFlagsArray = [
     // method.
     "--location",
 ];
+const validROS1Distros = ["kinetic", "lunar", "melodic", "noetic"];
+const validROS2Distros = ["dashing", "eloquent", "foxy"];
+const targetROS1DistroInput = "target-ros1-distro";
+const targetROS2DistroInput = "target-ros2-distro";
+const isLinux = process.platform == "linux";
+const isWindows = process.platform == "win32";
 /**
  * Convert local paths to URLs.
  *
@@ -3258,7 +3264,7 @@ function execBashCommand(commandLine, commandPrefix, options, log_message) {
         const message = log_message || `Invoking "bash -c '${bashScript}'`;
         let toolRunnerCommandLine = "";
         let toolRunnerCommandLineArgs = [];
-        if (process.platform == "win32") {
+        if (isWindows) {
             toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
             // This passes the same flags to cmd.exe that "run:" in a workflow.
             // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
@@ -3290,37 +3296,23 @@ function execBashCommand(commandLine, commandPrefix, options, log_message) {
     });
 }
 exports.execBashCommand = execBashCommand;
-//list of valid ROS distributions
-const validROS1Distros = ["kinetic", "lunar", "melodic", "noetic"];
-const validROS2Distros = ["dashing", "eloquent", "foxy"];
 //Determine whether all inputs name supported ROS distributions.
-function validateDistro(obj) {
-    if (!obj.t1 && !obj.t2) {
-        obj.cmd +=
-            "Neither `target_ros1_distro` or `target_ros2_distro` inputs were set, at least one is required.";
+function validateDistros(ros1Distro, ros2Distro) {
+    if (!ros1Distro && !ros2Distro) {
+        core.setFailed(`Neither '${targetROS1DistroInput}' or '${targetROS2DistroInput}' inputs were set, at least one is required.`);
         return false;
     }
-    if (obj.t1) {
-        if (validROS1Distros.indexOf(obj.t1) <= -1) {
-            obj.cmd += `Input ${obj.t1} was not a valid ROS 1 distribution for \`target_ros1_distro\`.' Valid values: ${validROS1Distros}`;
-            return false;
-        }
-        if (process.platform == "linux") {
-            obj.cmd += `mkdir -p /opt/ros/${obj.t1} && touch /opt/ros/${obj.t1}/setup.sh} && source /opt/ros/${obj.t1}/setup.sh && `;
-        }
+    if (ros1Distro && validROS1Distros.indexOf(ros1Distro) <= -1) {
+        core.setFailed(`Input ${ros1Distro} was not a valid ROS 1 distribution for '${targetROS1DistroInput}'. Valid values: ${validROS1Distros}`);
+        return false;
     }
-    if (obj.t2) {
-        if (validROS2Distros.indexOf(obj.t2) <= -1) {
-            obj.cmd += `Input ${obj.t2} was not a valid ROS 2 distribution for \`target_ros2_distro\`. Valid values: ${validROS2Distros}`;
-            return false;
-        }
-        if (process.platform == "linux") {
-            obj.cmd += `mkdir -p /opt/ros/${obj.t2} && touch /opt/ros/${obj.t2}/setup.sh} && source /opt/ros/${obj.t2}/setup.sh && `;
-        }
+    if (ros2Distro && validROS2Distros.indexOf(ros2Distro) <= -1) {
+        core.setFailed(`Input ${ros2Distro} was not a valid ROS 2 distribution for '${targetROS2DistroInput}'. Valid values: ${validROS2Distros}`);
+        return false;
     }
     return true;
 }
-exports.validateDistro = validateDistro;
+exports.validateDistros = validateDistros;
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -3335,27 +3327,29 @@ function run() {
             const packageNameList = packageName.split(RegExp("\\s"));
             const rosWorkspaceName = "ros_ws";
             const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
-            const targetRos1Distro = core.getInput("target-ros1-distro");
-            const targetRos2Distro = core.getInput("target-ros2-distro");
+            const targetRos1Distro = core.getInput(targetROS1DistroInput);
+            const targetRos2Distro = core.getInput(targetROS2DistroInput);
             const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
             const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
             const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
             const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) => resolveVcsRepoFileUrl(x));
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
-            let commandPrefix = "";
-            const obj = {
-                t1: targetRos1Distro,
-                t2: targetRos2Distro,
-                cmd: commandPrefix,
-            };
-            if (!validateDistro(obj)) {
-                core.setFailed(obj.cmd);
+            if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
                 return;
             }
-            commandPrefix = obj.cmd;
+            // Source any installed ROS binary distribution, safely creating an empty setup file if it is not present
+            let commandPrefix = "";
+            if (isLinux) {
+                if (targetRos1Distro) {
+                    commandPrefix += `mkdir -p /opt/ros/${targetRos1Distro} && touch /opt/ros/${targetRos1Distro}/setup.sh && source /opt/ros/${targetRos1Distro}/setup.sh && `;
+                }
+                if (targetRos2Distro) {
+                    commandPrefix += `mkdir -p /opt/ros/${targetRos2Distro} && touch /opt/ros/${targetRos2Distro}/setup.sh && source /opt/ros/${targetRos2Distro}/setup.sh && `;
+                }
+            }
             // rosdep on Windows does not reliably work on Windows, see
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
-            if (process.platform != "win32") {
+            if (!isWindows) {
                 yield execBashCommand("rosdep update", commandPrefix);
             }
             // Reset colcon configuration.
@@ -3376,7 +3370,7 @@ function run() {
             // We do not want to allow the "default" head state of the package to
             // to be present in the workspace, and colcon will fail stating it found twice
             // a package with an identical name.
-            const posixRosWorkspaceDir = process.platform === "win32"
+            const posixRosWorkspaceDir = isWindows
                 ? rosWorkspaceDir.replace(/\\/g, "/")
                 : rosWorkspaceDir;
             yield execBashCommand(`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`, commandPrefix);
@@ -3440,7 +3434,7 @@ function run() {
 			--packages-up-to ${packageNameList.join(" ")} \
 			${extra_options.join(" ")} \
 			--cmake-args ${extraCmakeArgs}`;
-            if (process.platform !== "win32") {
+            if (!isWindows) {
                 colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
             }
             yield execBashCommand(colconBuildCmd, commandPrefix, options);
