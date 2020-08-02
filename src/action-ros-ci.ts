@@ -39,7 +39,7 @@ const curlFlagsArray = [
 ];
 
 const validROS1Distros: string[] = ["kinetic", "lunar", "melodic", "noetic"];
-const validROS2Distros: string[] = ["dashing", "eloquent", "foxy"];
+const validROS2Distros: string[] = ["dashing", "eloquent", "foxy", "rolling"];
 const targetROS1DistroInput: string = "target-ros1-distro";
 const targetROS2DistroInput: string = "target-ros2-distro";
 const isLinux: boolean = process.platform == "linux";
