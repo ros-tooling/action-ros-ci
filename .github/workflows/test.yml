@@ -153,7 +153,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-          os: [macOS-latest, windows-latest, ubuntu-latest]
+          os: [macOS-latest, windows-latest, ubuntu-20.04]
           ros_distribution: [foxy, rolling]
     steps:
     - uses: actions/checkout@v2
