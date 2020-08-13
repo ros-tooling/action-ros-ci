@@ -166,21 +166,10 @@ async function run() {
 			return;
 		}
 
-		// Source any installed ROS binary distribution, safely creating an empty setup file if it is not present
-		let commandPrefix = "";
-		if (isLinux) {
-			if (targetRos1Distro) {
-				commandPrefix += `mkdir -p /opt/ros/${targetRos1Distro} && touch /opt/ros/${targetRos1Distro}/setup.sh && source /opt/ros/${targetRos1Distro}/setup.sh && `;
-			}
-			if (targetRos2Distro) {
-				commandPrefix += `mkdir -p /opt/ros/${targetRos2Distro} && touch /opt/ros/${targetRos2Distro}/setup.sh && source /opt/ros/${targetRos2Distro}/setup.sh && `;
-			}
-		}
-
-		// rosdep on Windows does not reliably work on Windows, see
+		// rosdep does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
 		if (!isWindows) {
-			await execBashCommand("rosdep update", commandPrefix);
+			await execBashCommand("rosdep update");
 		}
 
 		// Reset colcon configuration.
@@ -201,7 +190,7 @@ async function run() {
 		for (let vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
 			await execBashCommand(
 				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`,
-				commandPrefix,
+				undefined,
 				options
 			);
 		}
@@ -215,8 +204,7 @@ async function run() {
 				? rosWorkspaceDir.replace(/\\/g, "/")
 				: rosWorkspaceDir;
 		await execBashCommand(
-			`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`,
-			commandPrefix
+			`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`
 		);
 
 		// The repo file for the repository needs to be generated on-the-fly to
@@ -241,7 +229,7 @@ async function run() {
 		fs.writeFileSync(repoFilePath, repoFileContent);
 		await execBashCommand(
 			"vcs import --force --recursive src/ < package.repo",
-			commandPrefix,
+			undefined,
 			options
 		);
 
@@ -251,7 +239,7 @@ async function run() {
 			`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(
 				" "
 			)} -p) | xargs rm -rf`,
-			commandPrefix,
+			undefined,
 			options
 		);
 
@@ -259,24 +247,23 @@ async function run() {
 		if (targetRos1Distro) {
 			await execBashCommand(
 				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos1Distro} -y || true`,
-				commandPrefix,
+				undefined,
 				options
 			);
 		}
 		if (targetRos2Distro) {
 			await execBashCommand(
 				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos2Distro} -y || true`,
-				commandPrefix,
+				undefined,
 				options
 			);
 		}
 
 		if (colconMixinName !== "" && colconMixinRepo !== "") {
 			await execBashCommand(
-				`colcon mixin add default '${colconMixinRepo}'`,
-				commandPrefix
+				`colcon mixin add default '${colconMixinRepo}'`
 			);
-			await execBashCommand("colcon mixin update default", commandPrefix);
+			await execBashCommand("colcon mixin update default");
 		}
 
 		let extra_options: string[] = [];
@@ -302,6 +289,23 @@ async function run() {
 		// where this does not happen. See issue #26 for relevant CI logs.
 		core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
 
+		// Source any installed ROS distributions if they are present
+		let colconCommandPrefix = "";
+		if (isLinux) {
+			if (targetRos1Distro) {
+				const ros1SetupPath = `/opt/ros/${targetRos1Distro}/setup.sh`;
+				if (fs.existsSync(ros1SetupPath)) {
+					colconCommandPrefix += `source ${ros1SetupPath} && `;
+				}
+			}
+			if (targetRos2Distro) {
+				const ros2SetupPath = `/opt/ros/${targetRos2Distro}/setup.sh`;
+				if (fs.existsSync(ros2SetupPath)) {
+					colconCommandPrefix += `source ${ros2SetupPath} && `;
+				}
+			}
+		}
+
 		let colconBuildCmd = `colcon build --event-handlers console_cohesion+ \
 			--packages-up-to ${packageNameList.join(" ")} \
 			${extra_options.join(" ")} \
@@ -309,12 +313,12 @@ async function run() {
 		if (!isWindows) {
 			colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
 		}
-		await execBashCommand(colconBuildCmd, commandPrefix, options);
+		await execBashCommand(colconBuildCmd, colconCommandPrefix, options);
 
 		// ignoreReturnCode is set to true to avoid having a lack of coverage
 		// data fail the build.
 		const colconLcovInitialCmd = "colcon lcov-result --initial";
-		await execBashCommand(colconLcovInitialCmd, commandPrefix, {
+		await execBashCommand(colconLcovInitialCmd, colconCommandPrefix, {
 			cwd: rosWorkspaceDir,
 			ignoreReturnCode: true,
 		});
@@ -323,20 +327,20 @@ async function run() {
 			--pytest-with-coverage --return-code-on-test-failure \
 			--packages-select ${packageNameList.join(" ")} \
 			${extra_options.join(" ")}`;
-		await execBashCommand(colconTestCmd, commandPrefix, options);
+		await execBashCommand(colconTestCmd, colconCommandPrefix, options);
 
 		// ignoreReturnCode, check comment above in --initial
 		const colconLcovResultCmd = `colcon lcov-result \
 	             --filter ${coverageIgnorePattern} \
 	             --packages-select ${packageNameList.join(" ")}`;
-		await execBashCommand(colconLcovResultCmd, commandPrefix, {
+		await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
 			cwd: rosWorkspaceDir,
 			ignoreReturnCode: true,
 		});
 
 		const colconCoveragepyResultCmd = `colcon coveragepy-result \
 				--packages-select ${packageNameList.join(" ")}`;
-		await execBashCommand(colconCoveragepyResultCmd, commandPrefix, options);
+		await execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
 
 		core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
 	} catch (error) {

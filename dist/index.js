@@ -3337,20 +3337,10 @@ function run() {
             if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
                 return;
             }
-            // Source any installed ROS binary distribution, safely creating an empty setup file if it is not present
-            let commandPrefix = "";
-            if (isLinux) {
-                if (targetRos1Distro) {
-                    commandPrefix += `mkdir -p /opt/ros/${targetRos1Distro} && touch /opt/ros/${targetRos1Distro}/setup.sh && source /opt/ros/${targetRos1Distro}/setup.sh && `;
-                }
-                if (targetRos2Distro) {
-                    commandPrefix += `mkdir -p /opt/ros/${targetRos2Distro} && touch /opt/ros/${targetRos2Distro}/setup.sh && source /opt/ros/${targetRos2Distro}/setup.sh && `;
-                }
-            }
-            // rosdep on Windows does not reliably work on Windows, see
+            // rosdep does not reliably work on Windows, see
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
             if (!isWindows) {
-                yield execBashCommand("rosdep update", commandPrefix);
+                yield execBashCommand("rosdep update");
             }
             // Reset colcon configuration.
             yield io.rmRF(path.join(os.homedir(), ".colcon"));
@@ -3364,7 +3354,7 @@ function run() {
             };
             const curlFlags = curlFlagsArray.join(" ");
             for (let vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
-                yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`, commandPrefix, options);
+                yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`, undefined, options);
             }
             // If the package under tests is part of ros.repos, remove it first.
             // We do not want to allow the "default" head state of the package to
@@ -3373,7 +3363,7 @@ function run() {
             const posixRosWorkspaceDir = isWindows
                 ? rosWorkspaceDir.replace(/\\/g, "/")
                 : rosWorkspaceDir;
-            yield execBashCommand(`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`, commandPrefix);
+            yield execBashCommand(`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`);
             // The repo file for the repository needs to be generated on-the-fly to
             // incorporate the custom repository URL and branch name, when a PR is
             // being built.
@@ -3394,20 +3384,20 @@ function run() {
     url: 'https://${tokenAuth}github.com/${repoFullName}.git'
     version: '${commitRef}'`;
             fs_1.default.writeFileSync(repoFilePath, repoFileContent);
-            yield execBashCommand("vcs import --force --recursive src/ < package.repo", commandPrefix, options);
+            yield execBashCommand("vcs import --force --recursive src/ < package.repo", undefined, options);
             // Remove all repositories the package under test does not depend on, to
             // avoid having rosdep installing unrequired dependencies.
-            yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, commandPrefix, options);
+            yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, undefined, options);
             // Install ROS dependencies for each distribution being sourced
             if (targetRos1Distro) {
-                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos1Distro} -y || true`, commandPrefix, options);
+                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos1Distro} -y || true`, undefined, options);
             }
             if (targetRos2Distro) {
-                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos2Distro} -y || true`, commandPrefix, options);
+                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos2Distro} -y || true`, undefined, options);
             }
             if (colconMixinName !== "" && colconMixinRepo !== "") {
-                yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, commandPrefix);
-                yield execBashCommand("colcon mixin update default", commandPrefix);
+                yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
+                yield execBashCommand("colcon mixin update default");
             }
             let extra_options = [];
             if (colconMixinName !== "") {
@@ -3430,6 +3420,22 @@ function run() {
             // ament_cmake should handle this automatically, but we are seeing cases
             // where this does not happen. See issue #26 for relevant CI logs.
             core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
+            // Source any installed ROS distributions if they are present
+            let colconCommandPrefix = "";
+            if (isLinux) {
+                if (targetRos1Distro) {
+                    const ros1SetupPath = `/opt/ros/${targetRos1Distro}/setup.sh`;
+                    if (fs_1.default.existsSync(ros1SetupPath)) {
+                        colconCommandPrefix += `source ${ros1SetupPath} && `;
+                    }
+                }
+                if (targetRos2Distro) {
+                    const ros2SetupPath = `/opt/ros/${targetRos2Distro}/setup.sh`;
+                    if (fs_1.default.existsSync(ros2SetupPath)) {
+                        colconCommandPrefix += `source ${ros2SetupPath} && `;
+                    }
+                }
+            }
             let colconBuildCmd = `colcon build --event-handlers console_cohesion+ \
 			--packages-up-to ${packageNameList.join(" ")} \
 			${extra_options.join(" ")} \
@@ -3437,11 +3443,11 @@ function run() {
             if (!isWindows) {
                 colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
             }
-            yield execBashCommand(colconBuildCmd, commandPrefix, options);
+            yield execBashCommand(colconBuildCmd, colconCommandPrefix, options);
             // ignoreReturnCode is set to true to avoid having a lack of coverage
             // data fail the build.
             const colconLcovInitialCmd = "colcon lcov-result --initial";
-            yield execBashCommand(colconLcovInitialCmd, commandPrefix, {
+            yield execBashCommand(colconLcovInitialCmd, colconCommandPrefix, {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true,
             });
@@ -3449,18 +3455,18 @@ function run() {
 			--pytest-with-coverage --return-code-on-test-failure \
 			--packages-select ${packageNameList.join(" ")} \
 			${extra_options.join(" ")}`;
-            yield execBashCommand(colconTestCmd, commandPrefix, options);
+            yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
             // ignoreReturnCode, check comment above in --initial
             const colconLcovResultCmd = `colcon lcov-result \
 	             --filter ${coverageIgnorePattern} \
 	             --packages-select ${packageNameList.join(" ")}`;
-            yield execBashCommand(colconLcovResultCmd, commandPrefix, {
+            yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true,
             });
             const colconCoveragepyResultCmd = `colcon coveragepy-result \
 				--packages-select ${packageNameList.join(" ")}`;
-            yield execBashCommand(colconCoveragepyResultCmd, commandPrefix, options);
+            yield execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
             core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
         }
         catch (error) {
