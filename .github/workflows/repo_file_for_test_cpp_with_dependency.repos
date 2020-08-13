@@ -1,0 +1,6 @@
+
+repositories:
+  rmw:
+    type: git
+    url: https://github.com/ros2/rmw.git
+    version: foxy

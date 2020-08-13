@@ -91,6 +91,21 @@ jobs:
       # TODO(tmoulard): re-enable this test once it passes on Windows
       if: matrix.os != 'windows-latest'
 
+  test_ros2_foxy_package_with_dependencies:
+    name: "Test ROS2 foxy package with ROS dependencies"
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ros-tooling/setup-ros@0.0.25
+        with:
+          required-ros-distributions: foxy
+      - uses: ./
+        with:
+          package-name: rmw
+          target-ros2-distro: foxy
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
+
+
   test_ros2_docker:
     name: "Test ROS 2 package"
     runs-on: ubuntu-latest
@@ -390,7 +405,7 @@ jobs:
     # serves two purposes:
     # - Don't skip this job if dependent jobs have failed.
     # - On a fork, we don't have the secrets to authenticate to AWS.
-    if: ${{ ! github.event.repository.fork && ! github.event.pull_request.head.repo.fork }}
+    if: ${{ always() && !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
     steps:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
