@@ -190,7 +190,7 @@ async function run() {
 		for (let vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
 			await execBashCommand(
 				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`,
-				"",
+				undefined,
 				options
 			);
 		}
@@ -229,7 +229,7 @@ async function run() {
 		fs.writeFileSync(repoFilePath, repoFileContent);
 		await execBashCommand(
 			"vcs import --force --recursive src/ < package.repo",
-			"",
+			undefined,
 			options
 		);
 
@@ -239,7 +239,7 @@ async function run() {
 			`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(
 				" "
 			)} -p) | xargs rm -rf`,
-			"",
+			undefined,
 			options
 		);
 
@@ -247,14 +247,14 @@ async function run() {
 		if (targetRos1Distro) {
 			await execBashCommand(
 				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos1Distro} -y || true`,
-				"",
+				undefined,
 				options
 			);
 		}
 		if (targetRos2Distro) {
 			await execBashCommand(
 				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos2Distro} -y || true`,
-				"",
+				undefined,
 				options
 			);
 		}

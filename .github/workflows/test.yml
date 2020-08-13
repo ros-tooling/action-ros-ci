@@ -405,7 +405,7 @@ jobs:
     # serves two purposes:
     # - Don't skip this job if dependent jobs have failed.
     # - On a fork, we don't have the secrets to authenticate to AWS.
-    if: ${{ always() && !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
+    if: ${{ !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
     steps:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1

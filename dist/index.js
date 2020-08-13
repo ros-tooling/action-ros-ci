@@ -3354,7 +3354,7 @@ function run() {
             };
             const curlFlags = curlFlagsArray.join(" ");
             for (let vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
-                yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`, "", options);
+                yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`, undefined, options);
             }
             // If the package under tests is part of ros.repos, remove it first.
             // We do not want to allow the "default" head state of the package to
@@ -3384,16 +3384,16 @@ function run() {
     url: 'https://${tokenAuth}github.com/${repoFullName}.git'
     version: '${commitRef}'`;
             fs_1.default.writeFileSync(repoFilePath, repoFileContent);
-            yield execBashCommand("vcs import --force --recursive src/ < package.repo", "", options);
+            yield execBashCommand("vcs import --force --recursive src/ < package.repo", undefined, options);
             // Remove all repositories the package under test does not depend on, to
             // avoid having rosdep installing unrequired dependencies.
-            yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, "", options);
+            yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, undefined, options);
             // Install ROS dependencies for each distribution being sourced
             if (targetRos1Distro) {
-                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos1Distro} -y || true`, "", options);
+                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos1Distro} -y || true`, undefined, options);
             }
             if (targetRos2Distro) {
-                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos2Distro} -y || true`, "", options);
+                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos2Distro} -y || true`, undefined, options);
             }
             if (colconMixinName !== "" && colconMixinRepo !== "") {
                 yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
