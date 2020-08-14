@@ -96,6 +96,7 @@ steps:
   with:
     package-name: my_package
     target-ros1-distro: melodic
+    vcs-repo-file-url: ""
 ```
 
 ### Enable Address Sanitizer to automatically report memory issues
