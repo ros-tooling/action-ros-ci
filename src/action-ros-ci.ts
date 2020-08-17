@@ -321,7 +321,7 @@ async function run() {
 		if (!isWindows) {
 			colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
 		}
-		await execBashCommand(colconBuildCmd, colconCommandPrefix, options);
+		await execBashCommand(colconBuildCmd, colconCommandPrefix, options, colconCommandPrefix);
 
 		// ignoreReturnCode is set to true to avoid having a lack of coverage
 		// data fail the build.
