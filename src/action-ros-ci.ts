@@ -305,11 +305,14 @@ async function run() {
 				}
 			}
 		} else if (isWindows) {
+                        console.log("is windows");
                         // Windows only supports ROS2
                         if (targetRos2Distro) {
                                 const ros2SetupPath = `c:/dev/${targetRos2Distro}/setup.sh`;
+                                console.log(ros2SetupPath);
                                 if (fs.existsSync(ros2SetupPath)) {
                                         colconCommandPrefix += `call ${ros2SetupPath} && `;
+                                        console.log(colconCommandPrefix);
                                 }
                         }
                 }
