@@ -3436,14 +3436,11 @@ function run() {
                     }
                 }
             }
-            else if (isWindows) {
-                console.log("is windows");
+            if (isWindows) {
                 // Windows only supports ROS2
                 if (targetRos2Distro) {
-                    const ros2SetupPath = "C:\\dev\\${targetRos2Distro}\\setup.sh";
-                    if (fs_1.default.existsSync(ros2SetupPath)) {
-                        colconCommandPrefix += `call ${ros2SetupPath} && `;
-                    }
+                    const ros2SetupPath = `C:\\dev\\${targetRos2Distro}\\setup.sh`;
+                    colconCommandPrefix += `call ${ros2SetupPath} && `;
                 }
             }
             let colconBuildCmd = `colcon build --event-handlers console_cohesion+ \
@@ -3453,7 +3450,7 @@ function run() {
             if (!isWindows) {
                 colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
             }
-            yield execBashCommand(colconBuildCmd, colconCommandPrefix, options, colconCommandPrefix);
+            yield execBashCommand(colconBuildCmd, colconCommandPrefix, options);
             // ignoreReturnCode is set to true to avoid having a lack of coverage
             // data fail the build.
             const colconLcovInitialCmd = "colcon lcov-result --initial";
