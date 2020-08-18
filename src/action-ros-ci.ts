@@ -304,13 +304,13 @@ async function run() {
 					colconCommandPrefix += `source ${ros2SetupPath} && `;
 				}
 			}
-		}
-
-                if (isWindows) {
+		} else if (isWindows) {
                         // Windows only supports ROS2
                         if (targetRos2Distro) {
-                                const ros2SetupPath = `c:/dev/${targetRos2Distro}/setup.bat`;
-                                colconCommandPrefix += `${ros2SetupPath} && `;
+                                const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
+				if (fs.existsSync(ros2SetupPath)) {
+                                        colconCommandPrefix += `${ros2SetupPath} && `;
+                                }
                         }
                 }
 		
