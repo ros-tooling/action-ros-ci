@@ -307,7 +307,7 @@ async function run() {
 		} else if (isWindows) {
                         // Windows only supports ROS2
                         if (targetRos2Distro) {
-                                const ros2SetupPath = `C:\\dev\\${targetRos2Distro}\\local_setup.bat`;
+                                const ros2SetupPath = `c:/dev/${targetRos2Distro}/setup.sh`;
                                 if (fs.existsSync(ros2SetupPath)) {
                                         colconCommandPrefix += `call ${ros2SetupPath} && `;
                                 }
