@@ -3440,7 +3440,7 @@ function run() {
                 // Windows only supports ROS2
                 if (targetRos2Distro) {
                     const ros2SetupPath = `C:\\dev\\${targetRos2Distro}\\setup.sh`;
-                    colconCommandPrefix += `call ${ros2SetupPath} && `;
+                    colconCommandPrefix += `${ros2SetupPath} && `;
                 }
             }
             let colconBuildCmd = `colcon build --event-handlers console_cohesion+ \
