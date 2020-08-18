@@ -309,7 +309,7 @@ async function run() {
                 if (isWindows) {
                         // Windows only supports ROS2
                         if (targetRos2Distro) {
-                                const ros2SetupPath = `C:\\dev\\${targetRos2Distro}\\setup.sh`;
+                                const ros2SetupPath = `c:/dev/${targetRos2Distro}/setup.sh`;
                                 colconCommandPrefix += `${ros2SetupPath} && `;
                         }
                 }
