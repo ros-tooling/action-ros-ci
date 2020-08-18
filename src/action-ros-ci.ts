@@ -306,13 +306,13 @@ async function run() {
 			}
 		} else if (isWindows) {
                         // Windows only supports ROS2
-			if (targetRos2Distro) {
-                                const ros2SetupPath = `C:\dev\${targetRos2Distro}\local_setup.bat`;
-				if (fs.existsSync(ros2SetupPath)) {
-					colconCommandPrefix += `call ${ros2SetupPath} && `;
-				}
-			}
-		}
+                        if (targetRos2Distro) {
+                                const ros2SetupPath = `C:\\dev\\${targetRos2Distro}\\local_setup.bat`;
+                                if (fs.existsSync(ros2SetupPath)) {
+                                        colconCommandPrefix += `call ${ros2SetupPath} && `;
+                                }
+                        }
+                }
 		
 		let colconBuildCmd = `colcon build --event-handlers console_cohesion+ \
 			--packages-up-to ${packageNameList.join(" ")} \
@@ -321,7 +321,7 @@ async function run() {
 		if (!isWindows) {
 			colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
 		}
-		await execBashCommand(colconBuildCmd, colconCommandPrefix, options, colconCommandPrefix);
+		await execBashCommand(colconBuildCmd, colconCommandPrefix, options);
 
 		// ignoreReturnCode is set to true to avoid having a lack of coverage
 		// data fail the build.
