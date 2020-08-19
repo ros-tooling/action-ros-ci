@@ -169,7 +169,7 @@ async function run() {
 		// rosdep does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
 		if (!isWindows) {
-			await execBashCommand("rosdep update");
+                      await execBashCommand("rosdep update");
 		}
 
 		// Reset colcon configuration.
@@ -304,8 +304,16 @@ async function run() {
 					colconCommandPrefix += `source ${ros2SetupPath} && `;
 				}
 			}
-		}
-
+		} else if (isWindows) {
+                        // Windows only supports ROS2
+                        if (targetRos2Distro) {
+                                const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
+				  if (fs.existsSync(ros2SetupPath)) {
+                                        colconCommandPrefix += `${ros2SetupPath} && `;
+                                }
+                        }
+                }
+		
 		let colconBuildCmd = `colcon build --event-handlers console_cohesion+ \
 			--packages-up-to ${packageNameList.join(" ")} \
 			${extra_options.join(" ")} \

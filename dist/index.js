@@ -3436,6 +3436,15 @@ function run() {
                     }
                 }
             }
+            else if (isWindows) {
+                // Windows only supports ROS2
+                if (targetRos2Distro) {
+                    const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
+                    if (fs_1.default.existsSync(ros2SetupPath)) {
+                        colconCommandPrefix += `${ros2SetupPath} && `;
+                    }
+                }
+            }
             let colconBuildCmd = `colcon build --event-handlers console_cohesion+ \
 			--packages-up-to ${packageNameList.join(" ")} \
 			${extra_options.join(" ")} \
