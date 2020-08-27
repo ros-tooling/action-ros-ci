@@ -157,6 +157,7 @@ async function run() {
 		const packageName = core.getInput("package-name", { required: true });
 		const packageNameList = packageName.split(RegExp("\\s"));
 		const rosWorkspaceName = "ros_ws";
+		core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
 		const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
 		const targetRos1Distro = core.getInput(targetROS1DistroInput);
 		const targetRos2Distro = core.getInput(targetROS2DistroInput);
