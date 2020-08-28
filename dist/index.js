@@ -1931,10 +1931,13 @@ function run() {
                     }
                 }
             }
-            let colconBuildCmd = `colcon build --event-handlers console_cohesion+ \
-			--packages-up-to ${packageNameList.join(" ")} \
-			${extra_options.join(" ")} \
-			--cmake-args ${extraCmakeArgs}`;
+            let colconBuildCmd = [
+                `colcon build`,
+                `--event-handlers console_cohesion+`,
+                `--packages-up-to ${packageNameList.join(" ")}`,
+                `${extra_options.join(" ")}`,
+                `--cmake-args ${extraCmakeArgs}`,
+            ].join(" ");
             if (!isWindows) {
                 colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
             }
@@ -1946,21 +1949,29 @@ function run() {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true,
             });
-            const colconTestCmd = `colcon test --event-handlers console_cohesion+ \
-			--pytest-with-coverage --return-code-on-test-failure \
-			--packages-select ${packageNameList.join(" ")} \
-			${extra_options.join(" ")}`;
+            const colconTestCmd = [
+                `colcon test`,
+                `--event-handlers console_cohesion+`,
+                `--pytest-with-coverage`,
+                `--return-code-on-test-failure`,
+                `--packages-select ${packageNameList.join(" ")}`,
+                `${extra_options.join(" ")}`,
+            ].join(" ");
             yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
             // ignoreReturnCode, check comment above in --initial
-            const colconLcovResultCmd = `colcon lcov-result \
-	             --filter ${coverageIgnorePattern} \
-	             --packages-select ${packageNameList.join(" ")}`;
+            const colconLcovResultCmd = [
+                `colcon lcov-result`,
+                `--filter ${coverageIgnorePattern}`,
+                `--packages-select ${packageNameList.join(" ")}`,
+            ].join(" ");
             yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true,
             });
-            const colconCoveragepyResultCmd = `colcon coveragepy-result \
-				--packages-select ${packageNameList.join(" ")}`;
+            const colconCoveragepyResultCmd = [
+                `colcon coveragepy-result`,
+                `--packages-select ${packageNameList.join(" ")}`,
+            ].join(" ");
             yield execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
         }
         catch (error) {

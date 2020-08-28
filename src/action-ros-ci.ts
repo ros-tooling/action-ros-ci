@@ -119,17 +119,26 @@ export async function execBashCommand(
 }
 
 //Determine whether all inputs name supported ROS distributions.
-export function validateDistros(ros1Distro: string, ros2Distro: string): boolean {
+export function validateDistros(
+	ros1Distro: string,
+	ros2Distro: string
+): boolean {
 	if (!ros1Distro && !ros2Distro) {
-		core.setFailed(`Neither '${targetROS1DistroInput}' or '${targetROS2DistroInput}' inputs were set, at least one is required.`);
+		core.setFailed(
+			`Neither '${targetROS1DistroInput}' or '${targetROS2DistroInput}' inputs were set, at least one is required.`
+		);
 		return false;
 	}
 	if (ros1Distro && validROS1Distros.indexOf(ros1Distro) <= -1) {
-		core.setFailed(`Input ${ros1Distro} was not a valid ROS 1 distribution for '${targetROS1DistroInput}'. Valid values: ${validROS1Distros}`);
+		core.setFailed(
+			`Input ${ros1Distro} was not a valid ROS 1 distribution for '${targetROS1DistroInput}'. Valid values: ${validROS1Distros}`
+		);
 		return false;
 	}
 	if (ros2Distro && validROS2Distros.indexOf(ros2Distro) <= -1) {
-		core.setFailed(`Input ${ros2Distro} was not a valid ROS 2 distribution for '${targetROS2DistroInput}'. Valid values: ${validROS2Distros}`);
+		core.setFailed(
+			`Input ${ros2Distro} was not a valid ROS 2 distribution for '${targetROS2DistroInput}'. Valid values: ${validROS2Distros}`
+		);
 		return false;
 	}
 	return true;
@@ -170,7 +179,7 @@ async function run() {
 		// rosdep does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
 		if (!isWindows) {
-                      await execBashCommand("rosdep update");
+			await execBashCommand("rosdep update");
 		}
 
 		// Reset colcon configuration.
@@ -200,10 +209,9 @@ async function run() {
 		// We do not want to allow the "default" head state of the package to
 		// to be present in the workspace, and colcon will fail stating it found twice
 		// a package with an identical name.
-		const posixRosWorkspaceDir =
-			isWindows
-				? rosWorkspaceDir.replace(/\\/g, "/")
-				: rosWorkspaceDir;
+		const posixRosWorkspaceDir = isWindows
+			? rosWorkspaceDir.replace(/\\/g, "/")
+			: rosWorkspaceDir;
 		await execBashCommand(
 			`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`
 		);
@@ -261,9 +269,7 @@ async function run() {
 		}
 
 		if (colconMixinName !== "" && colconMixinRepo !== "") {
-			await execBashCommand(
-				`colcon mixin add default '${colconMixinRepo}'`
-			);
+			await execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
 			await execBashCommand("colcon mixin update default");
 		}
 
@@ -306,19 +312,22 @@ async function run() {
 				}
 			}
 		} else if (isWindows) {
-                        // Windows only supports ROS2
-                        if (targetRos2Distro) {
-                                const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
-				  if (fs.existsSync(ros2SetupPath)) {
-                                        colconCommandPrefix += `${ros2SetupPath} && `;
-                                }
-                        }
-                }
-		
-		let colconBuildCmd = `colcon build --event-handlers console_cohesion+ \
-			--packages-up-to ${packageNameList.join(" ")} \
-			${extra_options.join(" ")} \
-			--cmake-args ${extraCmakeArgs}`;
+			// Windows only supports ROS2
+			if (targetRos2Distro) {
+				const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
+				if (fs.existsSync(ros2SetupPath)) {
+					colconCommandPrefix += `${ros2SetupPath} && `;
+				}
+			}
+		}
+
+		let colconBuildCmd = [
+			`colcon build`,
+			`--event-handlers console_cohesion+`,
+			`--packages-up-to ${packageNameList.join(" ")}`,
+			`${extra_options.join(" ")}`,
+			`--cmake-args ${extraCmakeArgs}`,
+		].join(" ");
 		if (!isWindows) {
 			colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
 		}
@@ -332,24 +341,36 @@ async function run() {
 			ignoreReturnCode: true,
 		});
 
-		const colconTestCmd = `colcon test --event-handlers console_cohesion+ \
-			--pytest-with-coverage --return-code-on-test-failure \
-			--packages-select ${packageNameList.join(" ")} \
-			${extra_options.join(" ")}`;
+		const colconTestCmd = [
+			`colcon test`,
+			`--event-handlers console_cohesion+`,
+			`--pytest-with-coverage`,
+			`--return-code-on-test-failure`,
+			`--packages-select ${packageNameList.join(" ")}`,
+			`${extra_options.join(" ")}`,
+		].join(" ");
 		await execBashCommand(colconTestCmd, colconCommandPrefix, options);
 
 		// ignoreReturnCode, check comment above in --initial
-		const colconLcovResultCmd = `colcon lcov-result \
-	             --filter ${coverageIgnorePattern} \
-	             --packages-select ${packageNameList.join(" ")}`;
+		const colconLcovResultCmd = [
+			`colcon lcov-result`,
+			`--filter ${coverageIgnorePattern}`,
+			`--packages-select ${packageNameList.join(" ")}`,
+		].join(" ");
 		await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
 			cwd: rosWorkspaceDir,
 			ignoreReturnCode: true,
 		});
 
-		const colconCoveragepyResultCmd = `colcon coveragepy-result \
-				--packages-select ${packageNameList.join(" ")}`;
-		await execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
+		const colconCoveragepyResultCmd = [
+			`colcon coveragepy-result`,
+			`--packages-select ${packageNameList.join(" ")}`,
+		].join(" ");
+		await execBashCommand(
+			colconCoveragepyResultCmd,
+			colconCommandPrefix,
+			options
+		);
 
 		core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
 	} catch (error) {
