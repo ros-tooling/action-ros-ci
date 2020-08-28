@@ -85,25 +85,17 @@ export async function execBashCommand(
 	let toolRunnerCommandLine = "";
 	let toolRunnerCommandLineArgs: string[] = [];
 	if (isWindows) {
-		toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
-		// This passes the same flags to cmd.exe that "run:" in a workflow.
-		// https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
-		// Except for /D, which disables the AutoRun functionality from command prompt
-		// and it blocks Python virtual environment activation if one configures it in
-		// the previous steps.
-		toolRunnerCommandLineArgs = [
-			"/E:ON",
-			"/V:OFF",
-			"/S",
-			"/C",
-			"call",
-			"%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat",
-			"amd64",
-			"&",
-			"C:\\Program Files\\Git\\bin\\bash.exe",
-			"-c",
-			bashScript,
-		];
+		const which_msbuild = await io.which("msbuild");
+		if (!which_msbuild) {
+			//todo: mutate instead of copy
+			options = options || {};
+			options.env = options.env || {};
+			options.env.PATH =
+				(options.env.PATH + ";" || "") +
+				"%programfiles(x86)%Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin";
+		}
+		toolRunnerCommandLine = "C:\\Program Files\\Git\\bin\\bash.exe";
+		toolRunnerCommandLineArgs = ["-c", bashScript];
 	} else {
 		toolRunnerCommandLine = "bash";
 		toolRunnerCommandLineArgs = ["-c", bashScript];
