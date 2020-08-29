@@ -199,7 +199,7 @@ async function run() {
 		const curlFlags = curlFlagsArray.join(" ");
 		for (let vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
 			await execBashCommand(
-				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`,
+				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive --shallow src/`,
 				undefined,
 				options
 			);
