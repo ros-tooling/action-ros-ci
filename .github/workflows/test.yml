@@ -62,7 +62,7 @@ jobs:
       name: "Check that roscpp_tutorials install directory is present"
 
   test_ros2:
-    name: "Test ROS 2 package"
+    name: "Test ROS 2"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -92,7 +92,7 @@ jobs:
       if: matrix.os != 'windows-latest'
 
   test_ros2_foxy_package_with_dependencies:
-    name: "Test ROS2 foxy package with ROS dependencies"
+    name: "Test ROS 2 foxy package with ROS dependencies"
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -107,7 +107,7 @@ jobs:
 
 
   test_ros2_docker:
-    name: "Test ROS 2 package"
+    name: "ROS 2 Docker"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -167,7 +167,7 @@ jobs:
     - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
 
   test_ros2_from_source:
-    name: "Test ROS 2 package from source"
+    name: "ROS 2 from source"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -268,7 +268,7 @@ jobs:
       name: "Check that the additional extra flags has been correctly passed"
 
   test_ros2_from_source_docker:
-    name: "Test ROS 2 package"
+    name: "Test ROS 2 from source Docker"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
