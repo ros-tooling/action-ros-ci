@@ -53,7 +53,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run pre-commit && git add dist/index.js"
+      "pre-commit": "npm run pre-commit"
     }
   }
 }

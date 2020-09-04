@@ -1,6 +1,7 @@
 name: "Test action-ros-ci"
 on:
   pull_request:
+    paths: ['.github/**', 'dist/**']
   push:
     branches:
       - master

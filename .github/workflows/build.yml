@@ -1,0 +1,23 @@
+name: "Build"
+on: push
+jobs:
+  test_ros:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+    - run: |
+        npm ci
+        npm run build
+    - run: |
+        git checkout --detach
+        git config user.email "ros-tooling@users.noreply.github.com"
+        git config user.name "ROS Tooling [bot]"
+        git add --force dist 
+        git commit --no-verify -m "$commitmsg" --only dist
+        git push origin --no-verify HEAD:refs/tags/build/${{github.sha}}
+      env:
+        commitmsg: "Autobuild\n\nGitHub-Workflow: ${{ github.workflow }}"
