@@ -1,0 +1,4 @@
+# prettier currently does not respect .gitignore
+# and ignores can't be configured in package.json
+/coverage/
+/dist/

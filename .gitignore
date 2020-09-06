@@ -1,6 +1,7 @@
 __tests__/runner/*
 
 node_modules/
+dist
 
 # Rest pulled from https://github.com/github/gitignore/blob/master/Node.gitignore
 # Logs
@@ -13,6 +14,8 @@ lerna-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+package-lock.json.[0-9]*
 
 # Runtime data
 pids

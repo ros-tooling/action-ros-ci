@@ -1,59 +1,92 @@
 {
-  "name": "action-ros-ci",
-  "version": "0.0.18",
-  "description": "GitHub Action compiling and testing a ROS 2 package",
-  "main": "lib/main.js",
-  "scripts": {
-    "build": "ncc build src/action-ros-ci.ts -o dist",
-    "lint": "eslint src/action-ros-ci.ts",
-    "prettier": "prettier --write 'src/action-ros-ci.ts'",
-    "test": "tsc --noEmit && jest --coverage",
-    "pre-commit": "npm run test && npm run lint && npm run build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ros-tooling/action-ros-ci.git"
-  },
-  "keywords": [
-    "actions",
-    "ros",
-    "ci"
-  ],
-  "author": "ROS 2 Tooling Working Group",
-  "license": "Apache-2.0",
-  "licenses": [
-    {
-      "type": "Apache-2.0",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0"
-    }
-  ],
-  "bugs": {
-    "url": "https://github.com/ros-tooling/action-ros-ci/issues"
-  },
-  "dependencies": {
-    "@actions/core": "^1.2.5",
-    "@actions/exec": "^1.0.4",
-    "@actions/github": "^4.0.0",
-    "@actions/io": "^1.0.1"
-  },
-  "devDependencies": {
-    "@types/jest": "^26.0.13",
-    "@types/node": "^14.6.4",
-    "@typescript-eslint/eslint-plugin": "^2.34.0",
-    "@typescript-eslint/parser": "^2.34.0",
-    "@zeit/ncc": "^0.22.3",
-    "acorn": "^7.4.0",
-    "eslint": "^6.5.1",
-    "husky": "^4.2.5",
-    "jest": "^25.5.4",
-    "jest-circus": "^26.4.2",
-    "prettier": "2.1.1",
-    "ts-jest": "^25.5.1",
-    "typescript": "^3.9.7"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run pre-commit && git add dist/index.js"
-    }
-  }
+	"name": "action-ros-ci",
+	"version": "0.0.18",
+	"description": "GitHub Action compiling and testing a ROS 2 package",
+	"main": "src/action-ros-ci.ts",
+	"scripts": {
+		"build": "ncc build",
+		"lint": "eslint .",
+		"test": "jest --coverage",
+		"fixup": "eslint --fix . --ignore-path .gitignore && prettier --write . --ignore-path .gitignore"
+	},
+	"script-shell": "bash",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ros-tooling/action-ros-ci.git"
+	},
+	"keywords": [
+		"actions",
+		"ros",
+		"ci"
+	],
+	"author": "ROS 2 Tooling Working Group",
+	"license": "Apache-2.0",
+	"licenses": [
+		{
+			"type": "Apache-2.0",
+			"url": "http://www.apache.org/licenses/LICENSE-2.0"
+		}
+	],
+	"bugs": {
+		"url": "https://github.com/ros-tooling/action-ros-ci/issues"
+	},
+	"dependencies": {
+		"@actions/core": "^1.2.5",
+		"@actions/exec": "^1.0.4",
+		"@actions/github": "^4.0.0",
+		"@actions/io": "^1.0.1"
+	},
+	"devDependencies": {
+		"@tsconfig/node12": "^1.0.7",
+		"@types/jest": "^26.0.10",
+		"@types/node": "^14.6.1",
+		"@typescript-eslint/eslint-plugin": "^2.34.0",
+		"@typescript-eslint/parser": "^2.34.0",
+		"@zeit/ncc": "^0.22.3",
+		"acorn": "^7.4.0",
+		"eslint": "^6.5.1",
+		"eslint-config-prettier": "^6.11.0",
+		"husky": "^4.2.5",
+		"jest": "^25.5.4",
+		"jest-circus": "^26.4.2",
+		"prettier": "2.1.1",
+		"ts-jest": "^25.5.1",
+		"typescript": "^3.9.7"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "git stash push -k -u && npm run fixup"
+		}
+	},
+	"eslintConfig": {
+		"env": {
+			"commonjs": true,
+			"es6": true,
+			"node": true
+		},
+		"extends": [
+			"eslint:recommended",
+			"plugin:@typescript-eslint/eslint-recommended",
+			"prettier"
+		],
+		"globals": {
+			"Atomics": "readonly",
+			"SharedArrayBuffer": "readonly"
+		},
+		"parser": "@typescript-eslint/parser",
+		"parserOptions": {
+			"ecmaVersion": 2019,
+			"sourceType": "module"
+		},
+		"plugins": [
+			"@typescript-eslint"
+		],
+		"rules": {}
+	},
+	"prettier": {
+		"singleQuote": false,
+		"semi": true,
+		"tabWidth": 2,
+		"useTabs": true
+	}
 }
