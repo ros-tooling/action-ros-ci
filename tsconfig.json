@@ -1,7 +1,6 @@
 {
 	"extends": "@tsconfig/node12/tsconfig.json",
 	"compilerOptions": {
-		"noImplicitAny": false,
 		"outDir": "lib"
 	},
 	"files": ["src/action-ros-ci.ts"]
