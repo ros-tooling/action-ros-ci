@@ -6,8 +6,7 @@
 	"scripts": {
 		"build": "ncc build",
 		"lint": "eslint .",
-		"test": "jest --coverage",
-		"fixup": "eslint --fix . --ignore-path .gitignore && prettier --write . --ignore-path .gitignore"
+		"test": "jest --coverage"
 	},
 	"script-shell": "bash",
 	"repository": {
@@ -49,13 +48,14 @@
 		"husky": "^4.2.5",
 		"jest": "^25.5.4",
 		"jest-circus": "^26.4.2",
+		"lint-staged": "^10.3.0",
 		"prettier": "2.1.1",
 		"ts-jest": "^25.5.1",
 		"typescript": "^3.9.7"
 	},
 	"husky": {
 		"hooks": {
-			"pre-commit": "git stash push -k -u && npm run fixup"
+			"pre-commit": "lint-staged"
 		}
 	},
 	"eslintConfig": {
@@ -88,5 +88,9 @@
 		"semi": true,
 		"tabWidth": 2,
 		"useTabs": true
+	},
+	"lint-staged": {
+		"*.ts": "eslint --cache --fix",
+		"*": "prettier --write"
 	}
 }
