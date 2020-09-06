@@ -40,8 +40,8 @@ const curlFlagsArray = [
 
 const validROS1Distros: string[] = ["kinetic", "lunar", "melodic", "noetic"];
 const validROS2Distros: string[] = ["dashing", "eloquent", "foxy", "rolling"];
-const targetROS1DistroInput: string = "target-ros1-distro";
-const targetROS2DistroInput: string = "target-ros2-distro";
+const targetROS1DistroInput = "target-ros1-distro";
+const targetROS2DistroInput = "target-ros2-distro";
 const isLinux: boolean = process.platform == "linux";
 const isWindows: boolean = process.platform == "win32";
 
@@ -69,18 +69,18 @@ function resolveVcsRepoFileUrl(vcsRepoFileUrl: string): string {
  * @param   commandLine     command to execute (can include additional args). Must be correctly escaped.
  * @param   commandPrefix    optional string used to prefix the command to be executed.
  * @param   options         optional exec options.  See ExecOptions
- * @param   log_message     log group title.
+ * @param   logMessage     log group title.
  * @returns Promise<number> exit code
  */
 export async function execBashCommand(
 	commandLine: string,
 	commandPrefix?: string,
 	options?: im.ExecOptions,
-	log_message?: string
+	logMessage?: string
 ): Promise<number> {
 	commandPrefix = commandPrefix || "";
 	const bashScript = `${commandPrefix}${commandLine}`;
-	const message = log_message || `Invoking "bash -c '${bashScript}'`;
+	const message = logMessage || `Invoking "bash -c '${bashScript}'`;
 
 	let toolRunnerCommandLine = "";
 	let toolRunnerCommandLineArgs: string[] = [];
@@ -144,7 +144,7 @@ export function validateDistros(
 	return true;
 }
 
-async function run() {
+async function run(): Promise<void> {
 	try {
 		const repo = github.context.repo;
 		const workspace = process.env.GITHUB_WORKSPACE as string;
@@ -197,7 +197,7 @@ async function run() {
 		};
 
 		const curlFlags = curlFlagsArray.join(" ");
-		for (let vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
+		for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
 			await execBashCommand(
 				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`,
 				undefined,
@@ -273,12 +273,12 @@ async function run() {
 			await execBashCommand("colcon mixin update default");
 		}
 
-		let extra_options: string[] = [];
+		let extraOptions: string[] = [];
 		if (colconMixinName !== "") {
-			extra_options = extra_options.concat(["--mixin", colconMixinName]);
+			extraOptions = extraOptions.concat(["--mixin", colconMixinName]);
 		}
 		if (colconExtraArgs !== "") {
-			extra_options = extra_options.concat(colconExtraArgs);
+			extraOptions = extraOptions.concat(colconExtraArgs);
 		}
 
 		// Add the future install bin directory to PATH.
@@ -325,7 +325,7 @@ async function run() {
 			`colcon build`,
 			`--event-handlers console_cohesion+`,
 			`--packages-up-to ${packageNameList.join(" ")}`,
-			`${extra_options.join(" ")}`,
+			`${extraOptions.join(" ")}`,
 			`--cmake-args ${extraCmakeArgs}`,
 		].join(" ");
 		if (!isWindows) {
@@ -347,7 +347,7 @@ async function run() {
 			`--pytest-with-coverage`,
 			`--return-code-on-test-failure`,
 			`--packages-select ${packageNameList.join(" ")}`,
-			`${extra_options.join(" ")}`,
+			`${extraOptions.join(" ")}`,
 		].join(" ");
 		await execBashCommand(colconTestCmd, colconCommandPrefix, options);
 
