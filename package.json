@@ -42,7 +42,7 @@
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "@zeit/ncc": "^0.22.3",
-    "acorn": "^7.4.0",
+    "acorn": "^8.0.1",
     "eslint": "^6.5.1",
     "husky": "^4.3.0",
     "jest": "^25.5.4",
