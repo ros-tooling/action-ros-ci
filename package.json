@@ -7,8 +7,7 @@
 		"build": "ncc build src/action-ros-ci.ts -o dist",
 		"fixup": "eslint . --fix --ignore-path .lintignore && prettier . --write --ignore-path .lintignore",
 		"lint": "eslint src/action-ros-ci.ts",
-		"test": "tsc --noEmit && jest --coverage",
-		"pre-commit": "npm run test && npm run lint && npm run build"
+		"test": "tsc --noEmit && jest --coverage"
 	},
 	"repository": {
 		"type": "git",
@@ -47,13 +46,14 @@
 		"husky": "^4.3.0",
 		"jest": "^25.5.4",
 		"jest-circus": "^26.4.2",
+		"lint-staged": "^10.3.0",
 		"prettier": "2.1.1",
 		"ts-jest": "^25.5.1",
 		"typescript": "^3.9.7"
 	},
 	"husky": {
 		"hooks": {
-			"pre-commit": "npm run pre-commit && git add dist/index.js"
+			"pre-commit": "lint-staged"
 		}
 	}
 }
