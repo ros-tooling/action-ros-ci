@@ -1,71 +1,71 @@
-name: 'ROS 2 CI Action'
-description: 'Run ROS 2 package test in CI using Github Actions.'
-author: 'ROS Tooling Working Group'
+name: "ROS 2 CI Action"
+description: "Run ROS 2 package test in CI using Github Actions."
+author: "ROS Tooling Working Group"
 branding:
-  icon: 'activity'
-  color: 'gray-dark'
+  icon: "activity"
+  color: "gray-dark"
 inputs:
   colcon-mixin-name:
-    default: ''
-    description: 'Colcon mixin to be used to compile and test (empty means no mixin)'
+    default: ""
+    description: "Colcon mixin to be used to compile and test (empty means no mixin)"
     required: false
   colcon-mixin-repository:
-    default: 'https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml'
-    description: 'Mixin repository containing the mixin specified in colcon-mixin-name'
+    default: "https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml"
+    description: "Mixin repository containing the mixin specified in colcon-mixin-name"
     required: false
   coverage-ignore-pattern:
     description: |
-        Ignore all files matching this pattern in the coverage report.
-        It will be injected in colcon-lcov-result --filter option.
-        Useful for ignoring tests or examples in the coverage report.
+      Ignore all files matching this pattern in the coverage report.
+      It will be injected in colcon-lcov-result --filter option.
+      Useful for ignoring tests or examples in the coverage report.
   extra-cmake-args:
-    default: ''
+    default: ""
     description: |
-        Additional flags passed to CMake (using colcon build --cmake-args)
+      Additional flags passed to CMake (using colcon build --cmake-args)
     required: false
   colcon-extra-args:
-    default: ''
+    default: ""
     description: |
-        Arbitrary space-separated additional flags to pass to colcon.
+      Arbitrary space-separated additional flags to pass to colcon.
     required: false
   import-token:
-    default: ''
+    default: ""
     description: |
-        GitHub personal access token (PAT) to use to import the repository.
-        Useful if the repo is private.
-        The PAT should have the "repo" scope.
+      GitHub personal access token (PAT) to use to import the repository.
+      Useful if the repo is private.
+      The PAT should have the "repo" scope.
     required: false
   package-name:
     description: |
-        Name of the package(s) under test, as expected by colcon.
-        Passing multiple package names is allowed.
-        Package names can be separated by any whitespace character.
+      Name of the package(s) under test, as expected by colcon.
+      Passing multiple package names is allowed.
+      Package names can be separated by any whitespace character.
     required: true
   target-ros1-distro:
     description: |
-        ROS 1 distribution to target for the build.  Will be used both for
-        `rosdep install` and `source setup.bash`. Either or both of
-        `target-ros1-distro` and `target-ros2-distro`, but at least one must
-        be specified. Typically, both are specified when building packages
-        that rely on both ROS versions, such as the ros1_bridge.
+      ROS 1 distribution to target for the build.  Will be used both for
+      `rosdep install` and `source setup.bash`. Either or both of
+      `target-ros1-distro` and `target-ros2-distro`, but at least one must
+      be specified. Typically, both are specified when building packages
+      that rely on both ROS versions, such as the ros1_bridge.
     required: false
   target-ros2-distro:
     description: |
-        ROS 2 distribution to target for the build.  Will be used both for
-        `rosdep install` and `source setup.bash`. Either or both of
-        `target-ros1-distro` and `target-ros2-distro`, but at least one must
-        be specified. Typically, both are specified when building packages
-        that rely on both ROS versions, such as the ros1_bridge.
+      ROS 2 distribution to target for the build.  Will be used both for
+      `rosdep install` and `source setup.bash`. Either or both of
+      `target-ros1-distro` and `target-ros2-distro`, but at least one must
+      be specified. Typically, both are specified when building packages
+      that rely on both ROS versions, such as the ros1_bridge.
     required: false
   vcs-repo-file-url:
     description: |
-        repo file URL passed to vcs to initialize the colcon workspace.
-        The URL may point to a local file, such as file://path/to/file.txt
+      repo file URL passed to vcs to initialize the colcon workspace.
+      The URL may point to a local file, such as file://path/to/file.txt
     default: "https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos"
 outputs:
   ros-workspace-directory-name:
     description: |
-        root directory name of the ROS workspace created for this CI code.
+      root directory name of the ROS workspace created for this CI code.
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: "node12"
+  main: "dist/index.js"
