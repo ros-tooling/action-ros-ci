@@ -2,7 +2,7 @@
   "name": "action-ros-ci",
   "version": "0.0.18",
   "description": "GitHub Action compiling and testing a ROS 2 package",
-  "main": "lib/main.js",
+  "main": "dist/main.js",
   "scripts": {
     "build": "ncc build src/action-ros-ci.ts -o dist",
     "lint": "eslint src/action-ros-ci.ts",
@@ -26,6 +26,9 @@
       "type": "Apache-2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0"
     }
+  ],
+  "files": [
+    "action.yml"
   ],
   "bugs": {
     "url": "https://github.com/ros-tooling/action-ros-ci/issues"

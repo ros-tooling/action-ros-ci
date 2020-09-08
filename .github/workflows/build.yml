@@ -11,9 +11,13 @@ jobs:
         node-version: '12.x'
     - run: |
         npm ci
+        mkdir dist
         npm run build
+        cp package.json dist
+        cp action.yml dist
+        cp README.md dist
     - run: |
-        git checkout --detach
+        git checkout --orphan build_branch
         git config user.email "ros-tooling@users.noreply.github.com"
         git config user.name "ROS Tooling [bot]"
         git add --force dist 
