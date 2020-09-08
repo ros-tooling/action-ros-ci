@@ -11,17 +11,42 @@ jobs:
         node-version: '12.x'
     - run: |
         npm ci
-        mkdir dist
         npm run build
-        cp package.json dist
-        cp action.yml dist
-        cp README.md dist
-    - run: |
-        git checkout --orphan build_branch
         git config user.email "ros-tooling@users.noreply.github.com"
         git config user.name "ROS Tooling [bot]"
-        git add --force dist 
-        git commit --no-verify -m "$commitmsg" --only dist
-        git push origin --no-verify HEAD:refs/tags/build/${{github.sha}}
+    - name: Upload build as orphan ref
+      run: |
+        git checkout --orphan build_branch
+        git add --force dist/index.js action.yml package.json README.md
+        git commit --no-verify -m "$commitmsg"
+        git push origin --no-verify HEAD:refs/tags/staging1/${{github.sha}}
       env:
         commitmsg: "Autobuild\n\nGitHub-Workflow: ${{ github.workflow }}"
+    - name: Upload build as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: build
+        path: |
+            dist/index.js
+            action.yml
+            package.json
+            README.md
+    - name: Upload build as release
+      uses: actions/create-release@v1
+      id: release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: autobuild for ${{github.sha}}
+        draft: true
+    - name: npm pack
+      id: npm-pack
+      run: echo ::set-output name=file::$(npm pack)
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.release.outputs.upload_url }}
+        asset_path: ${{ steps.npm-pack.outputs.file }}
