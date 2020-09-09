@@ -50,3 +50,4 @@ jobs:
       with:
         upload_url: ${{ steps.release.outputs.upload_url }}
         asset_path: ${{ steps.npm-pack.outputs.file }}
+        asset_name: packed.zip
