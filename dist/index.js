@@ -10595,7 +10595,7 @@ function run() {
             const posixRosWorkspaceDir = isWindows
                 ? rosWorkspaceDir.replace(/\\/g, "/")
                 : rosWorkspaceDir;
-            yield execBashCommand(`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`);
+            yield execBashCommand(`vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$" | xargs rm -rf`);
             // The repo file for the repository needs to be generated on-the-fly to
             // incorporate the custom repository URL and branch name, when a PR is
             // being built.

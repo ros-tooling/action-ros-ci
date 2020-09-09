@@ -213,7 +213,7 @@ async function run() {
 			? rosWorkspaceDir.replace(/\\/g, "/")
 			: rosWorkspaceDir;
 		await execBashCommand(
-			`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`
+			`vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$" | xargs rm -rf`
 		);
 
 		// The repo file for the repository needs to be generated on-the-fly to
