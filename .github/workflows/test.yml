@@ -391,6 +391,16 @@ jobs:
       - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
         name: "Check that the additional extra flags has been correctly passed"
 
+    - uses: ./
+      id: test_directories_with_same_name_as_repo
+      name: "Test that directories with the same name as this repository are not removed"
+      with:
+        package-name: ament_copyright
+        target-ros2-distro: ${{ matrix.ros_distribution }}
+        vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_dirs_with_same_name_as_repo.repos"
+    - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/action-ros-ci/foo"
+    - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/foo/action-ros-ci/bar"
+
   log_workflow_status_to_cloudwatch:
     runs-on: ubuntu-latest
     container:
