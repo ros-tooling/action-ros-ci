@@ -2,8 +2,7 @@ name: Auto merge
 
 on:
   pull_request:
-    branches:
-      master
+    branches: master
   pull_request_review:
     types:
       - submitted
