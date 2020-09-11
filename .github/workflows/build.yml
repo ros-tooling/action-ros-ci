@@ -1,0 +1,54 @@
+name: "Build"
+on: push
+jobs:
+  test_ros:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+    - run: |
+        npm ci
+        npm run build
+        git config user.email "ros-tooling@users.noreply.github.com"
+        git config user.name "ROS Tooling [bot]"
+    - name: Upload build as orphan ref
+      run: |
+        git checkout --orphan build_branch
+        git add --force dist/index.js action.yml package.json README.md
+        git commit --no-verify -m "$commitmsg"
+        git push origin --no-verify HEAD:refs/tags/staging1/${{github.sha}}
+      env:
+        commitmsg: "Autobuild\n\nGitHub-Workflow: ${{ github.workflow }}"
+    - name: Upload build as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: build
+        path: |
+            dist/index.js
+            action.yml
+            package.json
+            README.md
+    - name: Upload build as release
+      uses: actions/create-release@v1
+      id: release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: autobuild for ${{github.sha}}
+        draft: true
+    - name: npm pack
+      id: npm-pack
+      run: echo ::set-output name=file::$(npm pack)
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.release.outputs.upload_url }}
+        asset_path: ${{ steps.npm-pack.outputs.file }}
+        asset_name: packed.zip
+        asset_content_type: application/zip

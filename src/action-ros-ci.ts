@@ -80,7 +80,7 @@ export async function execBashCommand(
 ): Promise<number> {
 	commandPrefix = commandPrefix || "";
 	const bashScript = `${commandPrefix}${commandLine}`;
-	const message = log_message || `Invoking "bash -c '${bashScript}'`;
+	const message = log_message || `Invoking  "bash -c '${bashScript}'`;
 
 	let toolRunnerCommandLine = "";
 	let toolRunnerCommandLineArgs: string[] = [];
@@ -199,7 +199,7 @@ async function run() {
 		const curlFlags = curlFlagsArray.join(" ");
 		for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
 			await execBashCommand(
-				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`,
+				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import   --force --recursive src/`,
 				undefined,
 				options
 			);
@@ -237,7 +237,7 @@ async function run() {
     version: '${commitRef}'`;
 		fs.writeFileSync(repoFilePath, repoFileContent);
 		await execBashCommand(
-			"vcs import --force --recursive src/ < package.repo",
+			"vcs import --force --recursive src/ <  package.repo",
 			undefined,
 			options
 		);

@@ -1,6 +1,9 @@
 __tests__/runner/*
-
 node_modules/
+
+# Although we *do* expect dist to get updated, there's no need for the user to commit it.
+# We can do that with the github "build" workflow.
+/dist/
 
 # Rest pulled from https://github.com/github/gitignore/blob/master/Node.gitignore
 # Logs
