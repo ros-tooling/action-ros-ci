@@ -1,0 +1,14 @@
+name: 'build-and-test'
+runs:
+  using: "composite"
+  steps:
+  - run: |
+      npm install -g codecov
+      npm ci
+      npm run build
+      npm test
+    shell: bash
+  # Upload code coverage to CodeCov, but do not fail the CI if CodeCov upload
+  # fails as the service is sometimes flaky.
+  - run: codecov -f ./coverage/coverage-final.json || true
+    shell: bash

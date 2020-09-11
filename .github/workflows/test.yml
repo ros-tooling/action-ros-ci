@@ -48,7 +48,7 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-    - run: .github/workflows/build-and-test.sh
+    - uses: ./.github/actions/build-and-test
     - uses: ros-tooling/setup-ros@0.0.25
       with:
         required-ros-distributions: ${{ matrix.ros_distribution }}
@@ -74,7 +74,7 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-    - run: .github/workflows/build-and-test.sh
+    - uses: ./.github/actions/build-and-test
     - uses: ros-tooling/setup-ros@0.0.25
       with:
         required-ros-distributions: ${{ matrix.ros_distribution }}
@@ -104,7 +104,6 @@ jobs:
           package-name: rmw
           target-ros2-distro: foxy
           vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
-
 
   test_ros2_docker:
     name: "ROS 2 Docker"
@@ -141,7 +140,7 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-    - run: .github/workflows/build-and-test.sh
+    - uses: ./.github/actions/build-and-test
     - uses: ros-tooling/setup-ros@0.0.25
       with:
         required-ros-distributions: ${{ matrix.ros_distribution }}
@@ -174,12 +173,33 @@ jobs:
       matrix:
           os: [macOS-latest, windows-latest, ubuntu-20.04]
           ros_distribution: [foxy, rolling]
+          shell: [bash, pwsh, sh, powershell, cmd]
+          vs-version: [null, 14, 15, 16]
+          exclude:
+            - {os: windows-latest, shell: sh}
+            - {os: macOS-latest, shell: powershell}
+            - {os: macOS-latest, shell: cmd}
+            - {os: macOS-latest, vs-version: 14}
+            - {os: macOS-latest, vs-version: 15}
+            - {os: macOS-latest, vs-version: 16}
+            - {os: ubuntu-20.04, shell: powershell}
+            - {os: ubuntu-20.04, shell: cmd}
+            - {os: ubuntu-20.04, vs-version: 14}
+            - {os: ubuntu-20.04, vs-version: 15}
+            - {os: ubuntu-20.04, vs-version: 16}
+    defaults:
+      run:
+        shell: ${{matrix.shell}}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-    - run: .github/workflows/build-and-test.sh
+    - if: matrix.vs-version
+      uses: microsoft/setup-msbuild@v1
+      with:
+        vs-version: ${{ matrix.vs-version }}
+    - uses: ./.github/actions/build-and-test
     - uses: ros-tooling/setup-ros@0.0.25
     - uses: ./
       id: test_single_package
@@ -300,7 +320,7 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-    - run: .github/workflows/build-and-test.sh
+    - uses: ./.github/actions/build-and-test
     - uses: ros-tooling/setup-ros@0.0.25
       with:
         required-ros-distributions: ${{ matrix.ros_distribution }}
