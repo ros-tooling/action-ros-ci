@@ -42,7 +42,7 @@
 		"@typescript-eslint/parser": "^4.1.1",
 		"@vercel/ncc": "^0.24.1",
 		"acorn": "^8.0.1",
-		"eslint": "^7.8.1",
+		"eslint": "^7.9.0",
 		"husky": "^4.3.0",
 		"jest": "^26.4.2",
 		"jest-circus": "^26.4.2",
