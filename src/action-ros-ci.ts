@@ -213,7 +213,7 @@ async function run() {
 			? rosWorkspaceDir.replace(/\\/g, "/")
 			: rosWorkspaceDir;
 		await execBashCommand(
-			`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`
+			`vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$" | xargs rm -rf`
 		);
 
 		// The repo file for the repository needs to be generated on-the-fly to
@@ -230,8 +230,10 @@ async function run() {
 		const headRef = process.env.GITHUB_HEAD_REF as string;
 		const commitRef = headRef || github.context.sha;
 		const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
+		// Add a random string prefix to avoid naming collisions when checking out the test repository
+		const randomStringPrefix = Math.random().toString(36).substring(2, 15);
 		const repoFileContent = `repositories:
-  ${repo["repo"]}:
+  ${randomStringPrefix}/${repo["repo"]}:
     type: git
     url: 'https://${tokenAuth}github.com/${repoFullName}.git'
     version: '${commitRef}'`;

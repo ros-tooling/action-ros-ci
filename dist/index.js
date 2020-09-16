@@ -10595,7 +10595,7 @@ function run() {
             const posixRosWorkspaceDir = isWindows
                 ? rosWorkspaceDir.replace(/\\/g, "/")
                 : rosWorkspaceDir;
-            yield execBashCommand(`find "${posixRosWorkspaceDir}" -type d -and -name "${repo["repo"]}" | xargs rm -rf`);
+            yield execBashCommand(`vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$" | xargs rm -rf`);
             // The repo file for the repository needs to be generated on-the-fly to
             // incorporate the custom repository URL and branch name, when a PR is
             // being built.
@@ -10610,8 +10610,10 @@ function run() {
             const headRef = process.env.GITHUB_HEAD_REF;
             const commitRef = headRef || github.context.sha;
             const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
+            // Add a random string prefix to avoid naming collisions when checking out the test repository
+            const randomStringPrefix = Math.random().toString(36).substring(2, 15);
             const repoFileContent = `repositories:
-  ${repo["repo"]}:
+  ${randomStringPrefix}/${repo["repo"]}:
     type: git
     url: 'https://${tokenAuth}github.com/${repoFullName}.git'
     version: '${commitRef}'`;
