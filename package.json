@@ -44,7 +44,7 @@
 		"acorn": "^8.0.4",
 		"eslint": "^7.10.0",
 		"husky": "^4.3.0",
-		"jest": "^26.4.2",
+		"jest": "^26.5.0",
 		"jest-circus": "^26.4.2",
 		"lint-staged": "^10.4.0",
 		"prettier": "2.1.2",
