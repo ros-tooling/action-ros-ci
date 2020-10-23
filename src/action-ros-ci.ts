@@ -144,6 +144,27 @@ export function validateDistros(
 	return true;
 }
 
+export function getRos2ReposURL(ros2Distro, whichRos2Repos) {
+	if (!whichRos2Repos) return null;
+	if (!ros2Distro) return null;
+
+	const VALID_WHICH_REPOS = ["develop", "release"];
+	let branch: string;
+	if (ros2Distro == "rolling") {
+		branch = "master";
+	} else if (whichRos2Repos == "develop") {
+		branch = ros2Distro;
+	} else if (whichRos2Repos == "release") {
+		branch = ros2Distro + "-release";
+	} else {
+		throw new Error(
+			`Input which-ros2-repos had unexpected value '${whichRos2Repos}'. Valid values: ${VALID_WHICH_REPOS}`
+		);
+	}
+
+	return `https://raw.githubusercontent.com/ros2/ros2/${branch}/ros2.repos`;
+}
+
 async function run() {
 	try {
 		const repo = github.context.repo;
@@ -161,16 +182,9 @@ async function run() {
 		const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
 		const targetRos1Distro = core.getInput(targetROS1DistroInput);
 		const targetRos2Distro = core.getInput(targetROS2DistroInput);
-		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
-		const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
-		const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(
-			(x) => x != ""
-		);
-		const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) =>
-			resolveVcsRepoFileUrl(x)
-		);
-
+		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url");
 		const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
+		const whichRos2Repos = core.getInput("which-ros2-repos");
 
 		if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
 			return;
@@ -180,6 +194,21 @@ async function run() {
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
 		if (!isWindows) {
 			await execBashCommand("rosdep update");
+		}
+
+		const vcsRepoFileUrlListResolved: string[] = [];
+
+		const default_repos = getRos2ReposURL(targetRos2Distro, whichRos2Repos);
+		if (default_repos) {
+			vcsRepoFileUrlListResolved.push(default_repos);
+		}
+
+		for (const x of vcsRepoFileUrlListAsString.split(RegExp("\\s"))) {
+			if (!x) {
+				continue;
+			}
+			const url = resolveVcsRepoFileUrl(x);
+			vcsRepoFileUrlListResolved.push(url);
 		}
 
 		// Reset colcon configuration.

@@ -16,6 +16,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const os = __importStar(__webpack_require__(2087));
+const utils_1 = __webpack_require__(5278);
 /**
  * Commands
  *
@@ -69,28 +70,14 @@ class Command {
         return cmdStr;
     }
 }
-/**
- * Sanitizes an input into a string so it can be passed into issueCommand safely
- * @param input input to sanitize into a string
- */
-function toCommandValue(input) {
-    if (input === null || input === undefined) {
-        return '';
-    }
-    else if (typeof input === 'string' || input instanceof String) {
-        return input;
-    }
-    return JSON.stringify(input);
-}
-exports.toCommandValue = toCommandValue;
 function escapeData(s) {
-    return toCommandValue(s)
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A');
 }
 function escapeProperty(s) {
-    return toCommandValue(s)
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A')
@@ -124,6 +111,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const command_1 = __webpack_require__(7351);
+const file_command_1 = __webpack_require__(717);
+const utils_1 = __webpack_require__(5278);
 const os = __importStar(__webpack_require__(2087));
 const path = __importStar(__webpack_require__(5622));
 /**
@@ -150,9 +139,17 @@ var ExitCode;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function exportVariable(name, val) {
-    const convertedVal = command_1.toCommandValue(val);
+    const convertedVal = utils_1.toCommandValue(val);
     process.env[name] = convertedVal;
-    command_1.issueCommand('set-env', { name }, convertedVal);
+    const filePath = process.env['GITHUB_ENV'] || '';
+    if (filePath) {
+        const delimiter = '_GitHubActionsFileCommandDelimeter_';
+        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
+        file_command_1.issueCommand('ENV', commandValue);
+    }
+    else {
+        command_1.issueCommand('set-env', { name }, convertedVal);
+    }
 }
 exports.exportVariable = exportVariable;
 /**
@@ -168,7 +165,13 @@ exports.setSecret = setSecret;
  * @param inputPath
  */
 function addPath(inputPath) {
-    command_1.issueCommand('add-path', {}, inputPath);
+    const filePath = process.env['GITHUB_PATH'] || '';
+    if (filePath) {
+        file_command_1.issueCommand('PATH', inputPath);
+    }
+    else {
+        command_1.issueCommand('add-path', {}, inputPath);
+    }
     process.env['PATH'] = `${inputPath}${path.delimiter}${process.env['PATH']}`;
 }
 exports.addPath = addPath;
@@ -327,6 +330,68 @@ function getState(name) {
 }
 exports.getState = getState;
 //# sourceMappingURL=core.js.map
+
+/***/ }),
+
+/***/ 717:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+// For internal use, subject to change.
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const fs = __importStar(__webpack_require__(5747));
+const os = __importStar(__webpack_require__(2087));
+const utils_1 = __webpack_require__(5278);
+function issueCommand(command, message) {
+    const filePath = process.env[`GITHUB_${command}`];
+    if (!filePath) {
+        throw new Error(`Unable to find environment variable for file command ${command}`);
+    }
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`Missing file at path: ${filePath}`);
+    }
+    fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+        encoding: 'utf8'
+    });
+}
+exports.issueCommand = issueCommand;
+//# sourceMappingURL=file-command.js.map
+
+/***/ }),
+
+/***/ 5278:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+/**
+ * Sanitizes an input into a string so it can be passed into issueCommand safely
+ * @param input input to sanitize into a string
+ */
+function toCommandValue(input) {
+    if (input === null || input === undefined) {
+        return '';
+    }
+    else if (typeof input === 'string' || input instanceof String) {
+        return input;
+    }
+    return JSON.stringify(input);
+}
+exports.toCommandValue = toCommandValue;
+//# sourceMappingURL=utils.js.map
 
 /***/ }),
 
@@ -10420,7 +10485,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.validateDistros = exports.execBashCommand = void 0;
+exports.getRos2ReposURL = exports.validateDistros = exports.execBashCommand = void 0;
 const core = __importStar(__webpack_require__(2186));
 const github = __importStar(__webpack_require__(5438));
 const tr = __importStar(__webpack_require__(8159));
@@ -10544,6 +10609,28 @@ function validateDistros(ros1Distro, ros2Distro) {
     return true;
 }
 exports.validateDistros = validateDistros;
+function getRos2ReposURL(ros2Distro, whichRos2Repos) {
+    if (!whichRos2Repos)
+        return null;
+    if (!ros2Distro)
+        return null;
+    const VALID_WHICH_REPOS = ["develop", "release"];
+    let branch;
+    if (ros2Distro == "rolling") {
+        branch = "master";
+    }
+    else if (whichRos2Repos == "develop") {
+        branch = ros2Distro;
+    }
+    else if (whichRos2Repos == "release") {
+        branch = ros2Distro + "-release";
+    }
+    else {
+        throw new Error(`Input which-ros2-repos had unexpected value '${whichRos2Repos}'. Valid values: ${VALID_WHICH_REPOS}`);
+    }
+    return `https://raw.githubusercontent.com/ros2/ros2/${branch}/ros2.repos`;
+}
+exports.getRos2ReposURL = getRos2ReposURL;
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -10561,11 +10648,9 @@ function run() {
             const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
             const targetRos1Distro = core.getInput(targetROS1DistroInput);
             const targetRos2Distro = core.getInput(targetROS2DistroInput);
-            const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
-            const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
-            const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
-            const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) => resolveVcsRepoFileUrl(x));
+            const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url");
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
+            const whichRos2Repos = core.getInput("which-ros2-repos");
             if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
                 return;
             }
@@ -10573,6 +10658,18 @@ function run() {
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
             if (!isWindows) {
                 yield execBashCommand("rosdep update");
+            }
+            const vcsRepoFileUrlListResolved = [];
+            const default_repos = getRos2ReposURL(targetRos2Distro, whichRos2Repos);
+            if (default_repos) {
+                vcsRepoFileUrlListResolved.push(default_repos);
+            }
+            for (const x of vcsRepoFileUrlListAsString.split(RegExp("\\s"))) {
+                if (!x) {
+                    continue;
+                }
+                const url = resolveVcsRepoFileUrl(x);
+                vcsRepoFileUrlListResolved.push(url);
             }
             // Reset colcon configuration.
             yield io.rmRF(path.join(os.homedir(), ".colcon"));

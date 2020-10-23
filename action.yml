@@ -60,8 +60,16 @@ inputs:
   vcs-repo-file-url:
     description: |
       repo file URL passed to vcs to initialize the colcon workspace.
-      The URL may point to a local file, such as file://path/to/file.txt
-    default: "https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos"
+      The URL may point to a local file, such as file://path/to/file.txt.
+    default: null
+  which-ros2-repos:
+    description: |
+      Each ROS distribution has 
+      Which repos file to pull distro ros2 packages from. One of:
+      "" (no default repos file),
+      "develop" (possibly immature packages),
+      "release" (source code of released packages)
+    default: "develop"
 outputs:
   ros-workspace-directory-name:
     description: |
