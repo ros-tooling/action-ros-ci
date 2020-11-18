@@ -56,7 +56,7 @@ See [action.yml](action.yml) to get the list of flags supported by this action.
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@0.0.25
-  - uses: ros-tooling/action-ros-ci@0.0.18
+  - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       package-name: ament_copyright
       target-ros2-distro: foxy
@@ -76,7 +76,7 @@ steps:
       rosinstall_generator <package-name> --rosdistro <target-distro> \
       --deps-only --deps --upstream-development > /tmp/deps.repos
   # Pass the file to the action
-  - uses: ros-tooling/action-ros-ci@0.0.18
+  - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -93,7 +93,7 @@ steps:
   - uses: ros-tooling/setup-ros@0.0.25
     with:
       required-ros-distributions: melodic
-  - uses: ros-tooling/action-ros-ci@0.0.18
+  - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       package-name: my_package
       target-ros1-distro: melodic
@@ -108,7 +108,7 @@ memory corruption bugs.
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@0.0.25
-  - uses: ros-tooling/action-ros-ci@0.0.18
+  - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       colcon-mixin-name: asan
       colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/3e627e0fa30db85aea05a50e2c61a9832664d236/index.yaml
@@ -138,7 +138,7 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@0.0.25
-  - uses: ros-tooling/action-ros-ci@0.0.18
+  - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -160,7 +160,7 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@0.0.25
-  - uses: ros-tooling/action-ros-ci@0.0.18
+  - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -180,7 +180,7 @@ See [action/codecov-action](https://github.com/codecov/codecov-action) documenta
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@0.0.25
-  - uses: ros-tooling/action-ros-ci@0.0.18
+  - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -210,7 +210,7 @@ The configuration file is required to let codecov map the workspace directory st
 GitHub workflows can persist data generated in workers during the build using [artifacts](persisting-workflow-data-using-artifacts). `action-ros-ci` generated colcon logs can be saved as follows:
 
 ```yaml
-- uses: ros-tooling/action-ros-ci@0.0.18
+- uses: ros-tooling/action-ros-ci@0.1.0
   id: action_ros_ci_step
   with:
     package-name: ament_copyright
@@ -229,7 +229,7 @@ Generate a [personal access token](https://github.com/settings/tokens) with the 
 For example, if your secret is called `REPO_TOKEN`:
 
 ```yaml
-- uses: ros-tooling/action-ros-ci@0.0.18
+- uses: ros-tooling/action-ros-ci@0.1.0
   with:
     package-name: my_package
     import-token: ${{ secrets.REPO_TOKEN }}
