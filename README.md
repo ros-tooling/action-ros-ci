@@ -55,7 +55,7 @@ See [action.yml](action.yml) to get the list of flags supported by this action.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@0.0.25
+  - uses: ros-tooling/setup-ros@0.0.26
   - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       package-name: ament_copyright
@@ -70,7 +70,7 @@ You can also automatically generate your package's dependencies using the follow
 ```yaml
 steps:
   - uses: actions/checkout@v2
-  - uses: ros-tooling/setup-ros@0.0.25
+  - uses: ros-tooling/setup-ros@0.0.26
   # Run the generator and output the results to a file.
   - run: |
       rosinstall_generator <package-name> --rosdistro <target-distro> \
@@ -90,7 +90,7 @@ This tool supports building for both ROS and ROS 2 - to target ROS use `target-r
 ```yaml
 steps:
   - uses: actions/checkout@v2
-  - uses: ros-tooling/setup-ros@0.0.25
+  - uses: ros-tooling/setup-ros@0.0.26
     with:
       required-ros-distributions: melodic
   - uses: ros-tooling/action-ros-ci@0.1.0
@@ -107,7 +107,7 @@ memory corruption bugs.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@0.0.25
+  - uses: ros-tooling/setup-ros@0.0.26
   - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       colcon-mixin-name: asan
@@ -137,7 +137,7 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@0.0.25
+  - uses: ros-tooling/setup-ros@0.0.26
   - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       package-name: my_package
@@ -159,7 +159,7 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@0.0.25
+  - uses: ros-tooling/setup-ros@0.0.26
   - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       package-name: my_package
@@ -179,7 +179,7 @@ See [action/codecov-action](https://github.com/codecov/codecov-action) documenta
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@0.0.25
+  - uses: ros-tooling/setup-ros@0.0.26
   - uses: ros-tooling/action-ros-ci@0.1.0
     with:
       package-name: my_package
