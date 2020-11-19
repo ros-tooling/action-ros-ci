@@ -10718,7 +10718,7 @@ function run() {
             //
             // ament_cmake should handle this automatically, but we are seeing cases
             // where this does not happen. See issue #26 for relevant CI logs.
-            core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
+            // core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
             // Source any installed ROS distributions if they are present
             let colconCommandPrefix = "";
             if (isLinux) {
