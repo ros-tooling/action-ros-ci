@@ -49,7 +49,7 @@ jobs:
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@0.1.0
+      - uses: ros-tooling/setup-ros@emersonknapp/upgrade-pip-before-install-dependencies
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - uses: ./
