@@ -5,6 +5,10 @@
 
 This action builds and tests a [ROS](http://wiki.ros.org/), or [ROS 2](https://index.ros.org/doc/ros2/) workspace from source.
 
+## Developing
+
+For developing and releasing `action-ros-ci`, see DEVELOPING.md
+
 ## Requirements
 
 This action requires the following ROS development tools to be installed (and initialized if applicable) on the CI worker instance:
@@ -55,8 +59,8 @@ See [action.yml](action.yml) to get the list of flags supported by this action.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@0.1.0
-  - uses: ros-tooling/action-ros-ci@0.1.0
+  - uses: ros-tooling/setup-ros@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.1
     with:
       package-name: ament_copyright
       target-ros2-distro: foxy
@@ -70,13 +74,13 @@ You can also automatically generate your package's dependencies using the follow
 ```yaml
 steps:
   - uses: actions/checkout@v2
-  - uses: ros-tooling/setup-ros@0.1.0
+  - uses: ros-tooling/setup-ros@v0.1
   # Run the generator and output the results to a file.
   - run: |
       rosinstall_generator <package-name> --rosdistro <target-distro> \
       --deps-only --deps --upstream-development > /tmp/deps.repos
   # Pass the file to the action
-  - uses: ros-tooling/action-ros-ci@0.1.0
+  - uses: ros-tooling/action-ros-ci@v0.1
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -90,10 +94,10 @@ This tool supports building for both ROS and ROS 2 - to target ROS use `target-r
 ```yaml
 steps:
   - uses: actions/checkout@v2
-  - uses: ros-tooling/setup-ros@0.1.0
+  - uses: ros-tooling/setup-ros@v0.1
     with:
       required-ros-distributions: melodic
-  - uses: ros-tooling/action-ros-ci@0.1.0
+  - uses: ros-tooling/action-ros-ci@v0.1
     with:
       package-name: my_package
       target-ros1-distro: melodic
@@ -107,8 +111,8 @@ memory corruption bugs.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@0.1.0
-  - uses: ros-tooling/action-ros-ci@0.1.0
+  - uses: ros-tooling/setup-ros@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.1
     with:
       colcon-mixin-name: asan
       colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/3e627e0fa30db85aea05a50e2c61a9832664d236/index.yaml
@@ -137,8 +141,8 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@0.1.0
-  - uses: ros-tooling/action-ros-ci@0.1.0
+  - uses: ros-tooling/setup-ros@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.1
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -159,8 +163,8 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@0.1.0
-  - uses: ros-tooling/action-ros-ci@0.1.0
+  - uses: ros-tooling/setup-ros@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.1
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -179,8 +183,8 @@ See [action/codecov-action](https://github.com/codecov/codecov-action) documenta
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@0.1.0
-  - uses: ros-tooling/action-ros-ci@0.1.0
+  - uses: ros-tooling/setup-ros@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.1
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -210,7 +214,7 @@ The configuration file is required to let codecov map the workspace directory st
 GitHub workflows can persist data generated in workers during the build using [artifacts](persisting-workflow-data-using-artifacts). `action-ros-ci` generated colcon logs can be saved as follows:
 
 ```yaml
-- uses: ros-tooling/action-ros-ci@0.1.0
+- uses: ros-tooling/action-ros-ci@v0.1
   id: action_ros_ci_step
   with:
     package-name: ament_copyright
@@ -229,7 +233,7 @@ Generate a [personal access token](https://github.com/settings/tokens) with the 
 For example, if your secret is called `REPO_TOKEN`:
 
 ```yaml
-- uses: ros-tooling/action-ros-ci@0.1.0
+- uses: ros-tooling/action-ros-ci@v0.1
   with:
     package-name: my_package
     import-token: ${{ secrets.REPO_TOKEN }}
