@@ -8,8 +8,8 @@ jobs:
   # (see .dependabot/config.yml for more info).
   auto-approve-dependabot:
     runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]'
     steps:
       - uses: hmarr/auto-approve-action@v2.0.0
-        if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]'
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
