@@ -3,7 +3,7 @@
 [![GitHub Action Status](https://github.com/ros-tooling/action-ros-ci/workflows/Test%20action-ros-ci/badge.svg)](https://github.com/ros-tooling/action-ros-ci)
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ros-tooling/action-ros-ci)](https://dependabot.com)
 
-This action builds a [ROS, or ROS 2](https://index.ros.org/doc/ros/) workspace from source, and run colon-test on the package under test.
+This action builds and tests a [ROS](http://wiki.ros.org/), or [ROS 2](https://index.ros.org/doc/ros2/) workspace from source.
 
 ## Developing
 
