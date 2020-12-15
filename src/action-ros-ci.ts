@@ -343,6 +343,29 @@ async function run() {
 			ignoreReturnCode: true,
 		});
 
+    if (isLinux) {
+			if (targetRos1Distro) {
+				const ros1SetupPath = `${rosWorkspaceDir}/devel/setup.sh`;
+				if (fs.existsSync(ros1SetupPath)) {
+					colconCommandPrefix += `source ${ros1SetupPath} && `;
+				}
+			}
+			if (targetRos2Distro) {
+				const ros2SetupPath = `${rosWorkspaceDir}/install/setup.sh`;
+				if (fs.existsSync(ros2SetupPath)) {
+					colconCommandPrefix += `source ${ros2SetupPath} && `;
+				}
+			}
+		} else if (isWindows) {
+			// Windows only supports ROS2
+			if (targetRos2Distro) {
+				const ros2SetupPath = `${rosWorkspaceDir}/install/setup.bat`;
+				if (fs.existsSync(ros2SetupPath)) {
+					colconCommandPrefix += `${ros2SetupPath} && `;
+				}
+			}
+    }
+    
 		const colconTestCmd = [
 			`colcon test`,
 			`--event-handlers console_cohesion+`,
