@@ -10762,15 +10762,41 @@ function run() {
                 cwd: rosWorkspaceDir,
                 ignoreReturnCode: true,
             });
+            
+            let colconTestCommandPrefix = colconCommandPrefix;
+            if (isLinux) {
+              if (targetRos1Distro) {
+                  const ros1SetupPath = `${rosWorkspaceDir}/setup.sh`;
+                  if (fs_1.default.existsSync(ros1SetupPath)) {
+                    colconTestCommandPrefix += `source ${ros1SetupPath} && `;
+                  }
+              }
+              if (targetRos2Distro) {
+                  const ros2SetupPath = `${rosWorkspaceDir}/setup.sh`;
+                  if (fs_1.default.existsSync(ros2SetupPath)) {
+                    colconTestCommandPrefix += `source ${ros2SetupPath} && `;
+                  }
+              }
+            }
+            else if (isWindows) {
+                // Windows only supports ROS2
+                if (targetRos2Distro) {
+                    const ros2SetupPath = `${rosWorkspaceDir}/setup.bat`;
+                    if (fs_1.default.existsSync(ros2SetupPath)) {
+                      colconTestCommandPrefix += `${ros2SetupPath} && `;
+                    }
+                }
+            }
+
             const colconTestCmd = [
-                `echo hola && colcon test`,
+                `colcon test`,
                 `--event-handlers console_cohesion+`,
                 `--pytest-with-coverage`,
                 `--return-code-on-test-failure`,
                 `--packages-select ${packageNameList.join(" ")}`,
                 `${extra_options.join(" ")}`,
             ].join(" ");
-            yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
+            yield execBashCommand(colconTestCmd, colconTestCommandPrefix, options);
             // ignoreReturnCode, check comment above in --initial
             const colconLcovResultCmd = [
                 `colcon lcov-result`,
