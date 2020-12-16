@@ -10767,16 +10767,16 @@ function run() {
             if (isLinux) {
               if (targetRos1Distro) {
                   const ros1SetupPath = `/opt/ros/${targetRos1Distro}/setup.sh`;
-                  const ros1SetupWsPath = `${rosWorkspaceName}/install/setup.sh`;
+                  const ros1SetupWsPath = `install/setup.sh`;
                   if (fs_1.default.existsSync(ros1SetupPath)) {
                     colconTestCommandPrefix += `source ${ros1SetupPath} && source ${ros1SetupWsPath} && `;
                   }
               }
               if (targetRos2Distro) {
                   const ros2SetupPath = `/opt/ros/${targetRos2Distro}/setup.sh`;
-                  const ros2SetupWsPath = `${rosWorkspaceName}/install/setup.sh`;
+                  const ros2SetupWsPath = `install/setup.sh`;
                   if (fs_1.default.existsSync(ros2SetupPath)) {
-                    colconTestCommandPrefix += `source ${ros2SetupPath} && source ${ros2SetupWsPath} && `;
+                    colconTestCommandPrefix += `ls && source ${ros2SetupPath} && source ${ros2SetupWsPath} && `;
                   }
               }
             }
@@ -10784,7 +10784,7 @@ function run() {
                 // Windows only supports ROS2
                 if (targetRos2Distro) {
                     const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
-                    const ros2SetupWsPath = `${rosWorkspaceName}/install/setup.bat`;
+                    const ros2SetupWsPath = `install/setup.bat`;
                     if (fs_1.default.existsSync(ros2SetupPath)) {
                       colconTestCommandPrefix += `${ros2SetupPath} && ${ros2SetupWsPath} && `;
                     }
