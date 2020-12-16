@@ -10789,7 +10789,7 @@ function run() {
             }
 
             const colconTestCmd = [
-                `colcon test`,
+                `${rosWorkspaceDir}/setup.sh && colcon test`,
                 `--event-handlers console_cohesion+`,
                 `--pytest-with-coverage`,
                 `--return-code-on-test-failure`,
