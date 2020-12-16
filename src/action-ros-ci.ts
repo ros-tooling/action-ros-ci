@@ -343,38 +343,42 @@ async function run() {
 			ignoreReturnCode: true,
 		});
 
+    let colconTestCommandPrefix = "";
     if (isLinux) {
 			if (targetRos1Distro) {
-				const ros1SetupPath = `${rosWorkspaceDir}/devel/setup.sh`;
+        const ros1SetupPath = `${rosWorkspaceDir}/devel/setup.sh`;
+        const ros1SetupWsPath = `devel/setup.sh`;
 				if (fs.existsSync(ros1SetupPath)) {
-					colconCommandPrefix += `source ${ros1SetupPath} && `;
+					colconCommandPrefix += `source ${ros1SetupPath} && source ${ros1SetupWsPath} && `;
 				}
 			}
 			if (targetRos2Distro) {
-				const ros2SetupPath = `${rosWorkspaceDir}/install/setup.sh`;
+        const ros2SetupPath = `${rosWorkspaceDir}/install/setup.sh`;
+        const ros2SetupWsPath = `install/setup.sh`;
 				if (fs.existsSync(ros2SetupPath)) {
-					colconCommandPrefix += `source ${ros2SetupPath} && `;
+					colconCommandPrefix += `source ${ros2SetupPath} && source ${ros2SetupWsPath} && `;
 				}
 			}
 		} else if (isWindows) {
 			// Windows only supports ROS2
 			if (targetRos2Distro) {
-				const ros2SetupPath = `${rosWorkspaceDir}/install/setup.bat`;
+        const ros2SetupPath = `${rosWorkspaceDir}/install/setup.bat`;
+        const ros2SetupWsPath = `install/setup.bat`;
 				if (fs.existsSync(ros2SetupPath)) {
-					colconCommandPrefix += `${ros2SetupPath} && `;
+					colconCommandPrefix += `${ros2SetupPath} && ${ros2SetupWsPath} && `;
 				}
 			}
     }
     
 		const colconTestCmd = [
-			`echo hola && colcon test`,
+			`colcon test`,
 			`--event-handlers console_cohesion+`,
 			`--pytest-with-coverage`,
 			`--return-code-on-test-failure`,
 			`--packages-select ${packageNameList.join(" ")}`,
 			`${extra_options.join(" ")}`,
 		].join(" ");
-		await execBashCommand(colconTestCmd, colconCommandPrefix, options);
+		await execBashCommand(colconTestCmd, colconTestCommandPrefix, options);
 
 		// ignoreReturnCode, check comment above in --initial
 		const colconLcovResultCmd = [

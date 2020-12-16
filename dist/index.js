@@ -10767,7 +10767,7 @@ function run() {
             if (isLinux) {
               if (targetRos1Distro) {
                   const ros1SetupPath = `/opt/ros/${targetRos1Distro}/setup.sh`;
-                  const ros1SetupWsPath = `install/setup.sh`;
+                  const ros1SetupWsPath = `devel/setup.sh`;
                   if (fs_1.default.existsSync(ros1SetupPath)) {
                     colconTestCommandPrefix += `source ${ros1SetupPath} && source ${ros1SetupWsPath} && `;
                   }
@@ -10776,7 +10776,7 @@ function run() {
                   const ros2SetupPath = `/opt/ros/${targetRos2Distro}/setup.sh`;
                   const ros2SetupWsPath = `install/setup.sh`;
                   if (fs_1.default.existsSync(ros2SetupPath)) {
-                    colconTestCommandPrefix += `ls && source ${ros2SetupPath} && source ${ros2SetupWsPath} && `;
+                    colconTestCommandPrefix += `source ${ros2SetupPath} && source ${ros2SetupWsPath} && `;
                   }
               }
             }
