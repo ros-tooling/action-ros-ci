@@ -26,6 +26,6 @@ Release process
     * `git push origin 0.1.4`
 1. Update or create the corresponding minor version tag. DON'T PUSH THIS YET
     * `git tag -f v0.1`
-1. Create a new release and publish it to the marketplace via https://github.com/ros-tooling/setup-ros/releases/new using the patch-level tag that you created
+1. Create a new release and publish it to the marketplace via https://github.com/ros-tooling/action-ros-ci/releases/new using the patch-level tag that you created
 1. Push the minor version tag now that the release is officially out. Users will get the new version automatically
     * `git push -f origin v0.1`
