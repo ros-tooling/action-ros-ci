@@ -10637,7 +10637,7 @@ function run() {
             // rosdep does not reliably work on Windows, see
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
             if (!isWindows) {
-                yield execBashCommand("rosdep update");
+                yield execBashCommand("rosdep update --include-eol-distros");
             }
             // Reset colcon configuration.
             yield io.rmRF(path.join(os.homedir(), ".colcon"));
