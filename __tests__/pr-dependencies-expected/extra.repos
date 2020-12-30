@@ -1,0 +1,9 @@
+repositories:
+  extra/0:
+    type: git
+    url: 'https://github.com/ros-tooling/action-ros-ci'
+    version: pull/490/merge
+  extra/1:
+    type: git
+    url: 'https://gitlab.com/ros-tracing/tracetools_analysis'
+    version: an/awesome-feature_branch2

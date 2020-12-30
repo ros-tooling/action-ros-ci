@@ -6,7 +6,8 @@ import * as io from "@actions/io";
 import * as os from "os";
 import * as path from "path";
 import fs from "fs";
-import retry from "async-retry"
+import retry from "async-retry";
+import * as dep from "./dependencies";
 
 // All command line flags passed to curl when invoked as a command.
 const curlFlagsArray = [
@@ -230,16 +231,66 @@ async function run() {
 		await io.rmRF(rosWorkspaceDir);
 
 		// Checkout ROS 2 from source and install ROS 2 system dependencies
-		await io.mkdirP(rosWorkspaceDir + "/src");
+		await io.mkdirP(path.join(rosWorkspaceDir, "src"));
+
+		// Download repos files into a specific directory
+		const reposFilesDir = path.join(rosWorkspaceDir, "repos-files");
+		await io.mkdirP(reposFilesDir);
+		const curlFlags = curlFlagsArray.join(" ");
+		const reposFiles: string[] = [];
+		for (const [
+			index,
+			vcsRepoFileUrl,
+		] of vcsRepoFileUrlListResolved.entries()) {
+			const reposFile = `${index}.repos`;
+			await execBashCommand(
+				`curl ${curlFlags} '${vcsRepoFileUrl}' --output ${reposFile}`,
+				undefined,
+				{ cwd: reposFilesDir }
+			);
+			reposFiles.push(path.join(reposFilesDir, reposFile));
+		}
 
 		const options = {
 			cwd: rosWorkspaceDir,
 		};
 
-		const curlFlags = curlFlagsArray.join(" ");
-		for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
+		// Process repos files and apply PR dependency changes
+		const prDependencies = dep.getPrDependencies(github.context.payload);
+		if (prDependencies.length === 0) {
+			await core.group("No PR dependencies", () => Promise.resolve());
+		} else {
+			await core.group("PR dependencies", () => {
+				for (const dependency of prDependencies) {
+					core.info("\t" + dep.getFullUrlFromDependency(dependency));
+				}
+				return Promise.resolve();
+			});
+			// Configure git to fetch/checkout PR & MR refs
 			await execBashCommand(
-				`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`,
+				"git config --global --add remote.origin.fetch '+refs/pull/*:refs/remotes/origin/pull/*' && " +
+					"git config --global --add remote.origin.fetch '+refs/merge-requests/*/head:refs/remotes/origin/merge-requests/*'",
+				undefined,
+				options
+			);
+			// Modify repos files
+			const extraReposFilePath = dep.replaceDependencyVersions(
+				reposFiles,
+				reposFilesDir,
+				prDependencies
+			);
+			if (extraReposFilePath) {
+				reposFiles.push(extraReposFilePath);
+			}
+		}
+
+		// Import repos
+		for (const reposFile of reposFiles) {
+			const posixReposFile = isWindows
+				? reposFile.replace(/\\/g, "/")
+				: reposFile;
+			await execBashCommand(
+				`vcs import --input ${posixReposFile} --force --recursive src/`,
 				undefined,
 				options
 			);

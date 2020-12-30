@@ -239,6 +239,28 @@ For example, if your secret is called `REPO_TOKEN`:
     import-token: ${{ secrets.REPO_TOKEN }}
 ```
 
+### Interdependent pull requests or merge requests
+
+This action allows declaring PR dependencies.
+For example, this may be useful when your PR depends on PRs/MRs/branches from other repos for it to work or be properly tested.
+
+Include links to PR dependencies in your PR's description using the following format:
+
+```
+action-ros-ci-dependency: https://github.com/user/some-repo/pull/123
+action-ros-ci-dependency: https://gitlab.com/user/some-repo/-/merge_requests/123
+action-ros-ci-dependency: https://github.com/user/some-repo/tree/some-branch
+action-ros-ci-dependency: https://gitlab.com/user/some-repo/-/tree/some-branch
+```
+
+If a given repo is in one of the repos files (see the [`vcs-repo-file-url` option](#Overview)), its `version` will be changed to point to the PR/MR/branch.
+If a given repo is not in any of the repos files, it will be added to a new file and cloned along with the other repos.
+This is useful if you usually rely on binary packages instead of building package dependencies from source every time.
+
+Both GitHub and GitLab links are supported.
+GitHub PRs are checked out using a `pull/$ID/merge` ref, i.e. PR source branch merged into target branch.
+GitLab MRs are checked out using a `merge-requests/$ID` ref, i.e. MR source branch *not* merged into target branch, which is equivalent to using the MR's source branch directly.
+
 ## License
 
 The scripts and documentation in this project are released under the [Apache 2](LICENSE) license.
