@@ -279,6 +279,9 @@ async function run() {
 			options
 		);
 
+		// Print HEAD commits of all repos
+		await execBashCommand("vcs log -l1 src/", undefined, options);
+
 		await installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
 
 		if (colconMixinName !== "" && colconMixinRepo !== "") {
