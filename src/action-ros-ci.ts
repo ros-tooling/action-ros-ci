@@ -80,7 +80,7 @@ export async function execBashCommand(
 ): Promise<number> {
 	commandPrefix = commandPrefix || "";
 	const bashScript = `${commandPrefix}${commandLine}`;
-	const message = log_message || `Invoking "bash -c '${bashScript}'`;
+	const message = log_message || `Invoking: bash -c '${bashScript}'`;
 
 	let toolRunnerCommandLine = "";
 	let toolRunnerCommandLineArgs: string[] = [];
