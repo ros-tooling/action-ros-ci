@@ -10557,7 +10557,7 @@ function execBashCommand(commandLine, commandPrefix, options, log_message) {
     return __awaiter(this, void 0, void 0, function* () {
         commandPrefix = commandPrefix || "";
         const bashScript = `${commandPrefix}${commandLine}`;
-        const message = log_message || `Invoking "bash -c '${bashScript}'`;
+        const message = log_message || `Invoking: bash -c '${bashScript}'`;
         let toolRunnerCommandLine = "";
         let toolRunnerCommandLineArgs = [];
         if (isWindows) {
