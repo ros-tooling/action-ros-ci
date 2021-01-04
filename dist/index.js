@@ -10556,7 +10556,8 @@ function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
 function execBashCommand(commandLine, commandPrefix, options, log_message) {
     return __awaiter(this, void 0, void 0, function* () {
         commandPrefix = commandPrefix || "";
-        const bashScript = `${commandPrefix} ${commandLine}`;
+        const bashScript = `${commandPrefix}${commandLine}`;
+        const message = log_message || `Invoking: bash -c '${bashScript}'`;
         let toolRunnerCommandLine = "";
         let toolRunnerCommandLineArgs = [];
         if (isWindows) {
@@ -10584,7 +10585,6 @@ function execBashCommand(commandLine, commandPrefix, options, log_message) {
             toolRunnerCommandLine = "bash";
             toolRunnerCommandLineArgs = ["-c", bashScript];
         }
-        const message = log_message || `Invoking: ${toolRunnerCommandLine} ${toolRunnerCommandLineArgs.join(" ")}`;
         const runner = new tr.ToolRunner(toolRunnerCommandLine, toolRunnerCommandLineArgs, options);
         return core.group(message, () => {
             return runner.exec();
@@ -10622,9 +10622,6 @@ function installRosdeps(upToPackages, workspaceDir, ros1Distro, ros2Distro) {
 		echo "Specify rosdistro name as single argument to this script"
 		exit 1
 	fi
-	pwd
-	ls
-	ls src
 	DISTRO=$1
 	package_paths=$(colcon list --paths-only --packages-up-to ${upToPackages})
 	# suppress errors from unresolved install keys to preserve backwards compatibility

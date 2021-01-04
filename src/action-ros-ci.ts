@@ -79,7 +79,9 @@ export async function execBashCommand(
 	log_message?: string
 ): Promise<number> {
 	commandPrefix = commandPrefix || "";
-	const bashScript = `${commandPrefix} ${commandLine}`;
+	const bashScript = `${commandPrefix}${commandLine}`;
+	const message = log_message || `Invoking: bash -c '${bashScript}'`;
+
 	let toolRunnerCommandLine = "";
 	let toolRunnerCommandLineArgs: string[] = [];
 	if (isWindows) {
@@ -106,8 +108,6 @@ export async function execBashCommand(
 		toolRunnerCommandLine = "bash";
 		toolRunnerCommandLineArgs = ["-c", bashScript];
 	}
-
-	const message = log_message || `Invoking: ${toolRunnerCommandLine} ${toolRunnerCommandLineArgs.join(" ")}`;
 	const runner: tr.ToolRunner = new tr.ToolRunner(
 		toolRunnerCommandLine,
 		toolRunnerCommandLineArgs,
@@ -161,9 +161,6 @@ async function installRosdeps(
 		echo "Specify rosdistro name as single argument to this script"
 		exit 1
 	fi
-	pwd
-	ls
-	ls src
 	DISTRO=$1
 	package_paths=$(colcon list --paths-only --packages-up-to ${upToPackages})
 	# suppress errors from unresolved install keys to preserve backwards compatibility
