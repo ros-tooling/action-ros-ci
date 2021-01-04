@@ -10609,6 +10609,37 @@ function validateDistros(ros1Distro, ros2Distro) {
     return true;
 }
 exports.validateDistros = validateDistros;
+/**
+  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
+  */
+function installRosdeps(upToPackages, workspaceDir, ros1Distro, ros2Distro) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const scriptName = "install_rosdeps.sh";
+        const scriptPath = path.join(workspaceDir, scriptName);
+        const scriptContent = `#!/bin/bash
+	set -euxo pipefail
+	if [ $# != 1 ]; then
+		echo "Specify rosdistro name as single argument to this script"
+		exit 1
+	fi
+	DISTRO=$1
+	package_paths=$(colcon list --paths-only --packages-up-to ${upToPackages})
+	# suppress errors from unresolved install keys to preserve backwards compatibility
+	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
+	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
+	DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths $package_paths --ignore-src --rosdistro $DISTRO -y || true`;
+        fs_1.default.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
+        let exitCode = 0;
+        const options = { cwd: workspaceDir };
+        if (ros1Distro) {
+            exitCode += yield execBashCommand(`./${scriptName} ${ros1Distro}`, "", options);
+        }
+        if (ros2Distro) {
+            exitCode += yield execBashCommand(`./${scriptName} ${ros2Distro}`, "", options);
+        }
+        return exitCode;
+    });
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -10619,8 +10650,7 @@ function run() {
             const extraCmakeArgs = core.getInput("extra-cmake-args");
             const colconExtraArgs = core.getInput("colcon-extra-args");
             const importToken = core.getInput("import-token");
-            const packageName = core.getInput("package-name", { required: true });
-            const packageNameList = packageName.split(RegExp("\\s"));
+            const packageNames = core.getInput("package-name", { required: true }).split(RegExp("\\s")).join(" ");
             const rosWorkspaceName = "ros_ws";
             core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
             const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
@@ -10684,16 +10714,7 @@ function run() {
     version: '${commitRef}'`;
             fs_1.default.writeFileSync(repoFilePath, repoFileContent);
             yield execBashCommand("vcs import --force --recursive src/ < package.repo", undefined, options);
-            // Remove all repositories the package under test does not depend on, to
-            // avoid having rosdep installing unrequired dependencies.
-            yield execBashCommand(`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(" ")} -p) | xargs rm -rf`, undefined, options);
-            // Install ROS dependencies for each distribution being sourced
-            if (targetRos1Distro) {
-                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos1Distro} -y || true`, undefined, options);
-            }
-            if (targetRos2Distro) {
-                yield execBashCommand(`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos2Distro} -y || true`, undefined, options);
-            }
+            yield installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
             if (colconMixinName !== "" && colconMixinRepo !== "") {
                 yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
                 yield execBashCommand("colcon mixin update default");
@@ -10747,7 +10768,7 @@ function run() {
             let colconBuildCmd = [
                 `colcon build`,
                 `--event-handlers console_cohesion+`,
-                `--packages-up-to ${packageNameList.join(" ")}`,
+                `--packages-up-to ${packageNames}`,
                 `${extra_options.join(" ")}`,
                 `--cmake-args ${extraCmakeArgs}`,
             ].join(" ");
@@ -10767,7 +10788,7 @@ function run() {
                 `--event-handlers console_cohesion+`,
                 `--pytest-with-coverage`,
                 `--return-code-on-test-failure`,
-                `--packages-select ${packageNameList.join(" ")}`,
+                `--packages-select ${packageNames}`,
                 `${extra_options.join(" ")}`,
             ].join(" ");
             yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
@@ -10775,7 +10796,7 @@ function run() {
             const colconLcovResultCmd = [
                 `colcon lcov-result`,
                 `--filter ${coverageIgnorePattern}`,
-                `--packages-select ${packageNameList.join(" ")}`,
+                `--packages-select ${packageNames}`,
             ].join(" ");
             yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
                 cwd: rosWorkspaceDir,
@@ -10783,7 +10804,7 @@ function run() {
             });
             const colconCoveragepyResultCmd = [
                 `colcon coveragepy-result`,
-                `--packages-select ${packageNameList.join(" ")}`,
+                `--packages-select ${packageNames}`,
             ].join(" ");
             yield execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
             core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
