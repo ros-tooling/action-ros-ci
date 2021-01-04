@@ -79,9 +79,7 @@ export async function execBashCommand(
 	log_message?: string
 ): Promise<number> {
 	commandPrefix = commandPrefix || "";
-	const bashScript = `${commandPrefix}${commandLine}`;
-	const message = log_message || `Invoking: bash -c '${bashScript}'`;
-
+	const bashScript = `${commandPrefix} ${commandLine}`;
 	let toolRunnerCommandLine = "";
 	let toolRunnerCommandLineArgs: string[] = [];
 	if (isWindows) {
@@ -108,6 +106,8 @@ export async function execBashCommand(
 		toolRunnerCommandLine = "bash";
 		toolRunnerCommandLineArgs = ["-c", bashScript];
 	}
+
+	const message = log_message || `Invoking: ${toolRunnerCommandLine} ${toolRunnerCommandLineArgs.join(" ")}`;
 	const runner: tr.ToolRunner = new tr.ToolRunner(
 		toolRunnerCommandLine,
 		toolRunnerCommandLineArgs,
@@ -144,6 +144,45 @@ export function validateDistros(
 	return true;
 }
 
+/**
+  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
+  */
+async function installRosdeps(
+	upToPackages: string,
+	workspaceDir: string,
+	ros1Distro?: string,
+	ros2Distro?: string,
+): Promise<number> {
+	const scriptName = "install_rosdeps.sh";
+	const scriptPath = path.join(workspaceDir, scriptName);
+	const scriptContent = `#!/bin/bash
+	set -euxo pipefail
+	if [ $# != 1 ]; then
+		echo "Specify rosdistro name as single argument to this script"
+		exit 1
+	fi
+	pwd
+	ls
+	ls src
+	DISTRO=$1
+	package_paths=$(colcon list --paths-only --packages-up-to ${upToPackages})
+	# suppress errors from unresolved install keys to preserve backwards compatibility
+	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
+	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
+	DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths $package_paths --ignore-src --rosdistro $DISTRO -y || true`;
+	fs.writeFileSync(scriptPath, scriptContent, {mode: 0o766});
+
+	let exitCode = 0;
+	const options = {cwd: workspaceDir};
+	if (ros1Distro) {
+		exitCode += await execBashCommand(`./${scriptName} ${ros1Distro}`, "", options);
+	}
+	if (ros2Distro) {
+		exitCode += await execBashCommand(`./${scriptName} ${ros2Distro}`, "", options);
+	}
+	return exitCode;
+}
+
 async function run() {
 	try {
 		const repo = github.context.repo;
@@ -154,8 +193,7 @@ async function run() {
 		const extraCmakeArgs = core.getInput("extra-cmake-args");
 		const colconExtraArgs = core.getInput("colcon-extra-args");
 		const importToken = core.getInput("import-token");
-		const packageName = core.getInput("package-name", { required: true });
-		const packageNameList = packageName.split(RegExp("\\s"));
+		const packageNames = core.getInput("package-name", { required: true }).split(RegExp("\\s")).join(" ");
 		const rosWorkspaceName = "ros_ws";
 		core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
 		const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
@@ -244,31 +282,7 @@ async function run() {
 			options
 		);
 
-		// Remove all repositories the package under test does not depend on, to
-		// avoid having rosdep installing unrequired dependencies.
-		await execBashCommand(
-			`diff --new-line-format="" --unchanged-line-format="" <(colcon list -p) <(colcon list --packages-up-to ${packageNameList.join(
-				" "
-			)} -p) | xargs rm -rf`,
-			undefined,
-			options
-		);
-
-		// Install ROS dependencies for each distribution being sourced
-		if (targetRos1Distro) {
-			await execBashCommand(
-				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos1Distro} -y || true`,
-				undefined,
-				options
-			);
-		}
-		if (targetRos2Distro) {
-			await execBashCommand(
-				`DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths src --ignore-src --rosdistro ${targetRos2Distro} -y || true`,
-				undefined,
-				options
-			);
-		}
+		await installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
 
 		if (colconMixinName !== "" && colconMixinRepo !== "") {
 			await execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
@@ -326,7 +340,7 @@ async function run() {
 		let colconBuildCmd = [
 			`colcon build`,
 			`--event-handlers console_cohesion+`,
-			`--packages-up-to ${packageNameList.join(" ")}`,
+			`--packages-up-to ${packageNames}`,
 			`${extra_options.join(" ")}`,
 			`--cmake-args ${extraCmakeArgs}`,
 		].join(" ");
@@ -348,7 +362,7 @@ async function run() {
 			`--event-handlers console_cohesion+`,
 			`--pytest-with-coverage`,
 			`--return-code-on-test-failure`,
-			`--packages-select ${packageNameList.join(" ")}`,
+			`--packages-select ${packageNames}`,
 			`${extra_options.join(" ")}`,
 		].join(" ");
 		await execBashCommand(colconTestCmd, colconCommandPrefix, options);
@@ -357,7 +371,7 @@ async function run() {
 		const colconLcovResultCmd = [
 			`colcon lcov-result`,
 			`--filter ${coverageIgnorePattern}`,
-			`--packages-select ${packageNameList.join(" ")}`,
+			`--packages-select ${packageNames}`,
 		].join(" ");
 		await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
 			cwd: rosWorkspaceDir,
@@ -366,7 +380,7 @@ async function run() {
 
 		const colconCoveragepyResultCmd = [
 			`colcon coveragepy-result`,
-			`--packages-select ${packageNameList.join(" ")}`,
+			`--packages-select ${packageNames}`,
 		].join(" ");
 		await execBashCommand(
 			colconCoveragepyResultCmd,
