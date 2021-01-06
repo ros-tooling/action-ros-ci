@@ -35,11 +35,11 @@ jobs:
         # Platforms are defined in REP 3: https://ros.org/reps/rep-0003.html
         include:
           # Kinetic Kame (May 2016 - May 2021)
-          - docker_image: ubuntu:xenial
+          - docker_image: rostooling/setup-ros-docker:ubuntu-xenial-ros-kinetic-ros-base-latest
             ros_distribution: kinetic
 
           # Melodic Morenia (May 2018 - May 2023)
-          - docker_image: ubuntu:bionic
+          - docker_image: rostooling/setup-ros-docker:ubuntu-bionic-ros-melodic-ros-base-latest
             ros_distribution: melodic
     container:
       image: ${{ matrix.docker_image }}
@@ -49,9 +49,6 @@ jobs:
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@0.1.1
-        with:
-          required-ros-distributions: ${{ matrix.ros_distribution }}
       - uses: ./
         id: action-ros-ci
         with:
@@ -123,15 +120,15 @@ jobs:
         # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
         include:
           # Dashing Diademata (May 2019 - May 2021)
-          - docker_image: ubuntu:bionic
+          - docker_image: rostooling/setup-ros-docker:ubuntu-bionic-ros-dashing-ros-base-latest
             ros_distribution: dashing
 
           # Eloquent Elusor (November 2019 - November 2020)
-          - docker_image: ubuntu:bionic
+          - docker_image: rostooling/setup-ros-docker:ubuntu-bionic-ros-eloquent-ros-base-latest
             ros_distribution: eloquent
 
           # Foxy Fitzroy (May 2020 - May 2023)
-          - docker_image: ubuntu:focal
+          - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-foxy-ros-base-latest
             ros_distribution: foxy
     container:
       image: ${{ matrix.docker_image }}
@@ -141,10 +138,6 @@ jobs:
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@0.1.1
-        with:
-          required-ros-distributions: ${{ matrix.ros_distribution }}
-
       - uses: ./
         name: "Test rosdep installs from correct distro"
         with:
