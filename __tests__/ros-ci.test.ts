@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import * as actionRosCi from "../src/action-ros-ci";
-import { execBashCommand } from "../src/action-ros-ci";
+import { execBashCommand, rosdepUpdateRetry } from "../src/action-ros-ci";
 
 jest.setTimeout(20000); // in milliseconds
 
@@ -25,6 +25,26 @@ describe("execBashCommand test suite", () => {
 		const result = execBashCommand("somebadcommand", "", options);
 		expect(mockGroup).toBeCalled();
 		expect(result).not.toEqual(0);
+	});
+	it("rosdep update retries 3 times when response is returns failure", async () => {
+		const mockGroup = jest.spyOn(core, "group");
+		mockGroup.mockReturnValue(
+			new Promise((resolve, reject) => {
+				reject({ error: "Test Error" });
+			})
+		);
+		const result = await rosdepUpdateRetry(0, 3);
+		expect(result).toEqual(3);
+	});
+	it("rosdep update do not retry when response returns sucessful exit code", async () => {
+		const mockGroup = jest.spyOn(core, "group");
+		mockGroup.mockReturnValue(
+			new Promise((resolve) => {
+				resolve(0);
+			})
+		);
+		const result = await rosdepUpdateRetry(0, 3);
+		expect(result).toEqual(0);
 	});
 });
 
