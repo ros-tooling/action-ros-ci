@@ -10642,17 +10642,16 @@ function installRosdeps(upToPackages, workspaceDir, ros1Distro, ros2Distro) {
 }
 function rosdepUpdateRetry(retries, maxTry) {
     return __awaiter(this, void 0, void 0, function* () {
-        do {
+        while (retries < maxTry) {
             try {
                 yield execBashCommand("rosdep update --include-eol-distros");
-                return retries;
+                return;
             }
             catch (error) {
                 console.log("Rosdep update failed");
-                rosdepUpdateRetry(++retries, maxTry);
+                ++retries;
             }
-        } while (retries < maxTry);
-        return retries;
+        }
     });
 }
 exports.rosdepUpdateRetry = rosdepUpdateRetry;

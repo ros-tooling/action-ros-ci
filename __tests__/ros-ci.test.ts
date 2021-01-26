@@ -4,6 +4,11 @@ import { execBashCommand, rosdepUpdateRetry } from "../src/action-ros-ci";
 
 jest.setTimeout(20000); // in milliseconds
 
+beforeEach(() => {
+	jest.resetAllMocks();
+	jest.restoreAllMocks();
+});
+
 describe("execBashCommand test suite", () => {
 	it("calls coreGroup", async () => {
 		const mockGroup = jest.spyOn(core, "group");
@@ -26,6 +31,9 @@ describe("execBashCommand test suite", () => {
 		expect(mockGroup).toBeCalled();
 		expect(result).not.toEqual(0);
 	});
+});
+
+describe("rosdepUpdateRetry test suite", () => {
 	it("rosdep update retries 3 times when response is returns failure", async () => {
 		const mockGroup = jest.spyOn(core, "group");
 		mockGroup.mockReturnValue(
@@ -33,8 +41,8 @@ describe("execBashCommand test suite", () => {
 				reject({ error: "Test Error" });
 			})
 		);
-		const result = await rosdepUpdateRetry(0, 3);
-		expect(result).toEqual(3);
+		await rosdepUpdateRetry(0, 3);
+		expect(mockGroup).toBeCalledTimes(3);
 	});
 	it("rosdep update do not retry when response returns sucessful exit code", async () => {
 		const mockGroup = jest.spyOn(core, "group");
@@ -43,8 +51,8 @@ describe("execBashCommand test suite", () => {
 				resolve(0);
 			})
 		);
-		const result = await rosdepUpdateRetry(0, 3);
-		expect(result).toEqual(0);
+		await rosdepUpdateRetry(0, 3);
+		expect(mockGroup).toBeCalledTimes(1);
 	});
 });
 

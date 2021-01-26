@@ -189,16 +189,15 @@ async function installRosdeps(
 }
 
 export async function rosdepUpdateRetry(retries: number, maxTry: number) {
-	do {
+	while (retries < maxTry) {
 		try {
 			await execBashCommand("rosdep update --include-eol-distros");
-			return retries;
+			return;
 		} catch (error) {
 			console.log("Rosdep update failed");
-			rosdepUpdateRetry(++retries, maxTry);
+			++retries;
 		}
-	} while (retries < maxTry);
-	return retries;
+	}
 }
 
 async function run() {
