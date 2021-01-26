@@ -4,6 +4,11 @@ import { execBashCommand } from "../src/action-ros-ci";
 
 jest.setTimeout(20000); // in milliseconds
 
+beforeEach(() => {
+	jest.resetAllMocks();
+	jest.restoreAllMocks();
+});
+
 describe("execBashCommand test suite", () => {
 	it("calls coreGroup", async () => {
 		const mockGroup = jest.spyOn(core, "group");

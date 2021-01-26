@@ -6,6 +6,7 @@ import * as io from "@actions/io";
 import * as os from "os";
 import * as path from "path";
 import fs from "fs";
+import retry from "async-retry";
 
 // All command line flags passed to curl when invoked as a command.
 const curlFlagsArray = [
@@ -145,13 +146,13 @@ export function validateDistros(
 }
 
 /**
-  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
-  */
+ * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
+ */
 async function installRosdeps(
 	upToPackages: string,
 	workspaceDir: string,
 	ros1Distro?: string,
-	ros2Distro?: string,
+	ros2Distro?: string
 ): Promise<number> {
 	const scriptName = "install_rosdeps.sh";
 	const scriptPath = path.join(workspaceDir, scriptName);
@@ -167,15 +168,23 @@ async function installRosdeps(
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
 	DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths $package_paths --ignore-src --rosdistro $DISTRO -y || true`;
-	fs.writeFileSync(scriptPath, scriptContent, {mode: 0o766});
+	fs.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
 
 	let exitCode = 0;
-	const options = {cwd: workspaceDir};
+	const options = { cwd: workspaceDir };
 	if (ros1Distro) {
-		exitCode += await execBashCommand(`./${scriptName} ${ros1Distro}`, "", options);
+		exitCode += await execBashCommand(
+			`./${scriptName} ${ros1Distro}`,
+			"",
+			options
+		);
 	}
 	if (ros2Distro) {
-		exitCode += await execBashCommand(`./${scriptName} ${ros2Distro}`, "", options);
+		exitCode += await execBashCommand(
+			`./${scriptName} ${ros2Distro}`,
+			"",
+			options
+		);
 	}
 	return exitCode;
 }
@@ -190,7 +199,10 @@ async function run() {
 		const extraCmakeArgs = core.getInput("extra-cmake-args");
 		const colconExtraArgs = core.getInput("colcon-extra-args");
 		const importToken = core.getInput("import-token");
-		const packageNames = core.getInput("package-name", { required: true }).split(RegExp("\\s")).join(" ");
+		const packageNames = core
+			.getInput("package-name", { required: true })
+			.split(RegExp("\\s"))
+			.join(" ");
 		const rosWorkspaceName = "ros_ws";
 		core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
 		const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
@@ -214,7 +226,14 @@ async function run() {
 		// rosdep does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
 		if (!isWindows) {
-			await execBashCommand("rosdep update --include-eol-distros");
+			retry(
+				async () => {
+					await execBashCommand("rosdep update --include-eol-distros");
+				},
+				{
+					retries: 3,
+				}
+			);
 		}
 
 		// Reset colcon configuration.
@@ -282,7 +301,12 @@ async function run() {
 		// Print HEAD commits of all repos
 		await execBashCommand("vcs log -l1 src/", undefined, options);
 
-		await installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
+		await installRosdeps(
+			packageNames,
+			rosWorkspaceDir,
+			targetRos1Distro,
+			targetRos2Distro
+		);
 
 		if (colconMixinName !== "" && colconMixinRepo !== "") {
 			await execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
