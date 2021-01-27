@@ -6,6 +6,7 @@ import * as io from "@actions/io";
 import * as os from "os";
 import * as path from "path";
 import fs from "fs";
+import retry from "async-retry"
 
 // All command line flags passed to curl when invoked as a command.
 const curlFlagsArray = [
@@ -214,7 +215,11 @@ async function run() {
 		// rosdep does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
 		if (!isWindows) {
-			await execBashCommand("rosdep update --include-eol-distros");
+			retry(async () => {
+				await execBashCommand("rosdep update --include-eol-distros");
+			}, {
+				retries: 3,
+			})
 		}
 
 		// Reset colcon configuration.
