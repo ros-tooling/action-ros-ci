@@ -26,6 +26,13 @@ describe("execBashCommand test suite", () => {
 		expect(mockGroup).toBeCalled();
 		expect(result).not.toEqual(0);
 	});
+	it("retries things", async () => {
+		const execSpy = jest.spyOn(actionRosCi, "execBashCommand");
+		await expect(
+			actionRosCi.retry(() => { return actionRosCi.execBashCommand("notarealcommand"); }, 3)
+		).rejects.toThrow();
+		expect(execSpy).toHaveBeenCalledTimes(3);
+	});
 });
 
 describe("validate distribution test", () => {
