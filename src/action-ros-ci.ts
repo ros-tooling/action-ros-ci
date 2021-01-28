@@ -215,7 +215,7 @@ async function run() {
 		// rosdep does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
 		if (!isWindows) {
-			retry(async () => {
+			await retry(async () => {
 				await execBashCommand("rosdep update --include-eol-distros");
 			}, {
 				retries: 3,
