@@ -10975,7 +10975,7 @@ function installRosdeps(upToPackages, workspaceDir, ros1Distro, ros2Distro) {
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
-	DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths $package_paths --ignore-src --rosdistro $DISTRO -y || true`;
+	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys rti-connext-dds-5.3.1 --rosdistro $DISTRO -y || true`;
         fs_1.default.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
         let exitCode = 0;
         const options = { cwd: workspaceDir };
