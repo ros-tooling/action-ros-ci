@@ -1,0 +1,17 @@
+repositories:
+  ros2/launch:
+    type: git
+    url: 'https://github.com/ros2/launch'
+    version: pull/460/merge
+  ros2/rcl_logging:
+    type: git
+    url: 'https://github.com/ros2/rcl_logging/'
+    version: pull/53/merge
+  ros2/rcl:
+    type: git
+    url: 'https://github.com/ros2/rcl.git'
+    version: master
+  ros2/rclcpp:
+    type: git
+    url: 'https://github.com/ros2/rclcpp.git'
+    version: pull/1500/merge

@@ -6,7 +6,7 @@
 	"scripts": {
 		"build": "ncc build src/action-ros-ci.ts -o dist",
 		"fixup": "eslint . --fix --ignore-path .lintignore && prettier . --write --ignore-path .lintignore",
-		"lint": "eslint src/action-ros-ci.ts",
+		"lint": "eslint src/action-ros-ci.ts src/dependencies.ts",
 		"test": "tsc --noEmit && jest --coverage"
 	},
 	"repository": {
@@ -47,6 +47,7 @@
 		"husky": "^4.3.5",
 		"jest": "^26.6.3",
 		"jest-circus": "^26.6.3",
+		"js-yaml": "^3.14.1",
 		"lint-staged": "^10.5.3",
 		"prettier": "2.2.1",
 		"ts-jest": "^26.4.4",
