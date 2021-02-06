@@ -185,6 +185,7 @@ jobs:
       - uses: ros-tooling/setup-ros@0.1.2
       - uses: ./
         id: test_single_package
+        name: "Test single package, default options"
         with:
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
@@ -201,6 +202,15 @@ jobs:
         name: "Check that ament_copyright install directory is present"
       - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
         name: "Check that ament_lint install directory is present"
+
+      - uses: ./
+        id: test_connext_dependency
+        name: "Test single package with Connext dependency, default options"
+        with:
+          package-name: rmw_implementation
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+      - run: test -d "${{ steps.test_connext_dependency.outputs.ros-workspace-directory-name }}/install/rmw_implementation"
+        name: "Check that rmw_implementation install directory is present"
 
       - uses: ./
         id: test_mixin
@@ -309,6 +319,7 @@ jobs:
 
       - uses: ./
         id: test_single_package
+        name: "Test single package, default options"
         with:
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
@@ -327,6 +338,16 @@ jobs:
         name: "Check that ament_copyright install directory is present"
       - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
         name: "Check that ament_lint install directory is present"
+
+      - uses: ./
+        id: test_connext_dependency
+        name: "Test single package with Connext dependency, default options"
+        with:
+          package-name: rmw_implementation
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ matrix.distro_repos_url }}
+      - run: test -d "${{ steps.test_connext_dependency.outputs.ros-workspace-directory-name }}/install/rmw_implementation"
+        name: "Check that rmw_implementation install directory is present"
 
       - uses: ./
         id: test_mixin
