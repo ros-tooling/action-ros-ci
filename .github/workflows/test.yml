@@ -331,6 +331,31 @@ jobs:
         name: "Check that ament_copyright install directory is present"
 
       - uses: ./
+        id: test_mixin_build_overrides
+        name: "Test single package, with mixins for colcon build"
+        with:
+          colcon-mixin-name-build: coverage-gcc
+          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ matrix.distro_repos_url }}
+      - run: test -d "${{ steps.test_mixin_build_overrides.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+        name: "Check that ament_copyright install directory is present, with mixin for building"
+
+      - uses: ./
+        id: test_mixin_test_overrides2
+        name: "Test single package, with mixins for colcon build"
+        with:
+          colcon-mixin-name-build: coverage-gcc
+          colcon-mixin-name-test: coverage-gcc
+          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ matrix.distro_repos_url }}
+      - run: test -d "${{ steps.test_mixin_test_overrides2.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+        name: "Check that ament_copyright install directory is present, with mixin for building and testing"
+
+      - uses: ./
         id: test_repo
         name: "Test single package, with custom repository file"
         with:
