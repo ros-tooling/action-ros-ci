@@ -302,7 +302,7 @@ async function run() {
 		}
 		else if (colconMixinName !== "") {
 		  // not supplied, override using colconMixinName
-			build_mixin_options = `--mixin` + colconMixinName;
+			build_mixin_options = `--mixin ` + colconMixinName;
 		}
 		
 		let test_mixin_options: string = "";
@@ -311,7 +311,7 @@ async function run() {
 		}
 		else if (colconMixinName !== "") {
 		  // not supplied, override using colconMixinName
-		  test_mixin_options = `--mixin` + colconMixinName;
+		  test_mixin_options = `--mixin ` + colconMixinName;
 		}
 		
 		let extra_options: string[] = [];
