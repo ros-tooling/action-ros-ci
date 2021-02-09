@@ -11070,25 +11070,26 @@ function run() {
             // Print HEAD commits of all repos
             yield execBashCommand("vcs log -l1 src/", undefined, options);
             yield installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
-            if (colconMixinName !== "" && colconMixinRepo !== "") {
+            let hasMixinName = colconMixinName !== "" || colconBuildMixinName !== "" || colconTestMixinName !== "";
+            if (hasMixinName && colconMixinRepo !== "") {
                 yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
                 yield execBashCommand("colcon mixin update default");
             }
             let build_mixin_options = "";
             if (colconBuildMixinName !== "") {
-                build_mixin_options = `--mixin ` + colconBuildMixinName;
+                build_mixin_options = `--mixin ${colconBuildMixinName}`;
             }
             else if (colconMixinName !== "") {
                 // not supplied, override using colconMixinName
-                build_mixin_options = `--mixin` + colconMixinName;
+                build_mixin_options = `--mixin ${colconMixinName}`;
             }
             let test_mixin_options = "";
             if (colconTestMixinName !== "") {
-                test_mixin_options = `--mixin ` + colconTestMixinName;
+                test_mixin_options = `--mixin ${colconTestMixinName}`;
             }
             else if (colconMixinName !== "") {
                 // not supplied, override using colconMixinName
-                test_mixin_options = `--mixin` + colconMixinName;
+                test_mixin_options = `--mixin ${colconMixinName}`;
             }
             let extra_options = [];
             if (colconExtraArgs !== "") {
