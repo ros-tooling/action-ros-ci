@@ -10993,6 +10993,8 @@ function run() {
             const repo = github.context.repo;
             const workspace = process.env.GITHUB_WORKSPACE;
             const colconMixinName = core.getInput("colcon-mixin-name");
+            const colconBuildMixinName = core.getInput("colcon-mixin-name-build");
+            const colconTestMixinName = core.getInput("colcon-mixin-name-test");
             const colconMixinRepo = core.getInput("colcon-mixin-repository");
             const extraCmakeArgs = core.getInput("extra-cmake-args");
             const colconExtraArgs = core.getInput("colcon-extra-args");
@@ -11072,10 +11074,23 @@ function run() {
                 yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
                 yield execBashCommand("colcon mixin update default");
             }
-            let extra_options = [];
-            if (colconMixinName !== "") {
-                extra_options = extra_options.concat(["--mixin", colconMixinName]);
+            let build_mixin_options = "";
+            if (colconBuildMixinName !== "") {
+                build_mixin_options = `--mixin ` + colconBuildMixinName;
             }
+            else if (colconMixinName !== "") {
+                // not supplied, override using colconMixinName
+                build_mixin_options = `--mixin` + colconMixinName;
+            }
+            let test_mixin_options = "";
+            if (colconTestMixinName !== "") {
+                test_mixin_options = `--mixin ` + colconTestMixinName;
+            }
+            else if (colconMixinName !== "") {
+                // not supplied, override using colconMixinName
+                test_mixin_options = `--mixin` + colconMixinName;
+            }
+            let extra_options = [];
             if (colconExtraArgs !== "") {
                 extra_options = extra_options.concat(colconExtraArgs);
             }
@@ -11122,6 +11137,7 @@ function run() {
                 `colcon build`,
                 `--event-handlers console_cohesion+`,
                 `--packages-up-to ${packageNames}`,
+                build_mixin_options,
                 `${extra_options.join(" ")}`,
                 `--cmake-args ${extraCmakeArgs}`,
             ].join(" ");
@@ -11142,6 +11158,7 @@ function run() {
                 `--pytest-with-coverage`,
                 `--return-code-on-test-failure`,
                 `--packages-select ${packageNames}`,
+                test_mixin_options,
                 `${extra_options.join(" ")}`,
             ].join(" ");
             yield execBashCommand(colconTestCmd, colconCommandPrefix, options);

@@ -9,6 +9,14 @@ inputs:
     default: ""
     description: "Colcon mixin to be used to compile and test (empty means no mixin)"
     required: false
+  colcon-mixin-name-build:
+    default: ""
+    description: "Colcon mixin to be used to as input to colcon build(empty means no mixin). Overrides colcon-mixin-name"
+    required: false
+  colcon-mixin-name-test:
+    default: ""
+    description: "Colcon mixin to be used to as input to colcon test(empty means no mixin). Overrides colcon-mixin-name"
+    required: false
   colcon-mixin-repository:
     default: "https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml"
     description: "Mixin repository containing the mixin specified in colcon-mixin-name"
