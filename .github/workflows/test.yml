@@ -344,7 +344,7 @@ jobs:
 
       - uses: ./
         id: test_mixin_test_overrides2
-        name: "Test single package, with mixins for colcon build"
+        name: "Test single package, with mixins for colcon build and test"
         with:
           colcon-mixin-name-build: coverage-gcc
           colcon-mixin-name-test: coverage-gcc
