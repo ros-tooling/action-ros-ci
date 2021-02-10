@@ -299,7 +299,7 @@ async function run() {
 
 		let build_mixin_options: string = "";
 		if (colconBuildMixinName !== "") {
-		  build_mixin_options = `--mixin ${colconBuildMixinName}`;
+			build_mixin_options = `--mixin ${colconBuildMixinName}`;
 		}
 		else if (colconMixinName !== "") {
 			// not supplied, override using colconMixinName
