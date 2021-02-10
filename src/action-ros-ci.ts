@@ -291,7 +291,7 @@ async function run() {
 
 		await installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
 
-    let hasMixinName = colconMixinName !== "" || colconBuildMixinName !== "" || colconTestMixinName !== "";
+		let hasMixinName = colconMixinName !== "" || colconBuildMixinName !== "" || colconTestMixinName !== "";
 		if (hasMixinName && colconMixinRepo !== "") {
 			await execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
 			await execBashCommand("colcon mixin update default");
@@ -302,17 +302,17 @@ async function run() {
 		  build_mixin_options = `--mixin ${colconBuildMixinName}`;
 		}
 		else if (colconMixinName !== "") {
-		  // not supplied, override using colconMixinName
+			// not supplied, override using colconMixinName
 			build_mixin_options = `--mixin ${colconMixinName}`;
 		}
-		
+
 		let test_mixin_options: string = "";
 		if (colconTestMixinName !== "") {
-		  test_mixin_options = `--mixin ${colconTestMixinName}`;
+			test_mixin_options = `--mixin ${colconTestMixinName}`;
 		}
 		else if (colconMixinName !== "") {
-		  // not supplied, override using colconMixinName
-		  test_mixin_options = `--mixin ${colconMixinName}`;
+			// not supplied, override using colconMixinName
+			test_mixin_options = `--mixin ${colconMixinName}`;
 		}
 		
 		let extra_options: string[] = [];
@@ -357,7 +357,7 @@ async function run() {
 				if (fs.existsSync(ros2SetupPath)) {
 					colconCommandPrefix += `${ros2SetupPath} && `;
 				}
-			}
+		  	}
 		}
 
 		let colconBuildCmd = [
