@@ -3,7 +3,11 @@
 ## Build and test
 
 ```
+# install dependencies
 npm install
+# autoformat sources to meet enforced linter style
+npm run fixup
+# generate build artifacts
 npm run build
 ```
 
