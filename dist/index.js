@@ -10957,8 +10957,8 @@ function validateDistros(ros1Distro, ros2Distro) {
 }
 exports.validateDistros = validateDistros;
 /**
-  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
-  */
+ * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
+ */
 function installRosdeps(upToPackages, workspaceDir, ros1Distro, ros2Distro) {
     return __awaiter(this, void 0, void 0, function* () {
         const scriptName = "install_rosdeps.sh";
@@ -10997,7 +10997,10 @@ function run() {
             const extraCmakeArgs = core.getInput("extra-cmake-args");
             const colconExtraArgs = core.getInput("colcon-extra-args");
             const importToken = core.getInput("import-token");
-            const packageNames = core.getInput("package-name", { required: true }).split(RegExp("\\s")).join(" ");
+            const packageNames = core
+                .getInput("package-name", { required: true })
+                .split(RegExp("\\s"))
+                .join(" ");
             const rosWorkspaceName = "ros_ws";
             core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
             const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);

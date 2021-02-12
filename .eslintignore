@@ -1,3 +1,4 @@
 # files for tools like prettier and eslint to ignore
 dist
 coverage
+*.md
