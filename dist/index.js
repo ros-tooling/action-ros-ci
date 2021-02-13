@@ -10840,6 +10840,7 @@ const os = __importStar(__nccwpck_require__(2087));
 const path = __importStar(__nccwpck_require__(5622));
 const fs_1 = __importDefault(__nccwpck_require__(5747));
 const async_retry_1 = __importDefault(__nccwpck_require__(3415));
+const dep = __importStar(__nccwpck_require__(7760));
 // All command line flags passed to curl when invoked as a command.
 const curlFlagsArray = [
     // (HTTP)  Fail  silently  (no  output at all) on server errors. This is mostly done to better enable
@@ -11007,7 +11008,28 @@ function run() {
             const targetRos1Distro = core.getInput(targetROS1DistroInput);
             const targetRos2Distro = core.getInput(targetROS2DistroInput);
             const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
-            const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
+            let vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
+            // Check if PR overrides/adds supplemental repos files
+            const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
+            const vcsReposSupplemental = dep.getReposFilesSupplemental(github.context.payload);
+            yield core.group("Repos files: override" +
+                (vcsReposOverride.length === 0 ? " - none" : ""), () => {
+                for (const vcsRepos of vcsReposOverride) {
+                    core.info("\t" + vcsRepos);
+                }
+                return Promise.resolve();
+            });
+            if (vcsReposOverride.length > 0) {
+                vcsRepoFileUrlList = vcsReposOverride;
+            }
+            yield core.group("Repos files: supplemental" +
+                (vcsReposSupplemental.length === 0 ? " - none" : ""), () => {
+                for (const vcsRepos of vcsReposSupplemental) {
+                    core.info("\t" + vcsRepos);
+                }
+                return Promise.resolve();
+            });
+            vcsRepoFileUrlList = vcsRepoFileUrlList.concat(vcsReposSupplemental);
             const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
             const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) => resolveVcsRepoFileUrl(x));
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
@@ -11171,6 +11193,84 @@ function run() {
     });
 }
 run();
+
+
+/***/ }),
+
+/***/ 7760:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getReposFilesSupplemental = exports.getReposFilesOverride = void 0;
+// Expecting something like:
+//  action-ros-ci-repos-override: https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
+const REGEX_REPOS_FILES_OVERRIDE = /action-ros-ci-repos-override:[ ]*([\S]+)/g;
+const REGEX_REPOS_FILES_SUPPLEMENTAL = /action-ros-ci-repos-supplemental:[ ]*([\S]+)/g;
+/**
+ * Extract captures of all matches.
+ *
+ * The first dimension contains all the matches and the second
+ * dimension contains the captures for the given match.
+ *
+ * @param content the string in which to search
+ * @param regex the regex to apply
+ * @returns the array of all captures for all matches
+ */
+function extractCaptures(content, regex) {
+    const captures = [];
+    let matches;
+    while ((matches = regex.exec(content)) !== null) {
+        const capture = matches.slice(1);
+        if (capture.length > 0) {
+            captures.push(capture);
+        }
+    }
+    return captures;
+}
+/**
+ * Try to extract PR body from context payload.
+ */
+function extractPrBody(contextPayload) {
+    const prPayload = contextPayload.pull_request;
+    if (!prPayload) {
+        return undefined;
+    }
+    return prPayload.body;
+}
+/**
+ * Get list of repos override files.
+ *
+ * @param contextPayload the github context payload object
+ * @returns an array with all declared repos override files
+ */
+function getReposFilesOverride(contextPayload) {
+    const prBody = extractPrBody(contextPayload);
+    if (!prBody) {
+        return [];
+    }
+    return extractCaptures(prBody, REGEX_REPOS_FILES_OVERRIDE).map((capture) => {
+        return capture[0];
+    });
+}
+exports.getReposFilesOverride = getReposFilesOverride;
+/**
+ * Get list of override repos files.
+ *
+ * @param contextPayload the github context payload object
+ * @returns an array with all declared override repos files
+ */
+function getReposFilesSupplemental(contextPayload) {
+    const prBody = extractPrBody(contextPayload);
+    if (!prBody) {
+        return [];
+    }
+    return extractCaptures(prBody, REGEX_REPOS_FILES_SUPPLEMENTAL).map((capture) => {
+        return capture[0];
+    });
+}
+exports.getReposFilesSupplemental = getReposFilesSupplemental;
 
 
 /***/ }),

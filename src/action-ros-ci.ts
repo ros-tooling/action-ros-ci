@@ -7,6 +7,7 @@ import * as os from "os";
 import * as path from "path";
 import fs from "fs";
 import retry from "async-retry";
+import * as dep from "./dependencies";
 
 // All command line flags passed to curl when invoked as a command.
 const curlFlagsArray = [
@@ -209,7 +210,38 @@ async function run() {
 		const targetRos1Distro = core.getInput(targetROS1DistroInput);
 		const targetRos2Distro = core.getInput(targetROS2DistroInput);
 		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
-		const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
+		let vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
+
+		// Check if PR overrides/adds supplemental repos files
+		const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
+		const vcsReposSupplemental = dep.getReposFilesSupplemental(
+			github.context.payload
+		);
+		await core.group(
+			"Repos files: override" +
+				(vcsReposOverride.length === 0 ? " - none" : ""),
+			() => {
+				for (const vcsRepos of vcsReposOverride) {
+					core.info("\t" + vcsRepos);
+				}
+				return Promise.resolve();
+			}
+		);
+		if (vcsReposOverride.length > 0) {
+			vcsRepoFileUrlList = vcsReposOverride;
+		}
+		await core.group(
+			"Repos files: supplemental" +
+				(vcsReposSupplemental.length === 0 ? " - none" : ""),
+			() => {
+				for (const vcsRepos of vcsReposSupplemental) {
+					core.info("\t" + vcsRepos);
+				}
+				return Promise.resolve();
+			}
+		);
+		vcsRepoFileUrlList = vcsRepoFileUrlList.concat(vcsReposSupplemental);
+
 		const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter(
 			(x) => x != ""
 		);
