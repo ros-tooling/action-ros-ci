@@ -239,6 +239,23 @@ For example, if your secret is called `REPO_TOKEN`:
     import-token: ${{ secrets.REPO_TOKEN }}
 ```
 
+### Interdependent pull requests or merge requests
+
+This action allows declaring PR dependencies by providing:
+* repos file(s) to override the one(s) defined through the `vcs-repo-file-url` action input
+* supplemental repos file(s) to be used along with the rest
+
+For example, this may be useful when your PR depends on PRs/MRs/branches from other repos for it to work or be properly tested.
+
+Include links in your PR's description using the following format:
+
+```
+action-ros-ci-repos-override: https://gist.github.com/some-user/some.repos
+action-ros-ci-repos-override: https://gist.github.com/some-user/some-other.repos
+action-ros-ci-repos-supplemental: https://gist.github.com/some-user/some-supplemental.repos
+action-ros-ci-repos-supplemental: file://path/to/some/other/supplemental.repos
+```
+
 ## License
 
 The scripts and documentation in this project are released under the [Apache 2](LICENSE) license.

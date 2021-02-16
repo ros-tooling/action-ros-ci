@@ -10840,6 +10840,7 @@ const os = __importStar(__nccwpck_require__(2087));
 const path = __importStar(__nccwpck_require__(5622));
 const fs_1 = __importDefault(__nccwpck_require__(5747));
 const async_retry_1 = __importDefault(__nccwpck_require__(3415));
+const dep = __importStar(__nccwpck_require__(7760));
 // All command line flags passed to curl when invoked as a command.
 const curlFlagsArray = [
     // (HTTP)  Fail  silently  (no  output at all) on server errors. This is mostly done to better enable
@@ -10957,8 +10958,8 @@ function validateDistros(ros1Distro, ros2Distro) {
 }
 exports.validateDistros = validateDistros;
 /**
-  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
-  */
+ * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
+ */
 function installRosdeps(upToPackages, workspaceDir, ros1Distro, ros2Distro) {
     return __awaiter(this, void 0, void 0, function* () {
         const scriptName = "install_rosdeps.sh";
@@ -10974,7 +10975,7 @@ function installRosdeps(upToPackages, workspaceDir, ros1Distro, ros2Distro) {
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
-	DEBIAN_FRONTEND=noninteractive RTI_NC_LICENSE_ACCEPTED=yes rosdep install -r --from-paths $package_paths --ignore-src --rosdistro $DISTRO -y || true`;
+	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys rti-connext-dds-5.3.1 --rosdistro $DISTRO -y || true`;
         fs_1.default.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
         let exitCode = 0;
         const options = { cwd: workspaceDir };
@@ -10999,14 +11000,38 @@ function run() {
             const extraCmakeArgs = core.getInput("extra-cmake-args");
             const colconExtraArgs = core.getInput("colcon-extra-args");
             const importToken = core.getInput("import-token");
-            const packageNames = core.getInput("package-name", { required: true }).split(RegExp("\\s")).join(" ");
+            const packageNames = core
+                .getInput("package-name", { required: true })
+                .split(RegExp("\\s"))
+                .join(" ");
             const rosWorkspaceName = "ros_ws";
             core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
             const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
             const targetRos1Distro = core.getInput(targetROS1DistroInput);
             const targetRos2Distro = core.getInput(targetROS2DistroInput);
             const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
-            const vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
+            let vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
+            // Check if PR overrides/adds supplemental repos files
+            const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
+            const vcsReposSupplemental = dep.getReposFilesSupplemental(github.context.payload);
+            yield core.group("Repos files: override" +
+                (vcsReposOverride.length === 0 ? " - none" : ""), () => {
+                for (const vcsRepos of vcsReposOverride) {
+                    core.info("\t" + vcsRepos);
+                }
+                return Promise.resolve();
+            });
+            if (vcsReposOverride.length > 0) {
+                vcsRepoFileUrlList = vcsReposOverride;
+            }
+            yield core.group("Repos files: supplemental" +
+                (vcsReposSupplemental.length === 0 ? " - none" : ""), () => {
+                for (const vcsRepos of vcsReposSupplemental) {
+                    core.info("\t" + vcsRepos);
+                }
+                return Promise.resolve();
+            });
+            vcsRepoFileUrlList = vcsRepoFileUrlList.concat(vcsReposSupplemental);
             const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
             const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) => resolveVcsRepoFileUrl(x));
             const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
@@ -11186,6 +11211,84 @@ function run() {
     });
 }
 run();
+
+
+/***/ }),
+
+/***/ 7760:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getReposFilesSupplemental = exports.getReposFilesOverride = void 0;
+// Expecting something like:
+//  action-ros-ci-repos-override: https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
+const REGEX_REPOS_FILES_OVERRIDE = /action-ros-ci-repos-override:[ ]*([\S]+)/g;
+const REGEX_REPOS_FILES_SUPPLEMENTAL = /action-ros-ci-repos-supplemental:[ ]*([\S]+)/g;
+/**
+ * Extract captures of all matches.
+ *
+ * The first dimension contains all the matches and the second
+ * dimension contains the captures for the given match.
+ *
+ * @param content the string in which to search
+ * @param regex the regex to apply
+ * @returns the array of all captures for all matches
+ */
+function extractCaptures(content, regex) {
+    const captures = [];
+    let matches;
+    while ((matches = regex.exec(content)) !== null) {
+        const capture = matches.slice(1);
+        if (capture.length > 0) {
+            captures.push(capture);
+        }
+    }
+    return captures;
+}
+/**
+ * Try to extract PR body from context payload.
+ */
+function extractPrBody(contextPayload) {
+    const prPayload = contextPayload.pull_request;
+    if (!prPayload) {
+        return undefined;
+    }
+    return prPayload.body;
+}
+/**
+ * Get list of repos override files.
+ *
+ * @param contextPayload the github context payload object
+ * @returns an array with all declared repos override files
+ */
+function getReposFilesOverride(contextPayload) {
+    const prBody = extractPrBody(contextPayload);
+    if (!prBody) {
+        return [];
+    }
+    return extractCaptures(prBody, REGEX_REPOS_FILES_OVERRIDE).map((capture) => {
+        return capture[0];
+    });
+}
+exports.getReposFilesOverride = getReposFilesOverride;
+/**
+ * Get list of override repos files.
+ *
+ * @param contextPayload the github context payload object
+ * @returns an array with all declared override repos files
+ */
+function getReposFilesSupplemental(contextPayload) {
+    const prBody = extractPrBody(contextPayload);
+    if (!prBody) {
+        return [];
+    }
+    return extractCaptures(prBody, REGEX_REPOS_FILES_SUPPLEMENTAL).map((capture) => {
+        return capture[0];
+    });
+}
+exports.getReposFilesSupplemental = getReposFilesSupplemental;
 
 
 /***/ }),
