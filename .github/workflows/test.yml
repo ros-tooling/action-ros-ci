@@ -158,10 +158,10 @@ jobs:
           package-name: test_msgs
           colcon-defaults: |
             {
-              'build': {
-                'mixin': 'build-mixin',
-                'packages-up-to': 'something',
-                'symlink-install': 'true'
+              "build": {
+                "mixin": "build-mixin",
+                "packages-up-to": "something",
+                "symlink-install": true
               }
             }
       # Verify that rosdep installed the required Debian package
