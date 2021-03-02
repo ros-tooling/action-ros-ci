@@ -92,6 +92,11 @@ jobs:
           package-name: osrf_testing_tools_cpp
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+          colcon-defaults:
+            build:
+              mixin: test-mixin
+              packages-up-to: some-other-value
+              symlink-install: true
         # TODO(tmoulard): re-enable this test once it passes on Windows
         if: runner.os != 'Windows'
       - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"

@@ -9,6 +9,8 @@ import fs from "fs";
 import retry from "async-retry";
 import * as dep from "./dependencies";
 
+import YAML from 'yaml';
+
 // All command line flags passed to curl when invoked as a command.
 const curlFlagsArray = [
 	// (HTTP)  Fail  silently  (no  output at all) on server errors. This is mostly done to better enable
@@ -212,6 +214,7 @@ async function run() {
 		const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
 		let vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
 
+
 		// Check if PR overrides/adds supplemental repos files
 		const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
 		const vcsReposSupplemental = dep.getReposFilesSupplemental(
@@ -254,6 +257,11 @@ async function run() {
 		if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
 			return;
 		}
+
+		const colcon_defaults_content = core.getInput("colcon-defaults");
+		const colcon_defaults_yaml = YAML.parse(colcon_defaults_content);
+		core.setFailed(`YAML loaded and successfully parsed ${colcon_defaults_content}`);
+		return;
 
 		// rosdep does not reliably work on Windows, see
 		// ros-infrastructure/rosdep#610 for instance. So, we do not run it.
@@ -307,7 +315,7 @@ async function run() {
 		// being built.
 		let repoFullName = process.env.GITHUB_REPOSITORY as string;
 		if (github.context.payload.pull_request) {
-			repoFullName = github.context.payload.pull_request.head.repo.full_name;
+			repoFullName = github.context.payload.pull_request!.head.repo.full_name;
 		}
 		let tokenAuth = importToken;
 		if (tokenAuth !== "") {

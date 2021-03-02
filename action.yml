@@ -13,6 +13,10 @@ inputs:
     default: "https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml"
     description: "Mixin repository containing the mixin specified in colcon-mixin-name"
     required: false
+  colcon-defaults:
+    required: false
+    default: ""
+    description: "Test test"
   coverage-ignore-pattern:
     description: |
       Ignore all files matching this pattern in the coverage report.
