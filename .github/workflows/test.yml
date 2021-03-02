@@ -197,12 +197,6 @@ jobs:
         with:
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          colcon-defaults: |
-            |
-            build----::::
-              mixin: test-mixin
-              packages-up-to: some-other-value
-              symlink-install: true
       - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
         name: "Check that ament_copyright install directory is present"
 

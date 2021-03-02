@@ -262,7 +262,7 @@ async function run() {
 		core.warning(`got the contents ${colcon_defaults_content}`);
 		const colcon_defaults_parsed = JSON.parse(colcon_defaults_content);
 		core.warning(`parsed as ${colcon_defaults_parsed}`);
-		core.setFailed(`Content successfully parsed - keys are: ${Object.entries(colcon_defaults_parsed)}`);
+		core.setFailed(`Content successfully parsed - build values: ${JSON.stringify(colcon_defaults_parsed.build)}`);
 		return;
 
 		// rosdep does not reliably work on Windows, see
