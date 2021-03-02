@@ -161,6 +161,11 @@ jobs:
           # test_msgs depends on test_interface_files, which should be installed by rosdep
           # If the dependencies are installed for the wrong distribution, then the build should fail
           package-name: test_msgs
+          colcon-defaults: |
+            build:
+              mixin: test-mixin
+              packages-up-to: some-other-value
+              symlink-install: true
       # Verify that rosdep installed the required Debian package
       - run: dpkg -s ros-${{ matrix.ros_distribution }}-test-interface-files
 
@@ -194,6 +199,11 @@ jobs:
         with:
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
+          colcon-defaults: |
+            build----::::
+              mixin: test-mixin
+              packages-up-to: some-other-value
+              symlink-install: true
       - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
         name: "Check that ament_copyright install directory is present"
 

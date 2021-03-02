@@ -260,7 +260,7 @@ async function run() {
 
 		const colcon_defaults_content = core.getInput("colcon-defaults");
 		const colcon_defaults_yaml = YAML.parse(colcon_defaults_content);
-		core.setFailed(`YAML loaded and successfully parsed ${colcon_defaults_content}`);
+		core.setFailed(`YAML loaded and successfully parsed ${colcon_defaults_yaml.build}`);
 		return;
 
 		// rosdep does not reliably work on Windows, see

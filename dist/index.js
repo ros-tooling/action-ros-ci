@@ -17615,7 +17615,7 @@ function run() {
             }
             const colcon_defaults_content = core.getInput("colcon-defaults");
             const colcon_defaults_yaml = yaml_1.default.parse(colcon_defaults_content);
-            core.setFailed(`YAML loaded and successfully parsed ${colcon_defaults_content}`);
+            core.setFailed(`YAML loaded and successfully parsed ${colcon_defaults_yaml.build}`);
             return;
             // rosdep does not reliably work on Windows, see
             // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
