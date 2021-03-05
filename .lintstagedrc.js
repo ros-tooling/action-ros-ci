@@ -1,7 +1,7 @@
 module.exports = {
 	"*": [
-		"eslint --cache --fix --ignore-path .lintignore",
-		"prettier --write --ignore-path .lintignore --ignore-unknown",
+		"eslint --cache --fix",
+		"prettier --write --ignore-unknown",
 		// Note: doing the build here ensures we omit unstaged changes
 		() => "npm run build",
 		() => "git add dist/index.js",
