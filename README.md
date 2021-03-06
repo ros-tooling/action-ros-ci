@@ -2,12 +2,25 @@
 
 [![GitHub Action Status](https://github.com/ros-tooling/action-ros-ci/workflows/Test%20action-ros-ci/badge.svg)](https://github.com/ros-tooling/action-ros-ci)
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ros-tooling/action-ros-ci)](https://dependabot.com)
+[![codecov](https://codecov.io/gh/ros-tooling/action-ros-ci/branch/master/graph/badge.svg)](https://codecov.io/gh/ros-tooling/action-ros-ci)
 
-This action builds and tests a [ROS](http://wiki.ros.org/), or [ROS 2](https://index.ros.org/doc/ros2/) workspace from source.
+This action builds and tests a [ROS](http://wiki.ros.org/) or [ROS 2](https://docs.ros.org/en/rolling/) workspace from source.
 
-## Developing
-
-For developing and releasing `action-ros-ci`, see DEVELOPING.md
+1. [Requirements](#Requirements)
+1. [Overview](#Overview)
+1. [Action Output](#Action-Output)
+1. [Usage](#Usage)
+   1. [Build and run tests for your ROS 2 package](#Build-and-run-tests-for-your-ROS-2-package)
+   1. [Build with a custom `repos` or `rosinstall` file](#Build-with-a-custom-repos-or-rosinstall-file)
+   1. [Build a ROS 1 workspace](#Build-a-ROS-1-workspace)
+   1. [Use a `colcon` `defaults.yaml` file](#Use-a-colcon-defaultsyaml-file)
+   1. [Enable Address Sanitizer to automatically report memory issues](#Enable-Address-Sanitizer-to-automatically-report-memory-issues)
+   1. [Generate and process code coverage data](#Generate-and-process-code-coverage-data)
+   1. [Store `colcon` logs as build artifacts](#Store-colcon-logs-as-build-artifacts)
+   1. [Use with private repos](#Use-with-private-repos)
+   1. [Interdependent pull requests or merge requests](#Interdependent-pull-requests-or-merge-requests)
+1. [Developing](#Developing)
+1. [License](#License)
 
 ## Requirements
 
@@ -38,31 +51,52 @@ The workspace is built by running:
 - run `colcon test` for all packages specified in `package-name`
 
 This action requires targeting a ROS or ROS 2 distribution explicitly.
-This is provided via the `target-ros1-distro` or `target-ros2-distro` inputs.
+This is provided via the `target-ros1-distro` or `target-ros2-distro` inputs, respectively.
 Either or both may be specified, if neither is provided an error will be raised.
-This input is used to `source setup.sh` for any installed ROS binary installations, as well as used as an argument to `rosdep install`.
+This input is used to `source setup.sh` for any installed ROS binaries (e.g. installed using [`ros-tooling/setup-ros`](https://github.com/ros-tooling/setup-ros)), as well as used as an argument to `rosdep install`.
 
 ## Action Output
 
-This action defines [an output variable](https://help.github.com/en/actions/building-actions/metadata-syntax-for-github-actions#outputs) `ros-workspace-directory-name`.
+This action defines [an output variable](https://help.github.com/en/actions/building-actions/metadata-syntax-for-github-actions#outputs): `ros-workspace-directory-name`.
 It contains the path to the root of the ROS workspace assembled by the action.
 
 The variable value should be used to retrieve logs, binaries, etc. after the action completes.
 
 ## Usage
 
-See [action.yml](action.yml) to get the list of flags supported by this action.
+See [`action.yml`](action.yml) to get the list of inputs supported by this action.
 
 [action-ros-ci-template](https://github.com/ros-tooling/action-ros-ci-template) offers a template for using `action-ros-ci`.
 
-### Build and run `ament_copyright` tests
+### Build and run tests for your ROS 2 package
+
+Here are the two simplest use-cases.
+
+#### Using dependencies from binaries
+
+In this case, `action-ros-ci` will rely on `setup-ros` for installing ROS 2 binaries.
+
+```yaml
+steps:
+  - uses: ros-tooling/setup-ros@v0.1
+    with:
+      required-ros-distributions: foxy
+  - uses: ros-tooling/action-ros-ci@v0.1
+    with:
+      package-name: my_package
+      target-ros2-distro: foxy
+```
+
+#### Building ROS 2 dependencies from source
+
+In this case, `action-ros-ci` will build all necessary ROS 2 dependencies of `my_package` from source.
 
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@v0.1
   - uses: ros-tooling/action-ros-ci@v0.1
     with:
-      package-name: ament_copyright
+      package-name: my_package
       target-ros2-distro: foxy
       vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/foxy/ros2.repos
 ```
@@ -88,13 +122,15 @@ steps:
       vcs-repo-file-url: /tmp/deps.repos
 ```
 
+Note that the `actions/checkout` step is required when using a custom repos file from your repository.
+
 ### Build a ROS 1 workspace
 
-This tool supports building for both ROS and ROS 2 - to target ROS use `target-ros1-distro`
+Building a ROS 1 workspace works the same way.
+Simply use `target-ros1-distro` instead of `target-ros2-distro`.
 
 ```yaml
 steps:
-  - uses: actions/checkout@v2
   - uses: ros-tooling/setup-ros@v0.1
     with:
       required-ros-distributions: melodic
@@ -177,7 +213,7 @@ steps:
       colcon-mixin-name: coverage-gcc
       # If possible, pin the repository in the workflow to a specific commit to avoid
       # changes in colcon-mixin-repository from breaking your tests.
-      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/5c45b95018788deff62202aaa831ad4c20ebe2c6/index.yaml
+      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
 ```
 
 #### Generate code coverage information using `coveragepy` and `colcon-coveragepy-result`
@@ -201,18 +237,19 @@ steps:
       colcon-mixin-name: coverage-pytest
       # If possible, pin the repository in the workflow to a specific commit to avoid
       # changes in colcon-mixin-repository from breaking your tests.
-      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/5c45b95018788deff62202aaa831ad4c20ebe2c6/index.yaml
+      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
 ```
 
 #### Integrate `action-ros-ci` with `codecov`
 
 The generated code coverage information can be uploaded to [codecov.io](https://codecov.io/).
-In this case, you will need to setup a secret `CODECOV_TOKEN` in [your repository settings][creating-encrypted-secrets].
 
-See [action/codecov-action](https://github.com/codecov/codecov-action) documentation for more information about how to setup the action.
+For a private repo, you will need to setup a secret `CODECOV_TOKEN` in [your repository settings][creating-encrypted-secrets].
+See [`codecov/codecov-action`](https://github.com/codecov/codecov-action) documentation for more information about how to setup the action.
 
 ```yaml
 steps:
+  - uses: actions/checkout@v2
   - uses: ros-tooling/setup-ros@v0.1
     with:
       required-ros-distributions: foxy
@@ -220,42 +257,46 @@ steps:
     with:
       package-name: my_package
       target-ros2-distro: foxy
-      colcon-mixin-name: coverage-gcc
+      colcon-mixin-name: coverage-gcc coverage-pytest
       # If possible, pin the repository in the workflow to a specific commit to avoid
       # changes in colcon-mixin-repository from breaking your tests.
-      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/5c45b95018788deff62202aaa831ad4c20ebe2c6/index.yaml
-  - uses: codecov/codecov-action@v1.0.7
+      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
+  - uses: codecov/codecov-action@v1.2.1
     with:
-      token: ${{ secrets.CODECOV_TOKEN }}
-      file: ros_ws/lcov/total_coverage.info
+      token: ${{ secrets.CODECOV_TOKEN }}  # only needed for private repos
+      files: ros_ws/lcov/total_coverage.info,ros_ws/coveragepy/.coverage
       flags: unittests
       name: codecov-umbrella
 ```
 
-You will also need to add a `codecov.yaml` configuration file (at the root of your repo):
+You will also need to add a [`codecov.yml` configuration file](https://docs.codecov.io/docs/codecovyml-reference) (at the root of your repo):
 
 ```yaml
 fixes:
-  - "ros_ws/src/my_package/::"
+  # For each package in your repo
+  - "ros_ws/src/*/my_repo/my_package/::"
 ```
 
-The configuration file is required to let codecov map the workspace directory structure, to the Git repository structure, and setup the links between codecov and GitHub properly.
+The configuration file is required to let codecov map the workspace directory structure to the Git repository structure, and setup the links between codecov and GitHub properly.
+Note here that `actions/checkout` is required because `codecov/codecov-action` needs the `codecov.yml` file.
 
 ### Store `colcon` logs as build artifacts
 
 GitHub workflows can persist data generated in workers during the build using [artifacts](persisting-workflow-data-using-artifacts). `action-ros-ci` generated colcon logs can be saved as follows:
 
 ```yaml
-- uses: ros-tooling/action-ros-ci@v0.1
-  id: action_ros_ci_step
-  with:
-    package-name: ament_copyright
-    target-ros2-distro: foxy
-- uses: actions/upload-artifact@v1
-  with:
-    name: colcon-logs
-    path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
-- if: always() # upload the logs even when the build fails
+steps:
+  # ...
+  - uses: ros-tooling/action-ros-ci@v0.1
+    id: action_ros_ci_step
+    with:
+      package-name: ament_copyright
+      target-ros2-distro: foxy
+  - uses: actions/upload-artifact@v1
+    with:
+      name: colcon-logs
+      path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
+    if: always() # upload the logs even when the build fails
 ```
 
 ### Use with private repos
@@ -266,10 +307,13 @@ Generate a [personal access token](https://github.com/settings/tokens) with the 
 For example, if your secret is called `REPO_TOKEN`:
 
 ```yaml
-- uses: ros-tooling/action-ros-ci@v0.1
-  with:
-    package-name: my_package
-    import-token: ${{ secrets.REPO_TOKEN }}
+steps:
+  # ...
+  - uses: ros-tooling/action-ros-ci@v0.1
+    with:
+      package-name: my_package
+      import-token: ${{ secrets.REPO_TOKEN }}
+      # ...
 ```
 
 ### Interdependent pull requests or merge requests
@@ -288,6 +332,10 @@ action-ros-ci-repos-override: https://gist.github.com/some-user/some-other.repos
 action-ros-ci-repos-supplemental: https://gist.github.com/some-user/some-supplemental.repos
 action-ros-ci-repos-supplemental: file://path/to/some/other/supplemental.repos
 ```
+
+## Developing
+
+For developing and releasing `action-ros-ci`, see [`DEVELOPING.md`](DEVELOPING.md).
 
 ## License
 
