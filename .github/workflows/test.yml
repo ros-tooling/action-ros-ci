@@ -176,6 +176,8 @@ jobs:
       matrix:
         os: [macOS-latest, windows-latest, ubuntu-20.04]
         ros_distribution: [foxy, rolling]
+    env:
+      DISTRO_REPOS_URL: "https://raw.githubusercontent.com/ros2/ros2/${{ matrix.ros_distribution == 'rolling' && 'master' || matrix.ros_distribution }}/ros2.repos"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2.1.4
@@ -189,6 +191,7 @@ jobs:
         with:
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
         name: "Check that ament_copyright install directory is present"
 
@@ -198,6 +201,7 @@ jobs:
         with:
           package-name: ament_copyright ament_lint
           target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_copyright"
         name: "Check that ament_copyright install directory is present"
       - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
@@ -210,6 +214,7 @@ jobs:
         with:
           package-name: rmw_implementation
           target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_connext_dependency.outputs.ros-workspace-directory-name }}/install/rmw_implementation"
         name: "Check that rmw_implementation install directory is present"
         if: matrix.os == 'ubuntu-20.04'
@@ -222,6 +227,7 @@ jobs:
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/install/ament_copyright"
         name: "Check that ament_copyright install directory is present"
 
