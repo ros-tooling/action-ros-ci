@@ -226,9 +226,10 @@ GitHub workflows can persist data generated in workers during the build using [a
 - if: always() # upload the logs even when the build fails
 ```
 
-### Use with a private repo
+### Use with private repos
 
-If using `action-ros-ci` with a private repo, it needs a personal access token to be able to checkout the code.
+`action-ros-ci` needs a personal access token to be able to clone private repositories.
+This may include the repository that is being tested as well as other repositories included in repos files provided through `vcs-repo-file-url`.
 Generate a [personal access token](https://github.com/settings/tokens) with the "repo" scope and add it to your repo's [secrets][creating-encrypted-secrets].
 For example, if your secret is called `REPO_TOKEN`:
 

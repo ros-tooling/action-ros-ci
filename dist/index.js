@@ -11052,6 +11052,14 @@ function run() {
             yield io.rmRF(rosWorkspaceDir);
             // Checkout ROS 2 from source and install ROS 2 system dependencies
             yield io.mkdirP(rosWorkspaceDir + "/src");
+            if (importToken !== "") {
+                const config = `
+[url "https://${importToken}@github.com"]
+	insteadOf = https://github.com
+[url "http://${importToken}@github.com"]
+	insteadOf = http://github.com`;
+                fs_1.default.appendFileSync(path.join(os.homedir(), ".gitconfig"), config);
+            }
             const options = {
                 cwd: rosWorkspaceDir,
             };
@@ -11074,10 +11082,6 @@ function run() {
             if (github.context.payload.pull_request) {
                 repoFullName = github.context.payload.pull_request.head.repo.full_name;
             }
-            let tokenAuth = importToken;
-            if (tokenAuth !== "") {
-                tokenAuth = tokenAuth.concat("@");
-            }
             const headRef = process.env.GITHUB_HEAD_REF;
             const commitRef = headRef || github.context.sha;
             const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
@@ -11086,7 +11090,7 @@ function run() {
             const repoFileContent = `repositories:
   ${randomStringPrefix}/${repo["repo"]}:
     type: git
-    url: 'https://${tokenAuth}github.com/${repoFullName}.git'
+    url: 'https://github.com/${repoFullName}.git'
     version: '${commitRef}'`;
             fs_1.default.writeFileSync(repoFilePath, repoFileContent);
             yield execBashCommand("vcs import --force --recursive src/ < package.repo", undefined, options);
