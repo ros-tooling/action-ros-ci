@@ -240,6 +240,21 @@ jobs:
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
 
+      - uses: ./
+        id: test_colcon_defaults
+        name: "Test single package, with colcon defaults"
+        with:
+          colcon-defaults: |
+            {
+              "build": {
+                "build-base": "build-custom"
+              }
+            }
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+      - run: test -d "${{ steps.test_colcon_defaults.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+      - run: test -d "${{ steps.test_colcon_defaults.outputs.ros-workspace-directory-name }}/build-custom"
+
       # The second repo file is ignored, but will get vcs-import'ed anyway.
       # This test case just run basic testing on the action logic, making
       # sure the for-loop is implemented correctly.

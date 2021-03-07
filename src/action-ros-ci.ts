@@ -48,6 +48,21 @@ const isLinux: boolean = process.platform == "linux";
 const isWindows: boolean = process.platform == "win32";
 
 /**
+ * Check if a string is a valid JSON string.
+ *
+ * @param str the string to validate
+ * @returns `true` if valid, `false` otherwise
+ */
+function isValidJson(str: string): boolean {
+	try {
+		JSON.parse(str);
+	} catch (e) {
+		return false;
+	}
+	return true;
+}
+
+/**
  * Convert local paths to URLs.
  *
  * The user can pass the VCS repo file either as a URL or a path.
@@ -195,6 +210,7 @@ async function run() {
 		const repo = github.context.repo;
 		const workspace = process.env.GITHUB_WORKSPACE as string;
 
+		const colconDefaults = core.getInput("colcon-defaults");
 		const colconMixinName = core.getInput("colcon-mixin-name");
 		const colconMixinRepo = core.getInput("colcon-mixin-repository");
 		const extraCmakeArgs = core.getInput("extra-cmake-args");
@@ -268,8 +284,19 @@ async function run() {
 			);
 		}
 
-		// Reset colcon configuration.
-		await io.rmRF(path.join(os.homedir(), ".colcon"));
+		// Reset colcon configuration and create defaults file if one was provided.
+		const colconHome = path.join(os.homedir(), ".colcon");
+		await io.rmRF(colconHome);
+		if (colconDefaults.length > 0) {
+			if (!isValidJson(colconDefaults)) {
+				core.setFailed(
+					`colcon-defaults value is not a valid JSON string:\n${colconDefaults}`
+				);
+				return;
+			}
+			await io.mkdirP(colconHome);
+			fs.writeFileSync(path.join(colconHome, "defaults.yaml"), colconDefaults);
+		}
 
 		// Wipe out the workspace directory to ensure the workspace is always
 		// identical.

@@ -104,6 +104,28 @@ steps:
       target-ros1-distro: melodic
 ```
 
+### Use a `colcon` `defaults.yaml` file
+
+To use a [`colcon` `defaults.yaml` file](https://colcon.readthedocs.io/en/released/user/configuration.html#defaults-yaml), provide a valid JSON string through the `colcon-defaults` input.
+This allows using a `colcon` option/argument that is not exposed by this action's inputs.
+
+```yaml
+steps:
+  - uses: ros-tooling/setup-ros@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.1
+    with:
+      package-name: my_package
+      target-ros2-distro: foxy
+      colcon-defaults: |
+        {
+          "build": {
+            "cmake-args": [
+                "-DMY_CUSTOM_OPTION=ON"
+            ]
+          }
+        }
+```
+
 ### Enable Address Sanitizer to automatically report memory issues
 
 [ASan][addresssanitizer] is an open-source tool developed to automatically report
