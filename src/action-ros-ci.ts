@@ -285,8 +285,8 @@ async function run() {
 		}
 
 		// Reset colcon configuration and create defaults file if one was provided.
-		const colconHome = path.join(os.homedir(), ".colcon");
-		await io.rmRF(colconHome);
+		await io.rmRF(path.join(os.homedir(), ".colcon"));
+		let colconDefaultsFile = "";
 		if (colconDefaults.length > 0) {
 			if (!isValidJson(colconDefaults)) {
 				core.setFailed(
@@ -294,8 +294,11 @@ async function run() {
 				);
 				return;
 			}
-			await io.mkdirP(colconHome);
-			fs.writeFileSync(path.join(colconHome, "defaults.yaml"), colconDefaults);
+			colconDefaultsFile = path.join(
+				fs.mkdtempSync(path.join(os.tmpdir(), "colcon-defaults-")),
+				"defaults.yaml"
+			);
+			fs.writeFileSync(colconDefaultsFile, colconDefaults);
 		}
 
 		// Wipe out the workspace directory to ensure the workspace is always
@@ -314,9 +317,14 @@ async function run() {
 			fs.appendFileSync(path.join(os.homedir(), ".gitconfig"), config);
 		}
 
-		const options = {
+		const options: im.ExecOptions = {
 			cwd: rosWorkspaceDir,
 		};
+		if (colconDefaultsFile !== "") {
+			options.env = {
+				COLCON_DEFAULTS_FILE: colconDefaultsFile,
+			};
+		}
 
 		const curlFlags = curlFlagsArray.join(" ");
 		for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
@@ -373,8 +381,12 @@ async function run() {
 		);
 
 		if (colconMixinName !== "" && colconMixinRepo !== "") {
-			await execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
-			await execBashCommand("colcon mixin update default");
+			await execBashCommand(
+				`colcon mixin add default '${colconMixinRepo}'`,
+				undefined,
+				options
+			);
+			await execBashCommand("colcon mixin update default", undefined, options);
 		}
 
 		let extra_options: string[] = [];
@@ -441,7 +453,7 @@ async function run() {
 		// data fail the build.
 		const colconLcovInitialCmd = "colcon lcov-result --initial";
 		await execBashCommand(colconLcovInitialCmd, colconCommandPrefix, {
-			cwd: rosWorkspaceDir,
+			...options,
 			ignoreReturnCode: true,
 		});
 
@@ -462,7 +474,7 @@ async function run() {
 			`--packages-select ${packageNames}`,
 		].join(" ");
 		await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
-			cwd: rosWorkspaceDir,
+			...options,
 			ignoreReturnCode: true,
 		});
 

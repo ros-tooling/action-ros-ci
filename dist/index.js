@@ -11062,15 +11062,15 @@ function run() {
                 });
             }
             // Reset colcon configuration and create defaults file if one was provided.
-            const colconHome = path.join(os.homedir(), ".colcon");
-            yield io.rmRF(colconHome);
+            yield io.rmRF(path.join(os.homedir(), ".colcon"));
+            let colconDefaultsFile = "";
             if (colconDefaults.length > 0) {
                 if (!isValidJson(colconDefaults)) {
                     core.setFailed(`colcon-defaults value is not a valid JSON string:\n${colconDefaults}`);
                     return;
                 }
-                yield io.mkdirP(colconHome);
-                fs_1.default.writeFileSync(path.join(colconHome, "defaults.yaml"), colconDefaults);
+                colconDefaultsFile = path.join(fs_1.default.mkdtempSync(path.join(os.tmpdir(), "colcon-defaults-")), "defaults.yaml");
+                fs_1.default.writeFileSync(colconDefaultsFile, colconDefaults);
             }
             // Wipe out the workspace directory to ensure the workspace is always
             // identical.
@@ -11088,6 +11088,11 @@ function run() {
             const options = {
                 cwd: rosWorkspaceDir,
             };
+            if (colconDefaultsFile !== "") {
+                options.env = {
+                    COLCON_DEFAULTS_FILE: colconDefaultsFile,
+                };
+            }
             const curlFlags = curlFlagsArray.join(" ");
             for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
                 yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`, undefined, options);
@@ -11123,8 +11128,8 @@ function run() {
             yield execBashCommand("vcs log -l1 src/", undefined, options);
             yield installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
             if (colconMixinName !== "" && colconMixinRepo !== "") {
-                yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
-                yield execBashCommand("colcon mixin update default");
+                yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, undefined, options);
+                yield execBashCommand("colcon mixin update default", undefined, options);
             }
             let extra_options = [];
             if (colconMixinName !== "") {
@@ -11186,10 +11191,7 @@ function run() {
             // ignoreReturnCode is set to true to avoid having a lack of coverage
             // data fail the build.
             const colconLcovInitialCmd = "colcon lcov-result --initial";
-            yield execBashCommand(colconLcovInitialCmd, colconCommandPrefix, {
-                cwd: rosWorkspaceDir,
-                ignoreReturnCode: true,
-            });
+            yield execBashCommand(colconLcovInitialCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
             const colconTestCmd = [
                 `colcon test`,
                 `--event-handlers console_cohesion+`,
@@ -11205,10 +11207,7 @@ function run() {
                 `--filter ${coverageIgnorePattern}`,
                 `--packages-select ${packageNames}`,
             ].join(" ");
-            yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
-                cwd: rosWorkspaceDir,
-                ignoreReturnCode: true,
-            });
+            yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
             const colconCoveragepyResultCmd = [
                 `colcon coveragepy-result`,
                 `--packages-select ${packageNames}`,
