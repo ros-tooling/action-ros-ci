@@ -112,6 +112,8 @@ This allows using a `colcon` option/argument that is not exposed by this action'
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@v0.1
+    with:
+      required-ros-distributions: foxy
   - uses: ros-tooling/action-ros-ci@v0.1
     with:
       package-name: my_package
