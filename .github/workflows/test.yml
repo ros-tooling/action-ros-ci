@@ -252,6 +252,7 @@ jobs:
             }
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_colcon_defaults.outputs.ros-workspace-directory-name }}/install/ament_copyright"
       - run: test -d "${{ steps.test_colcon_defaults.outputs.ros-workspace-directory-name }}/build-custom"
 
