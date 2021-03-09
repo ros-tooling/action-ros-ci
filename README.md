@@ -31,7 +31,7 @@ The action first assembles a workspace, then runs `colcon build`, and `colcon te
 
 The workspace is built by running:
 
-- `vcs import` on the repo file specified through the `vcs-repo-file-url` argument (defaults to `https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos`).
+- `vcs import` on the repo file(s) specified through the `vcs-repo-file-url` argument, if any (defaults to none)
 - checkout the code under test in the workspace using `vcs`
 - `rosdep install` for the workspace, to get its dependencies
 - run `colcon build` for all packages specified in `package-name`
@@ -64,6 +64,7 @@ steps:
     with:
       package-name: ament_copyright
       target-ros2-distro: foxy
+      vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/foxy/ros2.repos
 ```
 
 ### Build with a custom `repos` or `rosinstall` file
@@ -101,7 +102,6 @@ steps:
     with:
       package-name: my_package
       target-ros1-distro: melodic
-      vcs-repo-file-url: ""
 ```
 
 ### Enable Address Sanitizer to automatically report memory issues
@@ -112,6 +112,8 @@ memory corruption bugs.
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@v0.1
+    with:
+      required-ros-distributions: foxy
   - uses: ros-tooling/action-ros-ci@v0.1
     with:
       colcon-mixin-name: asan
@@ -142,6 +144,8 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@v0.1
+    with:
+      required-ros-distributions: foxy
   - uses: ros-tooling/action-ros-ci@v0.1
     with:
       package-name: my_package
@@ -164,6 +168,8 @@ preferable to use a `colcon` mixin to pass the appropriate flags automatically.
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@v0.1
+    with:
+      required-ros-distributions: foxy
   - uses: ros-tooling/action-ros-ci@v0.1
     with:
       package-name: my_package
@@ -184,6 +190,8 @@ See [action/codecov-action](https://github.com/codecov/codecov-action) documenta
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@v0.1
+    with:
+      required-ros-distributions: foxy
   - uses: ros-tooling/action-ros-ci@v0.1
     with:
       package-name: my_package
