@@ -5,6 +5,13 @@ branding:
   icon: "activity"
   color: "gray-dark"
 inputs:
+  colcon-defaults:
+    default: ""
+    description: |
+      Valid JSON content to use as a colcon defaults.yaml file.
+      Use a pipe to provide a multiline string.
+      See: https://colcon.readthedocs.io/en/released/user/configuration.html#defaults-yaml
+    required: false
   colcon-mixin-name:
     default: ""
     description: "Colcon mixin to be used to compile and test (empty means no mixin)"

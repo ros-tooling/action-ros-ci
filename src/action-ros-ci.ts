@@ -48,6 +48,21 @@ const isLinux: boolean = process.platform == "linux";
 const isWindows: boolean = process.platform == "win32";
 
 /**
+ * Check if a string is a valid JSON string.
+ *
+ * @param str the string to validate
+ * @returns `true` if valid, `false` otherwise
+ */
+function isValidJson(str: string): boolean {
+	try {
+		JSON.parse(str);
+	} catch (e) {
+		return false;
+	}
+	return true;
+}
+
+/**
  * Convert local paths to URLs.
  *
  * The user can pass the VCS repo file either as a URL or a path.
@@ -195,6 +210,7 @@ async function run() {
 		const repo = github.context.repo;
 		const workspace = process.env.GITHUB_WORKSPACE as string;
 
+		const colconDefaults = core.getInput("colcon-defaults");
 		const colconMixinName = core.getInput("colcon-mixin-name");
 		const colconMixinRepo = core.getInput("colcon-mixin-repository");
 		const extraCmakeArgs = core.getInput("extra-cmake-args");
@@ -268,8 +284,22 @@ async function run() {
 			);
 		}
 
-		// Reset colcon configuration.
+		// Reset colcon configuration and create defaults file if one was provided.
 		await io.rmRF(path.join(os.homedir(), ".colcon"));
+		let colconDefaultsFile = "";
+		if (colconDefaults.length > 0) {
+			if (!isValidJson(colconDefaults)) {
+				core.setFailed(
+					`colcon-defaults value is not a valid JSON string:\n${colconDefaults}`
+				);
+				return;
+			}
+			colconDefaultsFile = path.join(
+				fs.mkdtempSync(path.join(os.tmpdir(), "colcon-defaults-")),
+				"defaults.yaml"
+			);
+			fs.writeFileSync(colconDefaultsFile, colconDefaults);
+		}
 
 		// Wipe out the workspace directory to ensure the workspace is always
 		// identical.
@@ -287,9 +317,14 @@ async function run() {
 			fs.appendFileSync(path.join(os.homedir(), ".gitconfig"), config);
 		}
 
-		const options = {
+		const options: im.ExecOptions = {
 			cwd: rosWorkspaceDir,
 		};
+		if (colconDefaultsFile !== "") {
+			options.env = {
+				COLCON_DEFAULTS_FILE: colconDefaultsFile,
+			};
+		}
 
 		const curlFlags = curlFlagsArray.join(" ");
 		for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
@@ -346,8 +381,12 @@ async function run() {
 		);
 
 		if (colconMixinName !== "" && colconMixinRepo !== "") {
-			await execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
-			await execBashCommand("colcon mixin update default");
+			await execBashCommand(
+				`colcon mixin add default '${colconMixinRepo}'`,
+				undefined,
+				options
+			);
+			await execBashCommand("colcon mixin update default", undefined, options);
 		}
 
 		let extra_options: string[] = [];
@@ -414,7 +453,7 @@ async function run() {
 		// data fail the build.
 		const colconLcovInitialCmd = "colcon lcov-result --initial";
 		await execBashCommand(colconLcovInitialCmd, colconCommandPrefix, {
-			cwd: rosWorkspaceDir,
+			...options,
 			ignoreReturnCode: true,
 		});
 
@@ -435,7 +474,7 @@ async function run() {
 			`--packages-select ${packageNames}`,
 		].join(" ");
 		await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
-			cwd: rosWorkspaceDir,
+			...options,
 			ignoreReturnCode: true,
 		});
 

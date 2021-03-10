@@ -10875,6 +10875,21 @@ const targetROS2DistroInput = "target-ros2-distro";
 const isLinux = process.platform == "linux";
 const isWindows = process.platform == "win32";
 /**
+ * Check if a string is a valid JSON string.
+ *
+ * @param str the string to validate
+ * @returns `true` if valid, `false` otherwise
+ */
+function isValidJson(str) {
+    try {
+        JSON.parse(str);
+    }
+    catch (e) {
+        return false;
+    }
+    return true;
+}
+/**
  * Convert local paths to URLs.
  *
  * The user can pass the VCS repo file either as a URL or a path.
@@ -10993,6 +11008,7 @@ function run() {
         try {
             const repo = github.context.repo;
             const workspace = process.env.GITHUB_WORKSPACE;
+            const colconDefaults = core.getInput("colcon-defaults");
             const colconMixinName = core.getInput("colcon-mixin-name");
             const colconMixinRepo = core.getInput("colcon-mixin-repository");
             const extraCmakeArgs = core.getInput("extra-cmake-args");
@@ -11045,8 +11061,17 @@ function run() {
                     retries: 3,
                 });
             }
-            // Reset colcon configuration.
+            // Reset colcon configuration and create defaults file if one was provided.
             yield io.rmRF(path.join(os.homedir(), ".colcon"));
+            let colconDefaultsFile = "";
+            if (colconDefaults.length > 0) {
+                if (!isValidJson(colconDefaults)) {
+                    core.setFailed(`colcon-defaults value is not a valid JSON string:\n${colconDefaults}`);
+                    return;
+                }
+                colconDefaultsFile = path.join(fs_1.default.mkdtempSync(path.join(os.tmpdir(), "colcon-defaults-")), "defaults.yaml");
+                fs_1.default.writeFileSync(colconDefaultsFile, colconDefaults);
+            }
             // Wipe out the workspace directory to ensure the workspace is always
             // identical.
             yield io.rmRF(rosWorkspaceDir);
@@ -11063,6 +11088,11 @@ function run() {
             const options = {
                 cwd: rosWorkspaceDir,
             };
+            if (colconDefaultsFile !== "") {
+                options.env = {
+                    COLCON_DEFAULTS_FILE: colconDefaultsFile,
+                };
+            }
             const curlFlags = curlFlagsArray.join(" ");
             for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
                 yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`, undefined, options);
@@ -11098,8 +11128,8 @@ function run() {
             yield execBashCommand("vcs log -l1 src/", undefined, options);
             yield installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
             if (colconMixinName !== "" && colconMixinRepo !== "") {
-                yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`);
-                yield execBashCommand("colcon mixin update default");
+                yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, undefined, options);
+                yield execBashCommand("colcon mixin update default", undefined, options);
             }
             let extra_options = [];
             if (colconMixinName !== "") {
@@ -11161,10 +11191,7 @@ function run() {
             // ignoreReturnCode is set to true to avoid having a lack of coverage
             // data fail the build.
             const colconLcovInitialCmd = "colcon lcov-result --initial";
-            yield execBashCommand(colconLcovInitialCmd, colconCommandPrefix, {
-                cwd: rosWorkspaceDir,
-                ignoreReturnCode: true,
-            });
+            yield execBashCommand(colconLcovInitialCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
             const colconTestCmd = [
                 `colcon test`,
                 `--event-handlers console_cohesion+`,
@@ -11180,10 +11207,7 @@ function run() {
                 `--filter ${coverageIgnorePattern}`,
                 `--packages-select ${packageNames}`,
             ].join(" ");
-            yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
-                cwd: rosWorkspaceDir,
-                ignoreReturnCode: true,
-            });
+            yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
             const colconCoveragepyResultCmd = [
                 `colcon coveragepy-result`,
                 `--packages-select ${packageNames}`,
