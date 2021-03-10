@@ -43,7 +43,7 @@
 		"@typescript-eslint/parser": "^4.9.1",
 		"@vercel/ncc": "^0.27.0",
 		"acorn": "^8.0.5",
-		"eslint": "^7.18.0",
+		"eslint": "^7.21.0",
 		"eslint-config-prettier": "^7.2.0",
 		"eslint-plugin-prettier": "^3.3.1",
 		"husky": "^4.3.5",
