@@ -176,7 +176,12 @@ steps:
       required-ros-distributions: foxy
   - uses: ros-tooling/action-ros-ci@v0.1
     with:
-      colcon-mixin-name: asan
+      colcon-defaults: |
+        {
+          "build": {
+            "mixin": ["asan-gcc"]
+          }
+        }
       colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/3e627e0fa30db85aea05a50e2c61a9832664d236/index.yaml
       package-name: my_package
       target-ros2-distro: foxy
@@ -194,12 +199,11 @@ ASan is analyzing memory issues at runtime. ASan diagnostic messages will be emi
 
 #### Generate code coverage information using `lcov` and `colcon-lcov-result`
 
-If the compiler is invoked with the appropriate flags, `action-ros-ci` will use
-[`colcon-lcov-result`](https://github.com/colcon/colcon-lcov-result) to generate
-coverage information.
+Generate code coverage information for C/C++ files using the appropriate mixins for `gcc`.
+`action-ros-ci` uses [`colcon-lcov-result`](https://github.com/colcon/colcon-lcov-result) to aggregate generated coverage information.
 
 Flags can be passed manually using, for instance, `extra-cmake-args`, but it is
-preferable to use a `colcon` mixin to pass the appropriate flags automatically.
+preferable to use a `colcon` mixin (through [`colcon-defaults`](#Use-a-colcon-defaultsyaml-file)) to pass the appropriate flags automatically.
 
 ```yaml
 steps:
@@ -210,7 +214,12 @@ steps:
     with:
       package-name: my_package
       target-ros2-distro: foxy
-      colcon-mixin-name: coverage-gcc
+      colcon-defaults: |
+        {
+          "build": {
+            "mixin": ["coverage-gcc"]
+          }
+        }
       # If possible, pin the repository in the workflow to a specific commit to avoid
       # changes in colcon-mixin-repository from breaking your tests.
       colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
@@ -218,12 +227,8 @@ steps:
 
 #### Generate code coverage information using `coveragepy` and `colcon-coveragepy-result`
 
-If `colcon` is invoked with the `coverage-pytest` mixin, `action-ros-ci` will use
-[`colcon-coveragepy-result`](https://github.com/colcon/colcon-coveragepy-result) to generate
-coverage information.
-
-Flags can be passed manually using, for instance, `extra-cmake-args`, but it is
-preferable to use a `colcon` mixin to pass the appropriate flags automatically.
+Generate code coverage information for Python files using the appropriate mixins.
+`action-ros-ci` uses [`colcon-coveragepy-result`](https://github.com/colcon/colcon-coveragepy-result) to aggregate generated coverage information.
 
 ```yaml
 steps:
@@ -234,7 +239,15 @@ steps:
     with:
       package-name: my_package
       target-ros2-distro: foxy
-      colcon-mixin-name: coverage-pytest
+      colcon-defaults: |
+        {
+          "build": {
+            "mixin": ["coverage-pytest"]
+          },
+          "test": {
+            "mixin": ["coverage-pytest"]
+          }
+        }
       # If possible, pin the repository in the workflow to a specific commit to avoid
       # changes in colcon-mixin-repository from breaking your tests.
       colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
@@ -257,7 +270,15 @@ steps:
     with:
       package-name: my_package
       target-ros2-distro: foxy
-      colcon-mixin-name: coverage-gcc coverage-pytest
+      colcon-defaults: |
+        {
+          "build": {
+            "mixin": ["coverage-gcc", "coverage-pytest"]
+          },
+          "test": {
+            "mixin": ["coverage-pytest"]
+          }
+        }
       # If possible, pin the repository in the workflow to a specific commit to avoid
       # changes in colcon-mixin-repository from breaking your tests.
       colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml

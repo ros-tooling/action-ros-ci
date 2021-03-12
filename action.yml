@@ -12,13 +12,9 @@ inputs:
       Use a pipe to provide a multiline string.
       See: https://colcon.readthedocs.io/en/released/user/configuration.html#defaults-yaml
     required: false
-  colcon-mixin-name:
-    default: ""
-    description: "Colcon mixin to be used to compile and test (empty means no mixin)"
-    required: false
   colcon-mixin-repository:
     default: "https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml"
-    description: "Mixin repository containing the mixin specified in colcon-mixin-name"
+    description: "Mixin repository containing the mixin(s) specified through colcon-defaults or colcon-extra-args"
     required: false
   coverage-ignore-pattern:
     description: |
@@ -33,7 +29,7 @@ inputs:
   colcon-extra-args:
     default: ""
     description: |
-      Arbitrary space-separated additional flags to pass to colcon.
+      Arbitrary space-separated additional flags to pass to colcon (build & test).
     required: false
   import-token:
     default: ""

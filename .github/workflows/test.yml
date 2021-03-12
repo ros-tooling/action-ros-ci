@@ -236,7 +236,12 @@ jobs:
         id: test_mixin
         name: "Test single package, with custom mixin"
         with:
-          colcon-mixin-name: asan
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["asan-gcc"]
+              }
+            }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
@@ -289,7 +294,12 @@ jobs:
         id: test_coverage
         name: "Test single package, with coverage enabled (Linux only)"
         with:
-          colcon-mixin-name: coverage-gcc
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["coverage-gcc"]
+              }
+            }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           package-name: osrf_testing_tools_cpp
           target-ros2-distro: ${{ matrix.ros_distribution }}
@@ -391,7 +401,12 @@ jobs:
         id: test_mixin
         name: "Test single package, with custom mixin"
         with:
-          colcon-mixin-name: asan
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["asan-gcc"]
+              }
+            }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
@@ -428,7 +443,12 @@ jobs:
         id: test_coverage
         name: "Test single package, with coverage enabled (Linux only)"
         with:
-          colcon-mixin-name: coverage-gcc
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["coverage-gcc"]
+              }
+            }
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           package-name: osrf_testing_tools_cpp
           target-ros2-distro: ${{ matrix.ros_distribution }}

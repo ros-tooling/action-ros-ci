@@ -211,7 +211,6 @@ async function run() {
 		const workspace = process.env.GITHUB_WORKSPACE as string;
 
 		const colconDefaults = core.getInput("colcon-defaults");
-		const colconMixinName = core.getInput("colcon-mixin-name");
 		const colconMixinRepo = core.getInput("colcon-mixin-repository");
 		const extraCmakeArgs = core.getInput("extra-cmake-args");
 		const colconExtraArgs = core.getInput("colcon-extra-args");
@@ -395,7 +394,7 @@ done`;
 			targetRos2Distro
 		);
 
-		if (colconMixinName !== "" && colconMixinRepo !== "") {
+		if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
 			await execBashCommand(
 				`colcon mixin add default '${colconMixinRepo}'`,
 				undefined,
@@ -405,9 +404,6 @@ done`;
 		}
 
 		let extra_options: string[] = [];
-		if (colconMixinName !== "") {
-			extra_options = extra_options.concat(["--mixin", colconMixinName]);
-		}
 		if (colconExtraArgs !== "") {
 			extra_options = extra_options.concat(colconExtraArgs);
 		}
@@ -457,7 +453,7 @@ done`;
 			`--event-handlers console_cohesion+`,
 			`--packages-up-to ${packageNames}`,
 			`${extra_options.join(" ")}`,
-			`--cmake-args ${extraCmakeArgs}`,
+			extraCmakeArgs !== "" ? `--cmake-args ${extraCmakeArgs}` : "",
 		].join(" ");
 		if (!isWindows) {
 			colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
