@@ -19,6 +19,8 @@ env:
 jobs:
   test_lint:
     name: "Lint sources"
+    # Don't run scheduled jobs on forks
+    if: ${{ (github.event_name != 'schedule') || (github.event_name == 'schedule' && github.repository == 'ros-tooling/action-ros-ci') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -29,6 +31,8 @@ jobs:
 
   test_ros:
     name: "Test ROS package"
+    # Don't run scheduled jobs on forks
+    if: ${{ (github.event_name != 'schedule') || (github.event_name == 'schedule' && github.repository == 'ros-tooling/action-ros-ci') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -70,6 +74,8 @@ jobs:
 
   test_ros2:
     name: "Test ROS 2"
+    # Don't run scheduled jobs on forks
+    if: ${{ (github.event_name != 'schedule') || (github.event_name == 'schedule' && github.repository == 'ros-tooling/action-ros-ci') }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -100,6 +106,8 @@ jobs:
 
   test_ros2_foxy_package_with_dependencies:
     name: "Test ROS 2 foxy package with ROS dependencies"
+    # Don't run scheduled jobs on forks
+    if: ${{ (github.event_name != 'schedule') || (github.event_name == 'schedule' && github.repository == 'ros-tooling/action-ros-ci') }}
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -114,6 +122,8 @@ jobs:
 
   test_ros2_docker:
     name: "ROS 2 Docker"
+    # Don't run scheduled jobs on forks
+    if: ${{ (github.event_name != 'schedule') || (github.event_name == 'schedule' && github.repository == 'ros-tooling/action-ros-ci') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -170,6 +180,8 @@ jobs:
 
   test_ros2_from_source:
     name: "ROS 2 from source"
+    # Don't run scheduled jobs on forks
+    if: ${{ (github.event_name != 'schedule') || (github.event_name == 'schedule' && github.repository == 'ros-tooling/action-ros-ci') }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -305,6 +317,8 @@ jobs:
 
   test_ros2_from_source_docker:
     name: "Test ROS 2 from source Docker"
+    # Don't run scheduled jobs on forks
+    if: ${{ (github.event_name != 'schedule') || (github.event_name == 'schedule' && github.repository == 'ros-tooling/action-ros-ci') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
