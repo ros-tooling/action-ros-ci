@@ -130,6 +130,9 @@ export async function execBashCommand(
 		toolRunnerCommandLineArgs,
 		options
 	);
+	if (options && options.silent) {
+		return runner.exec();
+	}
 	return core.group(message, () => {
 		return runner.exec();
 	});
@@ -324,6 +327,14 @@ async function run() {
 				COLCON_DEFAULTS_FILE: colconDefaultsFile,
 			};
 		}
+
+		// Make sure to delete root .colcon directory if it exists
+		// This is because, for some reason, using Docker, commands might get run as root
+		await execBashCommand(
+			`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`,
+			undefined,
+			{ ...options, silent: true }
+		);
 
 		const curlFlags = curlFlagsArray.join(" ");
 		for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
