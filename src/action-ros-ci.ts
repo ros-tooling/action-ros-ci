@@ -460,7 +460,6 @@ async function run() {
 		const colconTestCmd = [
 			`colcon test`,
 			`--event-handlers console_cohesion+`,
-			`--pytest-with-coverage`,
 			`--return-code-on-test-failure`,
 			`--packages-select ${packageNames}`,
 			`${extra_options.join(" ")}`,
