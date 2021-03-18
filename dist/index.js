@@ -11210,7 +11210,6 @@ done`;
             const colconTestCmd = [
                 `colcon test`,
                 `--event-handlers console_cohesion+`,
-                `--pytest-with-coverage`,
                 `--return-code-on-test-failure`,
                 `--packages-select ${packageNames}`,
                 `${extra_options.join(" ")}`,
@@ -11221,11 +11220,14 @@ done`;
                 `colcon lcov-result`,
                 `--filter ${coverageIgnorePattern}`,
                 `--packages-select ${packageNames}`,
+                `--verbose`,
             ].join(" ");
             yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
             const colconCoveragepyResultCmd = [
                 `colcon coveragepy-result`,
                 `--packages-select ${packageNames}`,
+                `--verbose`,
+                `--coverage-report-args -m`,
             ].join(" ");
             yield execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
             core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
