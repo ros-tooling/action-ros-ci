@@ -471,6 +471,7 @@ async function run() {
 			`colcon lcov-result`,
 			`--filter ${coverageIgnorePattern}`,
 			`--packages-select ${packageNames}`,
+			`--verbose`,
 		].join(" ");
 		await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
 			...options,
@@ -480,6 +481,8 @@ async function run() {
 		const colconCoveragepyResultCmd = [
 			`colcon coveragepy-result`,
 			`--packages-select ${packageNames}`,
+			`--verbose`,
+			`--coverage-report-args -m`,
 		].join(" ");
 		await execBashCommand(
 			colconCoveragepyResultCmd,
