@@ -339,11 +339,26 @@ async function run() {
 		// We do not want to allow the "default" head state of the package to
 		// to be present in the workspace, and colcon will fail stating it found twice
 		// a package with an identical name.
+		let posixPathScriptPath = "";
+		if (isWindows) {
+			// vcs might output paths with a mix of forward slashes and backslashes on Windows
+			posixPathScriptPath = path.join(rosWorkspaceDir, "slash_converter.sh");
+			const scriptContent = String.raw`#!/bin/bash
+while IFS= read -r line; do
+	echo "$line" | sed 's/\\/\//g'
+done`;
+			fs.writeFileSync(posixPathScriptPath, scriptContent, {
+				mode: 0o766,
+			});
+			posixPathScriptPath = posixPathScriptPath.replace(/\\/g, "/");
+		}
 		const posixRosWorkspaceDir = isWindows
 			? rosWorkspaceDir.replace(/\\/g, "/")
 			: rosWorkspaceDir;
 		await execBashCommand(
-			`vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$" | xargs rm -rf`
+			`vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$"` +
+				(isWindows ? ` | ${posixPathScriptPath}` : "") +
+				` | xargs rm -rf`
 		);
 
 		// The repo file for the repository needs to be generated on-the-fly to
