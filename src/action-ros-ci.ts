@@ -324,6 +324,7 @@ async function run() {
 		};
 		if (colconDefaultsFile !== "") {
 			options.env = {
+				...process.env,
 				COLCON_DEFAULTS_FILE: colconDefaultsFile,
 			};
 		}

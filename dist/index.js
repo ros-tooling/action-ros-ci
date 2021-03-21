@@ -11091,9 +11091,7 @@ function run() {
                 cwd: rosWorkspaceDir,
             };
             if (colconDefaultsFile !== "") {
-                options.env = {
-                    COLCON_DEFAULTS_FILE: colconDefaultsFile,
-                };
+                options.env = Object.assign(Object.assign({}, process.env), { COLCON_DEFAULTS_FILE: colconDefaultsFile });
             }
             // Make sure to delete root .colcon directory if it exists
             // This is because, for some reason, using Docker, commands might get run as root
