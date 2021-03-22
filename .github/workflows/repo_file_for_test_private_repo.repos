@@ -1,0 +1,5 @@
+repositories:
+  private-repo-test:
+    type: git
+    url: https://github.com/ros-tooling/private-repo-test.git
+    version: master
