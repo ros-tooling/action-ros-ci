@@ -11084,19 +11084,24 @@ function run_throw() {
         yield io.rmRF(rosWorkspaceDir);
         // Checkout ROS 2 from source and install ROS 2 system dependencies
         yield io.mkdirP(rosWorkspaceDir + "/src");
-        if (importToken !== "") {
-            const config = `
-[url "https://${importToken}@github.com"]
-	insteadOf = https://github.com
-[url "http://${importToken}@github.com"]
-	insteadOf = http://github.com`;
-            fs_1.default.appendFileSync(path.join(os.homedir(), ".gitconfig"), config);
-        }
         const options = {
             cwd: rosWorkspaceDir,
         };
         if (colconDefaultsFile !== "") {
             options.env = Object.assign(Object.assign({}, process.env), { COLCON_DEFAULTS_FILE: colconDefaultsFile });
+        }
+        if (importToken !== "") {
+            // Unset all local extraheader config entries possibly set by actions/checkout,
+            // because local settings take precedence and the default token used by
+            // actions/checkout might not have the right permissions for any/all repos
+            yield execBashCommand(`/usr/bin/git config --local --unset-all http.https://github.com/.extraheader || true`, undefined, options);
+            yield execBashCommand(String.raw `/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader'` +
+                ` && git config --local --unset-all 'http.https://github.com/.extraheader' || true`, undefined, options);
+            // Use a global insteadof entry because local configs aren't observed by git clone
+            yield execBashCommand(`/usr/bin/git config --global url.https://${importToken}@github.com.insteadof 'https://github.com'`, undefined, options);
+            if (core.isDebug()) {
+                yield execBashCommand(`/usr/bin/git config --list --show-origin || true`, undefined, options);
+            }
         }
         // Make sure to delete root .colcon directory if it exists
         // This is because, for some reason, using Docker, commands might get run as root
@@ -11239,7 +11244,10 @@ done`;
             `--coverage-report-args -m`,
         ]);
         yield execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
-        core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
+        if (importToken !== "") {
+            // Unset config so that it doesn't leak to other actions
+            yield execBashCommand(`/usr/bin/git config --global --unset-all url.https://${importToken}@github.com.insteadof`, undefined, options);
+        }
     });
 }
 function run() {
