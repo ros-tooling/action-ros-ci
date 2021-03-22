@@ -135,7 +135,7 @@ jobs:
       - uses: ./
         with:
           import-token: ${{ secrets.GITHUB_TOKEN }}
-          package-name: my_package
+          package-name: simple_package
           target-ros2-distro: foxy
           vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_private_repo.repos"
 
