@@ -6,8 +6,8 @@ on:
       - master
       - "releases/*"
   schedule:
-    # Run the CI automatically every hour to look for flakyness.
-    - cron: "0 * * * *"
+    # Run the CI automatically twice per day to look for flakyness.
+    - cron: "0 */12 * * *"
 
 defaults:
   run:
