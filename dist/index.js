@@ -10949,6 +10949,9 @@ function execBashCommand(commandLine, commandPrefix, options, log_message) {
             toolRunnerCommandLineArgs = ["-c", bashScript];
         }
         const runner = new tr.ToolRunner(toolRunnerCommandLine, toolRunnerCommandLineArgs, options);
+        if (options && options.silent) {
+            return runner.exec();
+        }
         return core.group(message, () => {
             return runner.exec();
         });
@@ -11009,7 +11012,6 @@ function run() {
             const repo = github.context.repo;
             const workspace = process.env.GITHUB_WORKSPACE;
             const colconDefaults = core.getInput("colcon-defaults");
-            const colconMixinName = core.getInput("colcon-mixin-name");
             const colconMixinRepo = core.getInput("colcon-mixin-repository");
             const extraCmakeArgs = core.getInput("extra-cmake-args");
             const colconExtraArgs = core.getInput("colcon-extra-args");
@@ -11089,10 +11091,11 @@ function run() {
                 cwd: rosWorkspaceDir,
             };
             if (colconDefaultsFile !== "") {
-                options.env = {
-                    COLCON_DEFAULTS_FILE: colconDefaultsFile,
-                };
+                options.env = Object.assign(Object.assign({}, process.env), { COLCON_DEFAULTS_FILE: colconDefaultsFile });
             }
+            // Make sure to delete root .colcon directory if it exists
+            // This is because, for some reason, using Docker, commands might get run as root
+            yield execBashCommand(`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`, undefined, Object.assign(Object.assign({}, options), { silent: true }));
             const curlFlags = curlFlagsArray.join(" ");
             for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
                 yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`, undefined, options);
@@ -11142,14 +11145,11 @@ done`;
             // Print HEAD commits of all repos
             yield execBashCommand("vcs log -l1 src/", undefined, options);
             yield installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
-            if (colconMixinName !== "" && colconMixinRepo !== "") {
+            if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
                 yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, undefined, options);
                 yield execBashCommand("colcon mixin update default", undefined, options);
             }
             let extra_options = [];
-            if (colconMixinName !== "") {
-                extra_options = extra_options.concat(["--mixin", colconMixinName]);
-            }
             if (colconExtraArgs !== "") {
                 extra_options = extra_options.concat(colconExtraArgs);
             }
@@ -11197,7 +11197,7 @@ done`;
                 `--event-handlers console_cohesion+`,
                 `--packages-up-to ${packageNames}`,
                 `${extra_options.join(" ")}`,
-                `--cmake-args ${extraCmakeArgs}`,
+                extraCmakeArgs !== "" ? `--cmake-args ${extraCmakeArgs}` : "",
             ].join(" ");
             if (!isWindows) {
                 colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
