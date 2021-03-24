@@ -136,7 +136,7 @@ jobs:
           required-ros-distributions: foxy
       - uses: ./
         with:
-          import-token: ${{ secrets.TOKEN_PRIVATE_REPO_TEST }}
+          import-token: ${{ secrets.GITHUB_TOKEN }}
           package-name: simple_package
           target-ros2-distro: foxy
           vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_private_repo.repos"
