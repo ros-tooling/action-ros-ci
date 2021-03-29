@@ -81,7 +81,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
       required-ros-distributions: foxy
-  - uses: ros-tooling/action-ros-ci@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -94,7 +94,7 @@ In this case, `action-ros-ci` will build all necessary ROS 2 dependencies of `my
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@v0.1
-  - uses: ros-tooling/action-ros-ci@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -115,7 +115,7 @@ steps:
       rosinstall_generator <package-name> --rosdistro <target-distro> \
       --deps-only --deps --upstream-development > /tmp/deps.repos
   # Pass the file to the action
-  - uses: ros-tooling/action-ros-ci@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -134,7 +134,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
       required-ros-distributions: melodic
-  - uses: ros-tooling/action-ros-ci@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
       target-ros1-distro: melodic
@@ -150,7 +150,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
       required-ros-distributions: foxy
-  - uses: ros-tooling/action-ros-ci@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -174,7 +174,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
       required-ros-distributions: foxy
-  - uses: ros-tooling/action-ros-ci@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.2
     with:
       colcon-defaults: |
         {
@@ -210,7 +210,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
       required-ros-distributions: foxy
-  - uses: ros-tooling/action-ros-ci@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -235,7 +235,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
       required-ros-distributions: foxy
-  - uses: ros-tooling/action-ros-ci@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -266,7 +266,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
       required-ros-distributions: foxy
-  - uses: ros-tooling/action-ros-ci@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
       target-ros2-distro: foxy
@@ -308,7 +308,7 @@ GitHub workflows can persist data generated in workers during the build using [a
 ```yaml
 steps:
   # ...
-  - uses: ros-tooling/action-ros-ci@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.2
     id: action_ros_ci_step
     with:
       package-name: ament_copyright
@@ -330,7 +330,7 @@ For example, if your secret is called `REPO_TOKEN`:
 ```yaml
 steps:
   # ...
-  - uses: ros-tooling/action-ros-ci@v0.1
+  - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
       import-token: ${{ secrets.REPO_TOKEN }}
