@@ -11019,6 +11019,7 @@ function run() {
             const packageNames = core
                 .getInput("package-name", { required: true })
                 .split(RegExp("\\s"))
+                .filter((pkgName) => pkgName.length > 0)
                 .join(" ");
             const rosWorkspaceName = "ros_ws";
             core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
