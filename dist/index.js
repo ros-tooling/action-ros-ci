@@ -11199,7 +11199,9 @@ done`;
                 `--packages-up-to ${packageNames}`,
                 `${extra_options.join(" ")}`,
                 extraCmakeArgs !== "" ? `--cmake-args ${extraCmakeArgs}` : "",
-            ].join(" ");
+            ]
+                .filter((e) => e.length > 0)
+                .join(" ");
             if (!isWindows) {
                 colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
             }
@@ -11214,15 +11216,19 @@ done`;
                 `--return-code-on-test-failure`,
                 `--packages-select ${packageNames}`,
                 `${extra_options.join(" ")}`,
-            ].join(" ");
+            ]
+                .filter((e) => e.length > 0)
+                .join(" ");
             yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
             // ignoreReturnCode, check comment above in --initial
             const colconLcovResultCmd = [
                 `colcon lcov-result`,
-                `--filter ${coverageIgnorePattern}`,
+                coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
                 `--packages-select ${packageNames}`,
                 `--verbose`,
-            ].join(" ");
+            ]
+                .filter((e) => e.length > 0)
+                .join(" ");
             yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
             const colconCoveragepyResultCmd = [
                 `colcon coveragepy-result`,
