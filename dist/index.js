@@ -10831,7 +10831,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.validateDistros = exports.execBashCommand = void 0;
+exports.validateDistros = exports.execBashCommand = exports.filterNonEmptyJoin = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const tr = __importStar(__nccwpck_require__(8159));
@@ -10874,6 +10874,16 @@ const targetROS1DistroInput = "target-ros1-distro";
 const targetROS2DistroInput = "target-ros2-distro";
 const isLinux = process.platform == "linux";
 const isWindows = process.platform == "win32";
+/**
+ * Join string array using a single space and make sure to filter out empty elements.
+ *
+ * @param values the string values array
+ * @returns the joined string
+ */
+function filterNonEmptyJoin(values) {
+    return values.filter((v) => v.length > 0).join(" ");
+}
+exports.filterNonEmptyJoin = filterNonEmptyJoin;
 /**
  * Check if a string is a valid JSON string.
  *
@@ -11016,11 +11026,7 @@ function run() {
             const extraCmakeArgs = core.getInput("extra-cmake-args");
             const colconExtraArgs = core.getInput("colcon-extra-args");
             const importToken = core.getInput("import-token");
-            const packageNames = core
-                .getInput("package-name", { required: true })
-                .split(RegExp("\\s"))
-                .filter((pkgName) => pkgName.length > 0)
-                .join(" ");
+            const packageNames = filterNonEmptyJoin(core.getInput("package-name", { required: true }).split(RegExp("\\s")));
             const rosWorkspaceName = "ros_ws";
             core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
             const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
@@ -11193,15 +11199,13 @@ done`;
                     }
                 }
             }
-            let colconBuildCmd = [
+            let colconBuildCmd = filterNonEmptyJoin([
                 `colcon build`,
                 `--event-handlers console_cohesion+`,
                 `--packages-up-to ${packageNames}`,
                 `${extra_options.join(" ")}`,
                 extraCmakeArgs !== "" ? `--cmake-args ${extraCmakeArgs}` : "",
-            ]
-                .filter((e) => e.length > 0)
-                .join(" ");
+            ]);
             if (!isWindows) {
                 colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
             }
@@ -11210,32 +11214,28 @@ done`;
             // data fail the build.
             const colconLcovInitialCmd = "colcon lcov-result --initial";
             yield execBashCommand(colconLcovInitialCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
-            const colconTestCmd = [
+            const colconTestCmd = filterNonEmptyJoin([
                 `colcon test`,
                 `--event-handlers console_cohesion+`,
                 `--return-code-on-test-failure`,
                 `--packages-select ${packageNames}`,
                 `${extra_options.join(" ")}`,
-            ]
-                .filter((e) => e.length > 0)
-                .join(" ");
+            ]);
             yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
             // ignoreReturnCode, check comment above in --initial
-            const colconLcovResultCmd = [
+            const colconLcovResultCmd = filterNonEmptyJoin([
                 `colcon lcov-result`,
                 coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
                 `--packages-select ${packageNames}`,
                 `--verbose`,
-            ]
-                .filter((e) => e.length > 0)
-                .join(" ");
+            ]);
             yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
-            const colconCoveragepyResultCmd = [
+            const colconCoveragepyResultCmd = filterNonEmptyJoin([
                 `colcon coveragepy-result`,
                 `--packages-select ${packageNames}`,
                 `--verbose`,
                 `--coverage-report-args -m`,
-            ].join(" ");
+            ]);
             yield execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
             core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
         }
