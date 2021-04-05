@@ -41,6 +41,20 @@ describe("validate distribution test", () => {
 	});
 });
 
+describe("utilities", () => {
+	it("should join and filter out non empty elements", () => {
+		expect(actionRosCi.filterNonEmptyJoin([])).toBe("");
+		expect(actionRosCi.filterNonEmptyJoin([""])).toBe("");
+		expect(actionRosCi.filterNonEmptyJoin(["", ""])).toBe("");
+		expect(actionRosCi.filterNonEmptyJoin(["abc"])).toBe("abc");
+		expect(actionRosCi.filterNonEmptyJoin(["abc", "def"])).toBe("abc def");
+		expect(actionRosCi.filterNonEmptyJoin(["abc", "def", ""])).toBe("abc def");
+		expect(actionRosCi.filterNonEmptyJoin(["", "abc", "", "", "def"])).toBe(
+			"abc def"
+		);
+	});
+});
+
 describe("PR-specific repos files", () => {
 	it("should not do anything if not a PR", async () => {
 		let payload = {};
