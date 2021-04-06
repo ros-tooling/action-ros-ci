@@ -408,6 +408,10 @@ done`;
 		// Print HEAD commits of all repos
 		await execBashCommand("vcs log -l1 src/", undefined, options);
 
+		if (isLinux) {
+			// Always update APT before installing packages on Ubuntu
+			await execBashCommand("sudo apt-get update");
+		}
 		await installRosdeps(
 			packageNames,
 			rosWorkspaceDir,
