@@ -11151,6 +11151,10 @@ done`;
             yield execBashCommand("vcs import --force --recursive src/ < package.repo", undefined, options);
             // Print HEAD commits of all repos
             yield execBashCommand("vcs log -l1 src/", undefined, options);
+            if (isLinux) {
+                // Always update APT before installing packages on Ubuntu
+                yield execBashCommand("sudo apt-get update");
+            }
             yield installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
             if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
                 yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, undefined, options);
