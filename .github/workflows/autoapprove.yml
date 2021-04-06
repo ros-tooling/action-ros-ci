@@ -1,6 +1,8 @@
 name: Auto approve
 
-on: pull_request
+on:
+  pull_request_target:
+    types: [labeled]
 
 jobs:
   # Auto-approve dependabot PRs since this repo requires at least one approving review.
@@ -8,7 +10,7 @@ jobs:
   # (see .dependabot/config.yml for more info).
   auto-approve-dependabot:
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]'
+    if: github.actor == 'dependabot[bot]' && contains(github.event.pull_request.labels.*.name, 'dependencies')
     steps:
       - uses: hmarr/auto-approve-action@v2.1.0
         with:
