@@ -202,7 +202,7 @@ jobs:
         id: test_single_package
         name: "Test single package, default options"
         with:
-          package-name: ament_copyright
+          package-name: rcutils
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
