@@ -218,7 +218,7 @@ async function installRosdeps(
 	return exitCode;
 }
 
-async function run_throw() {
+async function run_throw(): Promise<void> {
 	const repo = github.context.repo;
 	const workspace = process.env.GITHUB_WORKSPACE as string;
 
@@ -525,7 +525,7 @@ done`;
 	core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
 }
 
-async function run() {
+async function run(): Promise<void> {
 	try {
 		await run_throw();
 	} catch (error) {
