@@ -11016,232 +11016,236 @@ function installRosdeps(upToPackages, workspaceDir, ros1Distro, ros2Distro) {
         return exitCode;
     });
 }
-function run() {
+function run_throw() {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const repo = github.context.repo;
-            const workspace = process.env.GITHUB_WORKSPACE;
-            const colconDefaults = core.getInput("colcon-defaults");
-            const colconMixinRepo = core.getInput("colcon-mixin-repository");
-            const extraCmakeArgs = core.getInput("extra-cmake-args");
-            const colconExtraArgs = core.getInput("colcon-extra-args");
-            const importToken = core.getInput("import-token");
-            const packageNames = filterNonEmptyJoin(core.getInput("package-name", { required: true }).split(RegExp("\\s")));
-            const rosWorkspaceName = "ros_ws";
-            core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
-            const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
-            const targetRos1Distro = core.getInput(targetROS1DistroInput);
-            const targetRos2Distro = core.getInput(targetROS2DistroInput);
-            const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
-            let vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
-            // Check if PR overrides/adds supplemental repos files
-            const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
-            const vcsReposSupplemental = dep.getReposFilesSupplemental(github.context.payload);
-            yield core.group("Repos files: override" +
-                (vcsReposOverride.length === 0 ? " - none" : ""), () => {
-                for (const vcsRepos of vcsReposOverride) {
-                    core.info("\t" + vcsRepos);
-                }
-                return Promise.resolve();
-            });
-            if (vcsReposOverride.length > 0) {
-                vcsRepoFileUrlList = vcsReposOverride;
+        const repo = github.context.repo;
+        const workspace = process.env.GITHUB_WORKSPACE;
+        const colconDefaults = core.getInput("colcon-defaults");
+        const colconMixinRepo = core.getInput("colcon-mixin-repository");
+        const extraCmakeArgs = core.getInput("extra-cmake-args");
+        const colconExtraArgs = core.getInput("colcon-extra-args");
+        const importToken = core.getInput("import-token");
+        const packageNames = filterNonEmptyJoin(core.getInput("package-name", { required: true }).split(RegExp("\\s")));
+        const rosWorkspaceName = "ros_ws";
+        core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
+        const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
+        const targetRos1Distro = core.getInput(targetROS1DistroInput);
+        const targetRos2Distro = core.getInput(targetROS2DistroInput);
+        const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
+        let vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
+        // Check if PR overrides/adds supplemental repos files
+        const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
+        const vcsReposSupplemental = dep.getReposFilesSupplemental(github.context.payload);
+        yield core.group("Repos files: override" + (vcsReposOverride.length === 0 ? " - none" : ""), () => {
+            for (const vcsRepos of vcsReposOverride) {
+                core.info("\t" + vcsRepos);
             }
-            yield core.group("Repos files: supplemental" +
-                (vcsReposSupplemental.length === 0 ? " - none" : ""), () => {
-                for (const vcsRepos of vcsReposSupplemental) {
-                    core.info("\t" + vcsRepos);
-                }
-                return Promise.resolve();
+            return Promise.resolve();
+        });
+        if (vcsReposOverride.length > 0) {
+            vcsRepoFileUrlList = vcsReposOverride;
+        }
+        yield core.group("Repos files: supplemental" +
+            (vcsReposSupplemental.length === 0 ? " - none" : ""), () => {
+            for (const vcsRepos of vcsReposSupplemental) {
+                core.info("\t" + vcsRepos);
+            }
+            return Promise.resolve();
+        });
+        vcsRepoFileUrlList = vcsRepoFileUrlList.concat(vcsReposSupplemental);
+        const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
+        const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) => resolveVcsRepoFileUrl(x));
+        const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
+        if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
+            return;
+        }
+        // rosdep does not reliably work on Windows, see
+        // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
+        if (!isWindows) {
+            yield async_retry_1.default(() => __awaiter(this, void 0, void 0, function* () {
+                yield execBashCommand("rosdep update --include-eol-distros");
+            }), {
+                retries: 3,
             });
-            vcsRepoFileUrlList = vcsRepoFileUrlList.concat(vcsReposSupplemental);
-            const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
-            const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) => resolveVcsRepoFileUrl(x));
-            const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
-            if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
+        }
+        // Reset colcon configuration and create defaults file if one was provided.
+        yield io.rmRF(path.join(os.homedir(), ".colcon"));
+        let colconDefaultsFile = "";
+        if (colconDefaults.length > 0) {
+            if (!isValidJson(colconDefaults)) {
+                core.setFailed(`colcon-defaults value is not a valid JSON string:\n${colconDefaults}`);
                 return;
             }
-            // rosdep does not reliably work on Windows, see
-            // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
-            if (!isWindows) {
-                yield async_retry_1.default(() => __awaiter(this, void 0, void 0, function* () {
-                    yield execBashCommand("rosdep update --include-eol-distros");
-                }), {
-                    retries: 3,
-                });
-            }
-            // Reset colcon configuration and create defaults file if one was provided.
-            yield io.rmRF(path.join(os.homedir(), ".colcon"));
-            let colconDefaultsFile = "";
-            if (colconDefaults.length > 0) {
-                if (!isValidJson(colconDefaults)) {
-                    core.setFailed(`colcon-defaults value is not a valid JSON string:\n${colconDefaults}`);
-                    return;
-                }
-                colconDefaultsFile = path.join(fs_1.default.mkdtempSync(path.join(os.tmpdir(), "colcon-defaults-")), "defaults.yaml");
-                fs_1.default.writeFileSync(colconDefaultsFile, colconDefaults);
-            }
-            // Wipe out the workspace directory to ensure the workspace is always
-            // identical.
-            yield io.rmRF(rosWorkspaceDir);
-            // Checkout ROS 2 from source and install ROS 2 system dependencies
-            yield io.mkdirP(rosWorkspaceDir + "/src");
-            if (importToken !== "") {
-                const config = `
+            colconDefaultsFile = path.join(fs_1.default.mkdtempSync(path.join(os.tmpdir(), "colcon-defaults-")), "defaults.yaml");
+            fs_1.default.writeFileSync(colconDefaultsFile, colconDefaults);
+        }
+        // Wipe out the workspace directory to ensure the workspace is always
+        // identical.
+        yield io.rmRF(rosWorkspaceDir);
+        // Checkout ROS 2 from source and install ROS 2 system dependencies
+        yield io.mkdirP(rosWorkspaceDir + "/src");
+        if (importToken !== "") {
+            const config = `
 [url "https://${importToken}@github.com"]
 	insteadOf = https://github.com
 [url "http://${importToken}@github.com"]
 	insteadOf = http://github.com`;
-                fs_1.default.appendFileSync(path.join(os.homedir(), ".gitconfig"), config);
-            }
-            const options = {
-                cwd: rosWorkspaceDir,
-            };
-            if (colconDefaultsFile !== "") {
-                options.env = Object.assign(Object.assign({}, process.env), { COLCON_DEFAULTS_FILE: colconDefaultsFile });
-            }
-            // Make sure to delete root .colcon directory if it exists
-            // This is because, for some reason, using Docker, commands might get run as root
-            yield execBashCommand(`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`, undefined, Object.assign(Object.assign({}, options), { silent: true }));
-            const curlFlags = curlFlagsArray.join(" ");
-            for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
-                yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`, undefined, options);
-            }
-            // If the package under tests is part of ros.repos, remove it first.
-            // We do not want to allow the "default" head state of the package to
-            // to be present in the workspace, and colcon will fail stating it found twice
-            // a package with an identical name.
-            let posixPathScriptPath = "";
-            if (isWindows) {
-                // vcs might output paths with a mix of forward slashes and backslashes on Windows
-                posixPathScriptPath = path.join(rosWorkspaceDir, "slash_converter.sh");
-                const scriptContent = String.raw `#!/bin/bash
+            fs_1.default.appendFileSync(path.join(os.homedir(), ".gitconfig"), config);
+        }
+        const options = {
+            cwd: rosWorkspaceDir,
+        };
+        if (colconDefaultsFile !== "") {
+            options.env = Object.assign(Object.assign({}, process.env), { COLCON_DEFAULTS_FILE: colconDefaultsFile });
+        }
+        // Make sure to delete root .colcon directory if it exists
+        // This is because, for some reason, using Docker, commands might get run as root
+        yield execBashCommand(`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`, undefined, Object.assign(Object.assign({}, options), { silent: true }));
+        const curlFlags = curlFlagsArray.join(" ");
+        for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
+            yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`, undefined, options);
+        }
+        // If the package under tests is part of ros.repos, remove it first.
+        // We do not want to allow the "default" head state of the package to
+        // to be present in the workspace, and colcon will fail stating it found twice
+        // a package with an identical name.
+        let posixPathScriptPath = "";
+        if (isWindows) {
+            // vcs might output paths with a mix of forward slashes and backslashes on Windows
+            posixPathScriptPath = path.join(rosWorkspaceDir, "slash_converter.sh");
+            const scriptContent = String.raw `#!/bin/bash
 while IFS= read -r line; do
 	echo "$line" | sed 's/\\/\//g'
 done`;
-                fs_1.default.writeFileSync(posixPathScriptPath, scriptContent, {
-                    mode: 0o766,
-                });
-                posixPathScriptPath = posixPathScriptPath.replace(/\\/g, "/");
-            }
-            const posixRosWorkspaceDir = isWindows
-                ? rosWorkspaceDir.replace(/\\/g, "/")
-                : rosWorkspaceDir;
-            yield execBashCommand(`vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$"` +
-                (isWindows ? ` | ${posixPathScriptPath}` : "") +
-                ` | xargs rm -rf`);
-            // The repo file for the repository needs to be generated on-the-fly to
-            // incorporate the custom repository URL and branch name, when a PR is
-            // being built.
-            let repoFullName = process.env.GITHUB_REPOSITORY;
-            if (github.context.payload.pull_request) {
-                repoFullName = github.context.payload.pull_request.head.repo.full_name;
-            }
-            const headRef = process.env.GITHUB_HEAD_REF;
-            const commitRef = headRef || github.context.sha;
-            const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
-            // Add a random string prefix to avoid naming collisions when checking out the test repository
-            const randomStringPrefix = Math.random().toString(36).substring(2, 15);
-            const repoFileContent = `repositories:
+            fs_1.default.writeFileSync(posixPathScriptPath, scriptContent, {
+                mode: 0o766,
+            });
+            posixPathScriptPath = posixPathScriptPath.replace(/\\/g, "/");
+        }
+        const posixRosWorkspaceDir = isWindows
+            ? rosWorkspaceDir.replace(/\\/g, "/")
+            : rosWorkspaceDir;
+        yield execBashCommand(`vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$"` +
+            (isWindows ? ` | ${posixPathScriptPath}` : "") +
+            ` | xargs rm -rf`);
+        // The repo file for the repository needs to be generated on-the-fly to
+        // incorporate the custom repository URL and branch name, when a PR is
+        // being built.
+        let repoFullName = process.env.GITHUB_REPOSITORY;
+        if (github.context.payload.pull_request) {
+            repoFullName = github.context.payload.pull_request.head.repo.full_name;
+        }
+        const headRef = process.env.GITHUB_HEAD_REF;
+        const commitRef = headRef || github.context.sha;
+        const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
+        // Add a random string prefix to avoid naming collisions when checking out the test repository
+        const randomStringPrefix = Math.random().toString(36).substring(2, 15);
+        const repoFileContent = `repositories:
   ${randomStringPrefix}/${repo["repo"]}:
     type: git
     url: 'https://github.com/${repoFullName}.git'
     version: '${commitRef}'`;
-            fs_1.default.writeFileSync(repoFilePath, repoFileContent);
-            yield execBashCommand("vcs import --force --recursive src/ < package.repo", undefined, options);
-            // Print HEAD commits of all repos
-            yield execBashCommand("vcs log -l1 src/", undefined, options);
-            if (isLinux) {
-                // Always update APT before installing packages on Ubuntu
-                yield execBashCommand("sudo apt-get update");
-            }
-            yield installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
-            if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
-                yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, undefined, options);
-                yield execBashCommand("colcon mixin update default", undefined, options);
-            }
-            let extra_options = [];
-            if (colconExtraArgs !== "") {
-                extra_options = extra_options.concat(colconExtraArgs);
-            }
-            // Add the future install bin directory to PATH.
-            // This enables cmake find_package to find packages installed in the
-            // colcon install directory, even if local_setup.sh has not been sourced.
-            //
-            // From the find_package doc:
-            // https://cmake.org/cmake/help/latest/command/find_package.html
-            //   5. Search the standard system environment variables.
-            //   Path entries ending in /bin or /sbin are automatically converted to
-            //   their parent directories:
-            //   PATH
-            //
-            // ament_cmake should handle this automatically, but we are seeing cases
-            // where this does not happen. See issue #26 for relevant CI logs.
-            core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
-            // Source any installed ROS distributions if they are present
-            let colconCommandPrefix = "";
-            if (isLinux) {
-                if (targetRos1Distro) {
-                    const ros1SetupPath = `/opt/ros/${targetRos1Distro}/setup.sh`;
-                    if (fs_1.default.existsSync(ros1SetupPath)) {
-                        colconCommandPrefix += `source ${ros1SetupPath} && `;
-                    }
-                }
-                if (targetRos2Distro) {
-                    const ros2SetupPath = `/opt/ros/${targetRos2Distro}/setup.sh`;
-                    if (fs_1.default.existsSync(ros2SetupPath)) {
-                        colconCommandPrefix += `source ${ros2SetupPath} && `;
-                    }
+        fs_1.default.writeFileSync(repoFilePath, repoFileContent);
+        yield execBashCommand("vcs import --force --recursive src/ < package.repo", undefined, options);
+        // Print HEAD commits of all repos
+        yield execBashCommand("vcs log -l1 src/", undefined, options);
+        if (isLinux) {
+            // Always update APT before installing packages on Ubuntu
+            yield execBashCommand("sudo apt-get update");
+        }
+        yield installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
+        if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
+            yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, undefined, options);
+            yield execBashCommand("colcon mixin update default", undefined, options);
+        }
+        let extra_options = [];
+        if (colconExtraArgs !== "") {
+            extra_options = extra_options.concat(colconExtraArgs);
+        }
+        // Add the future install bin directory to PATH.
+        // This enables cmake find_package to find packages installed in the
+        // colcon install directory, even if local_setup.sh has not been sourced.
+        //
+        // From the find_package doc:
+        // https://cmake.org/cmake/help/latest/command/find_package.html
+        //   5. Search the standard system environment variables.
+        //   Path entries ending in /bin or /sbin are automatically converted to
+        //   their parent directories:
+        //   PATH
+        //
+        // ament_cmake should handle this automatically, but we are seeing cases
+        // where this does not happen. See issue #26 for relevant CI logs.
+        core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
+        // Source any installed ROS distributions if they are present
+        let colconCommandPrefix = "";
+        if (isLinux) {
+            if (targetRos1Distro) {
+                const ros1SetupPath = `/opt/ros/${targetRos1Distro}/setup.sh`;
+                if (fs_1.default.existsSync(ros1SetupPath)) {
+                    colconCommandPrefix += `source ${ros1SetupPath} && `;
                 }
             }
-            else if (isWindows) {
-                // Windows only supports ROS2
-                if (targetRos2Distro) {
-                    const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
-                    if (fs_1.default.existsSync(ros2SetupPath)) {
-                        colconCommandPrefix += `${ros2SetupPath} && `;
-                    }
+            if (targetRos2Distro) {
+                const ros2SetupPath = `/opt/ros/${targetRos2Distro}/setup.sh`;
+                if (fs_1.default.existsSync(ros2SetupPath)) {
+                    colconCommandPrefix += `source ${ros2SetupPath} && `;
                 }
             }
-            let colconBuildCmd = filterNonEmptyJoin([
-                `colcon build`,
-                `--event-handlers console_cohesion+`,
-                `--packages-up-to ${packageNames}`,
-                `${extra_options.join(" ")}`,
-                extraCmakeArgs !== "" ? `--cmake-args ${extraCmakeArgs}` : "",
-            ]);
-            if (!isWindows) {
-                colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
+        }
+        else if (isWindows) {
+            // Windows only supports ROS2
+            if (targetRos2Distro) {
+                const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
+                if (fs_1.default.existsSync(ros2SetupPath)) {
+                    colconCommandPrefix += `${ros2SetupPath} && `;
+                }
             }
-            yield execBashCommand(colconBuildCmd, colconCommandPrefix, options);
-            // ignoreReturnCode is set to true to avoid having a lack of coverage
-            // data fail the build.
-            const colconLcovInitialCmd = "colcon lcov-result --initial";
-            yield execBashCommand(colconLcovInitialCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
-            const colconTestCmd = filterNonEmptyJoin([
-                `colcon test`,
-                `--event-handlers console_cohesion+`,
-                `--return-code-on-test-failure`,
-                `--packages-select ${packageNames}`,
-                `${extra_options.join(" ")}`,
-            ]);
-            yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
-            // ignoreReturnCode, check comment above in --initial
-            const colconLcovResultCmd = filterNonEmptyJoin([
-                `colcon lcov-result`,
-                coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
-                `--packages-select ${packageNames}`,
-                `--verbose`,
-            ]);
-            yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
-            const colconCoveragepyResultCmd = filterNonEmptyJoin([
-                `colcon coveragepy-result`,
-                `--packages-select ${packageNames}`,
-                `--verbose`,
-                `--coverage-report-args -m`,
-            ]);
-            yield execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
-            core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
+        }
+        let colconBuildCmd = filterNonEmptyJoin([
+            `colcon build`,
+            `--event-handlers console_cohesion+`,
+            `--packages-up-to ${packageNames}`,
+            `${extra_options.join(" ")}`,
+            extraCmakeArgs !== "" ? `--cmake-args ${extraCmakeArgs}` : "",
+        ]);
+        if (!isWindows) {
+            colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
+        }
+        yield execBashCommand(colconBuildCmd, colconCommandPrefix, options);
+        // ignoreReturnCode is set to true to avoid having a lack of coverage
+        // data fail the build.
+        const colconLcovInitialCmd = "colcon lcov-result --initial";
+        yield execBashCommand(colconLcovInitialCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
+        const colconTestCmd = filterNonEmptyJoin([
+            `colcon test`,
+            `--event-handlers console_cohesion+`,
+            `--return-code-on-test-failure`,
+            `--packages-select ${packageNames}`,
+            `${extra_options.join(" ")}`,
+        ]);
+        yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
+        // ignoreReturnCode, check comment above in --initial
+        const colconLcovResultCmd = filterNonEmptyJoin([
+            `colcon lcov-result`,
+            coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
+            `--packages-select ${packageNames}`,
+            `--verbose`,
+        ]);
+        yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
+        const colconCoveragepyResultCmd = filterNonEmptyJoin([
+            `colcon coveragepy-result`,
+            `--packages-select ${packageNames}`,
+            `--verbose`,
+            `--coverage-report-args -m`,
+        ]);
+        yield execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
+        core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
+    });
+}
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield run_throw();
         }
         catch (error) {
             core.setFailed(error.message);
