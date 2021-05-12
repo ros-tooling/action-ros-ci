@@ -92,7 +92,7 @@ jobs:
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@v0.1
+      - uses: ros-tooling/setup-ros@0.1.4
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - uses: ./
@@ -114,7 +114,7 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v2
-      - uses: ros-tooling/setup-ros@v0.1
+      - uses: ros-tooling/setup-ros@0.1.4
         with:
           required-ros-distributions: foxy
       - uses: ./
@@ -197,7 +197,7 @@ jobs:
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@v0.1
+      - uses: ros-tooling/setup-ros@0.1.4
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
@@ -361,7 +361,7 @@ jobs:
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@v0.1
+      - uses: ros-tooling/setup-ros@0.1.4
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
 
