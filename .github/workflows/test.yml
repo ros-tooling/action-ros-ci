@@ -123,6 +123,24 @@ jobs:
           target-ros2-distro: foxy
           vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
 
+  test_private_repo:
+    name: "Test with private repos"
+    runs-on: ubuntu-20.04
+    needs: pre_condition
+    # We don't have access to the secret token for the test repo on a fork
+    if: ${{ !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ros-tooling/setup-ros@0.1.2
+        with:
+          required-ros-distributions: foxy
+      - uses: ./
+        with:
+          import-token: ${{ secrets.TOKEN_PRIVATE_REPO_TEST }}
+          package-name: simple_package
+          target-ros2-distro: foxy
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_private_repo.repos"
+
   test_ros2_docker:
     name: "ROS 2 Docker"
     runs-on: ubuntu-latest
