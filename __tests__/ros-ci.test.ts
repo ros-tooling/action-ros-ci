@@ -32,12 +32,23 @@ describe("execBashCommand test suite", () => {
 describe("validate distribution test", () => {
 	it("validates that the ros distribution validator acts correctly", async () => {
 		expect(actionRosCi.validateDistros("kinetic", "")).toBe(true);
-		expect(actionRosCi.validateDistros("melodic", "dashing")).toBe(true);
+		expect(actionRosCi.validateDistros("lunar", "")).toBe(true);
+		expect(actionRosCi.validateDistros("melodic", "")).toBe(true);
+		expect(actionRosCi.validateDistros("noetic", "")).toBe(true);
+		expect(actionRosCi.validateDistros("", "dashing")).toBe(true);
 		expect(actionRosCi.validateDistros("", "eloquent")).toBe(true);
+		expect(actionRosCi.validateDistros("", "foxy")).toBe(true);
+		expect(actionRosCi.validateDistros("", "galactic")).toBe(true);
+		expect(actionRosCi.validateDistros("", "rolling")).toBe(true);
+
+		expect(actionRosCi.validateDistros("noetic", "rolling")).toBe(true);
+		expect(actionRosCi.validateDistros("melodic", "dashing")).toBe(true);
+
 		expect(actionRosCi.validateDistros("", "")).toBe(false);
 		expect(actionRosCi.validateDistros("groovy", "")).toBe(false);
 		expect(actionRosCi.validateDistros("", "bouncy")).toBe(false);
 		expect(actionRosCi.validateDistros("apples", "bananas")).toBe(false);
+		expect(actionRosCi.validateDistros("apples", "rolling")).toBe(false);
 	});
 });
 
