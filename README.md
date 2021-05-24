@@ -80,11 +80,11 @@ In this case, `action-ros-ci` will rely on `setup-ros` for installing ROS 2 bina
 steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
-      required-ros-distributions: foxy
+      required-ros-distributions: galactic
   - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
-      target-ros2-distro: foxy
+      target-ros2-distro: galactic
 ```
 
 #### Building ROS 2 dependencies from source
@@ -97,8 +97,8 @@ steps:
   - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
-      target-ros2-distro: foxy
-      vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/foxy/ros2.repos
+      target-ros2-distro: galactic
+      vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/galactic/ros2.repos
 ```
 
 ### Build with a custom `repos` or `rosinstall` file
@@ -118,7 +118,7 @@ steps:
   - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
-      target-ros2-distro: foxy
+      target-ros2-distro: galactic
       vcs-repo-file-url: /tmp/deps.repos
 ```
 
@@ -149,11 +149,11 @@ This allows using a `colcon` option/argument that is not exposed by this action'
 steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
-      required-ros-distributions: foxy
+      required-ros-distributions: galactic
   - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
-      target-ros2-distro: foxy
+      target-ros2-distro: galactic
       colcon-defaults: |
         {
           "build": {
@@ -173,7 +173,7 @@ memory corruption bugs.
 steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
-      required-ros-distributions: foxy
+      required-ros-distributions: galactic
   - uses: ros-tooling/action-ros-ci@v0.2
     with:
       colcon-defaults: |
@@ -184,7 +184,7 @@ steps:
         }
       colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/3e627e0fa30db85aea05a50e2c61a9832664d236/index.yaml
       package-name: my_package
-      target-ros2-distro: foxy
+      target-ros2-distro: galactic
 ```
 
 To look for detected memory errors, check the build logs for entries containing `ERROR: AddressSanitizer`. Example:
@@ -209,11 +209,11 @@ preferable to use a `colcon` mixin (through [`colcon-defaults`](#Use-a-colcon-de
 steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
-      required-ros-distributions: foxy
+      required-ros-distributions: galactic
   - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
-      target-ros2-distro: foxy
+      target-ros2-distro: galactic
       colcon-defaults: |
         {
           "build": {
@@ -234,11 +234,11 @@ Generate code coverage information for Python files using the appropriate mixins
 steps:
   - uses: ros-tooling/setup-ros@v0.1
     with:
-      required-ros-distributions: foxy
+      required-ros-distributions: galactic
   - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
-      target-ros2-distro: foxy
+      target-ros2-distro: galactic
       colcon-defaults: |
         {
           "build": {
@@ -265,11 +265,11 @@ steps:
   - uses: actions/checkout@v2
   - uses: ros-tooling/setup-ros@v0.1
     with:
-      required-ros-distributions: foxy
+      required-ros-distributions: galactic
   - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
-      target-ros2-distro: foxy
+      target-ros2-distro: galactic
       colcon-defaults: |
         {
           "build": {
@@ -312,7 +312,7 @@ steps:
     id: action_ros_ci_step
     with:
       package-name: ament_copyright
-      target-ros2-distro: foxy
+      target-ros2-distro: galactic
   - uses: actions/upload-artifact@v1
     with:
       name: colcon-logs
