@@ -3,7 +3,8 @@ import { WebhookPayload } from "@actions/github/lib/interfaces";
 // Expecting something like:
 //  action-ros-ci-repos-override: https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
 const REGEX_REPOS_FILES_OVERRIDE = /action-ros-ci-repos-override:[ ]*([\S]+)/g;
-const REGEX_REPOS_FILES_SUPPLEMENTAL = /action-ros-ci-repos-supplemental:[ ]*([\S]+)/g;
+const REGEX_REPOS_FILES_SUPPLEMENTAL =
+	/action-ros-ci-repos-supplemental:[ ]*([\S]+)/g;
 
 /**
  * Extract captures of all matches.
