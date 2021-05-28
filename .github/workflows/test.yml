@@ -85,7 +85,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, windows-latest]
-        ros_distribution: [eloquent, foxy]
+        ros_distribution: [foxy, galactic]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2.1.5
@@ -148,10 +148,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distribution: # ROS 1 tests only run on Ubuntu
-          - dashing
-          - eloquent
+        ros_distribution:
           - foxy
+          - galactic
         # Define the Docker image(s) associated with each ROS distribution.
         # The include syntax allows additional variables to be defined, like
         # docker_image in this case. See documentation:
@@ -159,17 +158,13 @@ jobs:
         #
         # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
         include:
-          # Dashing Diademata (May 2019 - May 2021)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-bionic-ros-dashing-ros-base-latest
-            ros_distribution: dashing
-
-          # Eloquent Elusor (November 2019 - November 2020)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-bionic-ros-eloquent-ros-base-latest
-            ros_distribution: eloquent
-
           # Foxy Fitzroy (May 2020 - May 2023)
           - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-foxy-ros-base-latest
             ros_distribution: foxy
+
+          # Galactic Geochelone (May 2021 - November 2022)
+          - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-galactic-ros-base-latest
+            ros_distribution: galactic
     container:
       image: ${{ matrix.docker_image }}
     steps:
@@ -206,7 +201,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, windows-latest, ubuntu-20.04]
-        ros_distribution: [foxy, rolling]
+        ros_distribution: [foxy, galactic, rolling]
     env:
       DISTRO_REPOS_URL: "https://raw.githubusercontent.com/ros2/ros2/${{ matrix.ros_distribution == 'rolling' && 'master' || matrix.ros_distribution }}/ros2.repos"
     steps:
@@ -351,9 +346,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distribution: # ROS 1 tests only run on Ubuntu
-          - dashing
-          - eloquent
+        ros_distribution:
+          - foxy
+          - galactic
 
         # Define the Docker image(s) associated with each ROS distribution.
         # The include syntax allows additional variables to be defined, like
@@ -362,15 +357,15 @@ jobs:
         #
         # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
         include:
-          # Dashing Diademata (May 2019 - May 2021)
-          - docker_image: ubuntu:bionic
-            ros_distribution: dashing
-            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/dashing/ros2.repos
+          # Foxy Fitzroy (May 2020 - May 2023)
+          - docker_image: ubuntu:focal
+            ros_distribution: foxy
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/foxy/ros2.repos
 
-          # Eloquent Elusor (November 2019 - November 2020)
-          - docker_image: ubuntu:bionic
-            ros_distribution: eloquent
-            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/eloquent/ros2.repos
+          # Galactic Geochelone (May 2021 - November 2022)
+          - docker_image: ubuntu:focal
+            ros_distribution: galactic
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/galactic/ros2.repos
     container:
       image: ${{ matrix.docker_image }}
     steps:
@@ -380,9 +375,6 @@ jobs:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
       - uses: ros-tooling/setup-ros@v0.2
-        with:
-          required-ros-distributions: ${{ matrix.ros_distribution }}
-
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
