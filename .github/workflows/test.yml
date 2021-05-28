@@ -148,7 +148,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distribution: # ROS 1 tests only run on Ubuntu
+        ros_distribution:
           - foxy
           - galactic
         # Define the Docker image(s) associated with each ROS distribution.
@@ -346,7 +346,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ros_distribution: # ROS 1 tests only run on Ubuntu
+        ros_distribution:
           - foxy
           - galactic
 
@@ -375,9 +375,6 @@ jobs:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
       - uses: ros-tooling/setup-ros@v0.2
-        with:
-          required-ros-distributions: ${{ matrix.ros_distribution }}
-
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
