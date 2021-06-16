@@ -10842,33 +10842,6 @@ const path = __importStar(__nccwpck_require__(5622));
 const fs_1 = __importDefault(__nccwpck_require__(5747));
 const async_retry_1 = __importDefault(__nccwpck_require__(3415));
 const dep = __importStar(__nccwpck_require__(7760));
-// All command line flags passed to curl when invoked as a command.
-const curlFlagsArray = [
-    // (HTTP)  Fail  silently  (no  output at all) on server errors. This is mostly done to better enable
-    // scripts etc to better deal with failed attempts. In normal cases  when  a  HTTP  server  fails  to
-    // deliver  a  document,  it  returns an HTML document stating so (which often also describes why and
-    // more). This flag will prevent curl from outputting that and return error 22.
-    // This method is not fail-safe and there are occasions where non-successful response codes will slip
-    // through, especially when authentication is involved (response codes 401 and 407).
-    "--fail",
-    // Silent or quiet mode. Don't show progress meter or error messages.  Makes Curl mute.
-    "--silent",
-    // When used with -s it makes curl show an error message if it fails.
-    "--show-error",
-    // (HTTP/HTTPS) If the server reports that the requested page  has  moved  to  a  different  location
-    // (indicated  with  a Location: header and a 3XX response code), this option will make curl redo the
-    // request on the new place. If used together with -i, --include or  -I,  --head,  headers  from  all
-    // requested pages will be shown. When authentication is used, curl only sends its credentials to the
-    // initial host. If a redirect takes curl to a different host, it won't  be  able  to  intercept  the
-    // user+password.  See  also  --location-trusted  on  how to change this. You can limit the amount of
-    // redirects to follow by using the --max-redirs option.
-    //
-    // When curl follows a redirect and the request is not a plain GET (for example POST or PUT), it will
-    // do  the  following  request  with a GET if the HTTP response was 301, 302, or 303. If the response
-    // code was any other 3xx code, curl will re-send the following request  using  the  same  unmodified
-    // method.
-    "--location",
-];
 const validROS1Distros = ["kinetic", "lunar", "melodic", "noetic"];
 const validROS2Distros = [
     "dashing",
@@ -10905,24 +10878,6 @@ function isValidJson(str) {
         return false;
     }
     return true;
-}
-/**
- * Convert local paths to URLs.
- *
- * The user can pass the VCS repo file either as a URL or a path.
- * If it is a path, this function will convert it into a URL (file://...).
- * If the file is already passed as an URL, this function does nothing.
- *
- * @param   vcsRepoFileUrl     path or URL to the repo file
- * @returns                    URL to the repo file
- */
-function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
-    if (fs_1.default.existsSync(vcsRepoFileUrl)) {
-        return "file://" + path.resolve(vcsRepoFileUrl);
-    }
-    else {
-        return vcsRepoFileUrl;
-    }
 }
 /**
  * Execute a command in bash and wrap the output in a log group.
@@ -11070,7 +11025,6 @@ function run_throw() {
         });
         vcsRepoFileUrlList = vcsRepoFileUrlList.concat(vcsReposSupplemental);
         const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
-        const vcsRepoFileUrlListResolved = vcsRepoFileUrlListNonEmpty.map((x) => resolveVcsRepoFileUrl(x));
         const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
         if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
             return;
@@ -11122,9 +11076,8 @@ function run_throw() {
         // Make sure to delete root .colcon directory if it exists
         // This is because, for some reason, using Docker, commands might get run as root
         yield execBashCommand(`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`, undefined, Object.assign(Object.assign({}, options), { silent: true }));
-        const curlFlags = curlFlagsArray.join(" ");
-        for (const vcsRepoFileUrl of vcsRepoFileUrlListResolved) {
-            yield execBashCommand(`curl ${curlFlags} '${vcsRepoFileUrl}' | vcs import --force --recursive src/`, undefined, options);
+        for (const vcsRepoFileUrl of vcsRepoFileUrlListNonEmpty) {
+            yield execBashCommand(`vcs import --force --recursive src/ --input ${vcsRepoFileUrl}`, undefined, options);
         }
         // If the package under tests is part of ros.repos, remove it first.
         // We do not want to allow the "default" head state of the package to
@@ -11167,7 +11120,7 @@ done`;
     url: 'https://github.com/${repoFullName}.git'
     version: '${commitRef}'`;
         fs_1.default.writeFileSync(repoFilePath, repoFileContent);
-        yield execBashCommand("vcs import --force --recursive src/ < package.repo", undefined, options);
+        yield execBashCommand("vcs import --force --recursive src/ --input package.repo", undefined, options);
         // Print HEAD commits of all repos
         yield execBashCommand("vcs log -l1 src/", undefined, options);
         if (isLinux) {

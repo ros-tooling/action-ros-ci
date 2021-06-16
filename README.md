@@ -27,7 +27,6 @@ This action builds and tests a [ROS](http://wiki.ros.org/) or [ROS 2](https://do
 This action requires the following ROS development tools to be installed (and initialized if applicable) on the CI worker instance:
 
 ```
-curl
 colcon-common-extensions
 colcon-lcov-result  # Optional
 colcon-coveragepy-result
