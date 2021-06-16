@@ -96,10 +96,9 @@ jobs:
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - uses: ./
-        id: test_single_package
-        name: "Test single package, default options"
+        id: test_all_packages_in_repo
+        name: "Test all packages in single repo, default options"
         with:
-          package-name: osrf_testing_tools_cpp
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
         # TODO(tmoulard): re-enable this test once it passes on Windows

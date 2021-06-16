@@ -1833,18 +1833,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const assert_1 = __nccwpck_require__(2357);
-const fs = __importStar(__nccwpck_require__(5747));
-const path = __importStar(__nccwpck_require__(5622));
+const fs = __nccwpck_require__(5747);
+const path = __nccwpck_require__(5622);
 _a = fs.promises, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.readdir = _a.readdir, exports.readlink = _a.readlink, exports.rename = _a.rename, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
 exports.IS_WINDOWS = process.platform === 'win32';
 function exists(fsPath) {
@@ -2042,18 +2035,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const childProcess = __importStar(__nccwpck_require__(3129));
-const path = __importStar(__nccwpck_require__(5622));
+const childProcess = __nccwpck_require__(3129);
+const path = __nccwpck_require__(5622);
 const util_1 = __nccwpck_require__(1669);
-const ioUtil = __importStar(__nccwpck_require__(1962));
+const ioUtil = __nccwpck_require__(1962);
 const exec = util_1.promisify(childProcess.exec);
 /**
  * Copies a file or folder.
@@ -2221,73 +2207,58 @@ function which(tool, check) {
                     throw new Error(`Unable to locate executable file: ${tool}. Please verify either the file path exists or the file can be found within a directory specified by the PATH environment variable. Also check the file mode to verify the file is executable.`);
                 }
             }
-            return result;
         }
-        const matches = yield findInPath(tool);
-        if (matches && matches.length > 0) {
-            return matches[0];
+        try {
+            // build the list of extensions to try
+            const extensions = [];
+            if (ioUtil.IS_WINDOWS && process.env.PATHEXT) {
+                for (const extension of process.env.PATHEXT.split(path.delimiter)) {
+                    if (extension) {
+                        extensions.push(extension);
+                    }
+                }
+            }
+            // if it's rooted, return it if exists. otherwise return empty.
+            if (ioUtil.isRooted(tool)) {
+                const filePath = yield ioUtil.tryGetExecutablePath(tool, extensions);
+                if (filePath) {
+                    return filePath;
+                }
+                return '';
+            }
+            // if any path separators, return empty
+            if (tool.includes('/') || (ioUtil.IS_WINDOWS && tool.includes('\\'))) {
+                return '';
+            }
+            // build the list of directories
+            //
+            // Note, technically "where" checks the current directory on Windows. From a toolkit perspective,
+            // it feels like we should not do this. Checking the current directory seems like more of a use
+            // case of a shell, and the which() function exposed by the toolkit should strive for consistency
+            // across platforms.
+            const directories = [];
+            if (process.env.PATH) {
+                for (const p of process.env.PATH.split(path.delimiter)) {
+                    if (p) {
+                        directories.push(p);
+                    }
+                }
+            }
+            // return the first match
+            for (const directory of directories) {
+                const filePath = yield ioUtil.tryGetExecutablePath(directory + path.sep + tool, extensions);
+                if (filePath) {
+                    return filePath;
+                }
+            }
+            return '';
         }
-        return '';
+        catch (err) {
+            throw new Error(`which failed with message ${err.message}`);
+        }
     });
 }
 exports.which = which;
-/**
- * Returns a list of all occurrences of the given tool on the system path.
- *
- * @returns   Promise<string[]>  the paths of the tool
- */
-function findInPath(tool) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (!tool) {
-            throw new Error("parameter 'tool' is required");
-        }
-        // build the list of extensions to try
-        const extensions = [];
-        if (ioUtil.IS_WINDOWS && process.env['PATHEXT']) {
-            for (const extension of process.env['PATHEXT'].split(path.delimiter)) {
-                if (extension) {
-                    extensions.push(extension);
-                }
-            }
-        }
-        // if it's rooted, return it if exists. otherwise return empty.
-        if (ioUtil.isRooted(tool)) {
-            const filePath = yield ioUtil.tryGetExecutablePath(tool, extensions);
-            if (filePath) {
-                return [filePath];
-            }
-            return [];
-        }
-        // if any path separators, return empty
-        if (tool.includes(path.sep)) {
-            return [];
-        }
-        // build the list of directories
-        //
-        // Note, technically "where" checks the current directory on Windows. From a toolkit perspective,
-        // it feels like we should not do this. Checking the current directory seems like more of a use
-        // case of a shell, and the which() function exposed by the toolkit should strive for consistency
-        // across platforms.
-        const directories = [];
-        if (process.env.PATH) {
-            for (const p of process.env.PATH.split(path.delimiter)) {
-                if (p) {
-                    directories.push(p);
-                }
-            }
-        }
-        // find all matches
-        const matches = [];
-        for (const directory of directories) {
-            const filePath = yield ioUtil.tryGetExecutablePath(path.join(directory, tool), extensions);
-            if (filePath) {
-                matches.push(filePath);
-            }
-        }
-        return matches;
-    });
-}
-exports.findInPath = findInPath;
 function readCopyOptions(options) {
     const force = options.force == null ? true : options.force;
     const recursive = Boolean(options.recursive);
@@ -11024,7 +10995,7 @@ exports.validateDistros = validateDistros;
 /**
  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
  */
-function installRosdeps(upToPackages, workspaceDir, ros1Distro, ros2Distro) {
+function installRosdeps(packageSelection, workspaceDir, ros1Distro, ros2Distro) {
     return __awaiter(this, void 0, void 0, function* () {
         const scriptName = "install_rosdeps.sh";
         const scriptPath = path.join(workspaceDir, scriptName);
@@ -11035,7 +11006,7 @@ function installRosdeps(upToPackages, workspaceDir, ros1Distro, ros2Distro) {
 		exit 1
 	fi
 	DISTRO=$1
-	package_paths=$(colcon list --paths-only --packages-up-to ${upToPackages})
+	package_paths=$(colcon list --paths-only ${packageSelection})
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
@@ -11061,7 +11032,16 @@ function run_throw() {
         const extraCmakeArgs = core.getInput("extra-cmake-args");
         const colconExtraArgs = core.getInput("colcon-extra-args");
         const importToken = core.getInput("import-token");
-        const packageNames = filterNonEmptyJoin(core.getInput("package-name", { required: true }).split(RegExp("\\s")));
+        const packageNameInput = core.getInput("package-name");
+        const packageNames = packageNameInput
+            ? filterNonEmptyJoin(packageNameInput.split(RegExp("\\s")))
+            : undefined;
+        const buildPackageSelection = packageNames
+            ? `--packages-up-to ${packageNames}`
+            : "";
+        const testPackageSelection = packageNames
+            ? `--packages-select ${packageNames}`
+            : "";
         const rosWorkspaceName = "ros_ws";
         core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
         const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
@@ -11194,7 +11174,7 @@ done`;
             // Always update APT before installing packages on Ubuntu
             yield execBashCommand("sudo apt-get update");
         }
-        yield installRosdeps(packageNames, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
+        yield installRosdeps(buildPackageSelection, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
         if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
             yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, undefined, options);
             yield execBashCommand("colcon mixin update default", undefined, options);
@@ -11245,7 +11225,7 @@ done`;
         let colconBuildCmd = filterNonEmptyJoin([
             `colcon build`,
             `--event-handlers console_cohesion+`,
-            `--packages-up-to ${packageNames}`,
+            buildPackageSelection,
             `${extra_options.join(" ")}`,
             extraCmakeArgs !== "" ? `--cmake-args ${extraCmakeArgs}` : "",
         ]);
@@ -11261,7 +11241,7 @@ done`;
             `colcon test`,
             `--event-handlers console_cohesion+`,
             `--return-code-on-test-failure`,
-            `--packages-select ${packageNames}`,
+            testPackageSelection,
             `${extra_options.join(" ")}`,
         ]);
         yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
@@ -11269,13 +11249,13 @@ done`;
         const colconLcovResultCmd = filterNonEmptyJoin([
             `colcon lcov-result`,
             coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
-            `--packages-select ${packageNames}`,
+            testPackageSelection,
             `--verbose`,
         ]);
         yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
         const colconCoveragepyResultCmd = filterNonEmptyJoin([
             `colcon coveragepy-result`,
-            `--packages-select ${packageNames}`,
+            testPackageSelection,
             `--verbose`,
             `--coverage-report-args -m`,
         ]);
