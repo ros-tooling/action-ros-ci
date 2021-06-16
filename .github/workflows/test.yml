@@ -78,7 +78,7 @@ jobs:
         name: "Check that roscpp_tutorials install directory is present"
 
   test_ros2:
-    name: "Test ROS 2"
+    name: "Test ROS 2 packages in repository"
     runs-on: ${{ matrix.os }}
     needs: pre_condition
     strategy:
@@ -103,7 +103,10 @@ jobs:
           vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
         # TODO(tmoulard): re-enable this test once it passes on Windows
         if: runner.os != 'Windows'
-      - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
+      - run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
+        # TODO(tmoulard): re-enable this test once it passes on Windows
+        if: runner.os != 'Windows'
+      - run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/install/test_osrf_testing_tools_cpp"
         # TODO(tmoulard): re-enable this test once it passes on Windows
         if: runner.os != 'Windows'
 
@@ -184,13 +187,13 @@ jobs:
       - run: dpkg -s ros-${{ matrix.ros_distribution }}-test-interface-files
 
       - uses: ./
-        id: test_single_package
-        name: "Test single package, default options"
+        id: test_all_packages_in_repo
+        name: "Test all packages in repo, default options"
         with:
-          package-name: osrf_testing_tools_cpp
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
-      - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
+      - run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
+      - run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/install/test_osrf_testing_tools_cpp"
 
   test_ros2_from_source:
     name: "ROS 2 from source"

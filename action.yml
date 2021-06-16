@@ -42,10 +42,12 @@ inputs:
     required: false
   package-name:
     description: |
-      Name of the package(s) under test, as expected by colcon.
+      Limit the package(s) to be built and tested.
+      If left empty this will build and test everything in the workspace - including packages from vcs-repo-file-url imports.
       Passing multiple package names is allowed.
       Package names can be separated by any whitespace character.
     required: false
+    default: ""
   target-ros1-distro:
     description: |
       ROS 1 distribution to target for the build.  Will be used both for
