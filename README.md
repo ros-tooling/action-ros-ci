@@ -47,8 +47,8 @@ The workspace is built by running:
 - `vcs import` on the repo file(s) specified through the `vcs-repo-file-url` argument, if any (defaults to none)
 - checkout the code under test in the workspace using `vcs`
 - `rosdep install` for the workspace, to get its dependencies
-- run `colcon build` for all packages specified in `package-name`
-- run `colcon test` for all packages specified in `package-name`
+- run `colcon build` (optionally limited to packages specified in `package-name`)
+- run `colcon test` (optionally limited to packages specified in `package-name`)
 
 This action requires targeting a ROS or ROS 2 distribution explicitly.
 This is provided via the `target-ros1-distro` or `target-ros2-distro` inputs, respectively.

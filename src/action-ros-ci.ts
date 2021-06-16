@@ -184,7 +184,7 @@ export function validateDistros(
  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
  */
 async function installRosdeps(
-	upToPackages: string,
+	packageSelection: string,
 	workspaceDir: string,
 	ros1Distro?: string,
 	ros2Distro?: string
@@ -198,7 +198,7 @@ async function installRosdeps(
 		exit 1
 	fi
 	DISTRO=$1
-	package_paths=$(colcon list --paths-only --packages-up-to ${upToPackages})
+	package_paths=$(colcon list --paths-only ${packageSelection})
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
@@ -233,9 +233,17 @@ async function run_throw(): Promise<void> {
 	const extraCmakeArgs = core.getInput("extra-cmake-args");
 	const colconExtraArgs = core.getInput("colcon-extra-args");
 	const importToken = core.getInput("import-token");
-	const packageNames = filterNonEmptyJoin(
-		core.getInput("package-name", { required: true }).split(RegExp("\\s"))
-	);
+	const packageNameInput = core.getInput("package-name");
+	const packageNames = packageNameInput
+		? filterNonEmptyJoin(packageNameInput.split(RegExp("\\s")))
+		: undefined;
+	const buildPackageSelection = packageNames
+		? `--packages-up-to ${packageNames}`
+		: "";
+	const testPackageSelection = packageNames
+		? `--packages-select ${packageNames}`
+		: "";
+
 	const rosWorkspaceName = "ros_ws";
 	core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
 	const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
@@ -436,7 +444,7 @@ done`;
 		await execBashCommand("sudo apt-get update");
 	}
 	await installRosdeps(
-		packageNames,
+		buildPackageSelection,
 		rosWorkspaceDir,
 		targetRos1Distro,
 		targetRos2Distro
@@ -499,7 +507,7 @@ done`;
 	let colconBuildCmd = filterNonEmptyJoin([
 		`colcon build`,
 		`--event-handlers console_cohesion+`,
-		`--packages-up-to ${packageNames}`,
+		buildPackageSelection,
 		`${extra_options.join(" ")}`,
 		extraCmakeArgs !== "" ? `--cmake-args ${extraCmakeArgs}` : "",
 	]);
@@ -520,7 +528,7 @@ done`;
 		`colcon test`,
 		`--event-handlers console_cohesion+`,
 		`--return-code-on-test-failure`,
-		`--packages-select ${packageNames}`,
+		testPackageSelection,
 		`${extra_options.join(" ")}`,
 	]);
 	await execBashCommand(colconTestCmd, colconCommandPrefix, options);
@@ -529,7 +537,7 @@ done`;
 	const colconLcovResultCmd = filterNonEmptyJoin([
 		`colcon lcov-result`,
 		coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
-		`--packages-select ${packageNames}`,
+		testPackageSelection,
 		`--verbose`,
 	]);
 	await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
@@ -539,7 +547,7 @@ done`;
 
 	const colconCoveragepyResultCmd = filterNonEmptyJoin([
 		`colcon coveragepy-result`,
-		`--packages-select ${packageNames}`,
+		testPackageSelection,
 		`--verbose`,
 		`--coverage-report-args -m`,
 	]);
