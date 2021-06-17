@@ -10880,6 +10880,24 @@ function isValidJson(str) {
     return true;
 }
 /**
+ * Convert local paths to URLs.
+ *
+ * The user can pass the VCS repo file either as a URL or a path.
+ * If it is a path, this function will convert it into a URL (file://...).
+ * If the file is already passed as an URL, this function does nothing.
+ *
+ * @param   vcsRepoFileUrl     path or URL to the repo file
+ * @returns                    URL to the repo file
+ */
+function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
+    if (fs_1.default.existsSync(vcsRepoFileUrl)) {
+        return "file://" + path.resolve(vcsRepoFileUrl);
+    }
+    else {
+        return vcsRepoFileUrl;
+    }
+}
+/**
  * Execute a command in bash and wrap the output in a log group.
  *
  * @param   commandLine     command to execute (can include additional args). Must be correctly escaped.
@@ -11077,7 +11095,8 @@ function run_throw() {
         // This is because, for some reason, using Docker, commands might get run as root
         yield execBashCommand(`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`, undefined, Object.assign(Object.assign({}, options), { silent: true }));
         for (const vcsRepoFileUrl of vcsRepoFileUrlListNonEmpty) {
-            yield execBashCommand(`vcs import --force --recursive src/ --input ${vcsRepoFileUrl}`, undefined, options);
+            const resolvedUrl = resolveVcsRepoFileUrl(vcsRepoFileUrl);
+            yield execBashCommand(`vcs import --force --recursive src/ --input ${resolvedUrl}`, undefined, options);
         }
         // If the package under tests is part of ros.repos, remove it first.
         // We do not want to allow the "default" head state of the package to
@@ -11120,7 +11139,7 @@ done`;
     url: 'https://github.com/${repoFullName}.git'
     version: '${commitRef}'`;
         fs_1.default.writeFileSync(repoFilePath, repoFileContent);
-        yield execBashCommand("vcs import --force --recursive src/ --input package.repo", undefined, options);
+        yield execBashCommand("vcs import --force --recursive src/ < package.repo", undefined, options);
         // Print HEAD commits of all repos
         yield execBashCommand("vcs log -l1 src/", undefined, options);
         if (isLinux) {

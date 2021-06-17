@@ -48,6 +48,24 @@ function isValidJson(str: string): boolean {
 }
 
 /**
+ * Convert local paths to URLs.
+ *
+ * The user can pass the VCS repo file either as a URL or a path.
+ * If it is a path, this function will convert it into a URL (file://...).
+ * If the file is already passed as an URL, this function does nothing.
+ *
+ * @param   vcsRepoFileUrl     path or URL to the repo file
+ * @returns                    URL to the repo file
+ */
+function resolveVcsRepoFileUrl(vcsRepoFileUrl: string): string {
+	if (fs.existsSync(vcsRepoFileUrl)) {
+		return "file://" + path.resolve(vcsRepoFileUrl);
+	} else {
+		return vcsRepoFileUrl;
+	}
+}
+
+/**
  * Execute a command in bash and wrap the output in a log group.
  *
  * @param   commandLine     command to execute (can include additional args). Must be correctly escaped.
@@ -326,8 +344,9 @@ async function run_throw(): Promise<void> {
 	);
 
 	for (const vcsRepoFileUrl of vcsRepoFileUrlListNonEmpty) {
+		const resolvedUrl = resolveVcsRepoFileUrl(vcsRepoFileUrl);
 		await execBashCommand(
-			`vcs import --force --recursive src/ --input ${vcsRepoFileUrl}`,
+			`vcs import --force --recursive src/ --input ${resolvedUrl}`,
 			undefined,
 			options
 		);
@@ -378,7 +397,7 @@ done`;
     version: '${commitRef}'`;
 	fs.writeFileSync(repoFilePath, repoFileContent);
 	await execBashCommand(
-		"vcs import --force --recursive src/ --input package.repo",
+		"vcs import --force --recursive src/ < package.repo",
 		undefined,
 		options
 	);
