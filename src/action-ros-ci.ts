@@ -5,6 +5,7 @@ import * as tr from "@actions/exec/lib/toolrunner";
 import * as io from "@actions/io";
 import * as os from "os";
 import * as path from "path";
+import * as url from "url";
 import fs from "fs";
 import retry from "async-retry";
 import * as dep from "./dependencies";
@@ -59,7 +60,7 @@ function isValidJson(str: string): boolean {
  */
 function resolveVcsRepoFileUrl(vcsRepoFileUrl: string): string {
 	if (fs.existsSync(vcsRepoFileUrl)) {
-		return "file://" + path.resolve(vcsRepoFileUrl);
+		return url.pathToFileURL(path.resolve(vcsRepoFileUrl)).href;
 	} else {
 		return vcsRepoFileUrl;
 	}
