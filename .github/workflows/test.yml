@@ -341,6 +341,19 @@ jobs:
       - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
         name: "Check that the additional extra flags has been correctly passed"
 
+      - uses: ./
+        id: test_skip_tests
+        name: "Test single package, skip tests"
+        with:
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
+          skip-tests: true
+      - run: test -d "${{ steps.test_skip_tests.outputs.ros-workspace-directory-name }}/build/ament_copyright"
+        name: "Check that a build directory exists for ament_copyright"
+      - run: test ! -f "${{ steps.test_skip_tests.outputs.ros-workspace-directory-name }}/build/ament_copyright/colcon_test.rc"
+        name: "Check that 'colcon test' wasn't run on ament_copyright"
+
   test_ros2_from_source_docker:
     name: "Test ROS 2 from source Docker"
     runs-on: ubuntu-latest
