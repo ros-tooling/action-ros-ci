@@ -11134,6 +11134,7 @@ function run_throw() {
         const targetRos2Distro = core.getInput(targetROS2DistroInput);
         const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
         let vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
+        const skipTests = core.getInput("skip-tests") === "true";
         // Check if PR overrides/adds supplemental repos files
         const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
         const vcsReposSupplemental = dep.getReposFilesSupplemental(github.context.payload);
@@ -11317,33 +11318,38 @@ done`;
             colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
         }
         yield execBashCommand(colconBuildCmd, colconCommandPrefix, options);
-        // ignoreReturnCode is set to true to avoid having a lack of coverage
-        // data fail the build.
-        const colconLcovInitialCmd = "colcon lcov-result --initial";
-        yield execBashCommand(colconLcovInitialCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
-        const colconTestCmd = filterNonEmptyJoin([
-            `colcon test`,
-            `--event-handlers console_cohesion+`,
-            `--return-code-on-test-failure`,
-            testPackageSelection,
-            `${extra_options.join(" ")}`,
-        ]);
-        yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
-        // ignoreReturnCode, check comment above in --initial
-        const colconLcovResultCmd = filterNonEmptyJoin([
-            `colcon lcov-result`,
-            coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
-            testPackageSelection,
-            `--verbose`,
-        ]);
-        yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
-        const colconCoveragepyResultCmd = filterNonEmptyJoin([
-            `colcon coveragepy-result`,
-            testPackageSelection,
-            `--verbose`,
-            `--coverage-report-args -m`,
-        ]);
-        yield execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
+        if (!skipTests) {
+            // ignoreReturnCode is set to true to avoid having a lack of coverage
+            // data fail the build.
+            const colconLcovInitialCmd = "colcon lcov-result --initial";
+            yield execBashCommand(colconLcovInitialCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
+            const colconTestCmd = filterNonEmptyJoin([
+                `colcon test`,
+                `--event-handlers console_cohesion+`,
+                `--return-code-on-test-failure`,
+                testPackageSelection,
+                `${extra_options.join(" ")}`,
+            ]);
+            yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
+            // ignoreReturnCode, check comment above in --initial
+            const colconLcovResultCmd = filterNonEmptyJoin([
+                `colcon lcov-result`,
+                coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
+                testPackageSelection,
+                `--verbose`,
+            ]);
+            yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
+            const colconCoveragepyResultCmd = filterNonEmptyJoin([
+                `colcon coveragepy-result`,
+                testPackageSelection,
+                `--verbose`,
+                `--coverage-report-args -m`,
+            ]);
+            yield execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
+        }
+        else {
+            core.info("Skipping tests");
+        }
         if (importToken !== "") {
             // Unset config so that it doesn't leak to other actions
             yield execBashCommand(`/usr/bin/git config --global --unset-all url.https://${importToken}@github.com.insteadof`, undefined, options);

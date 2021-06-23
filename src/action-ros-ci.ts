@@ -221,6 +221,7 @@ async function run_throw(): Promise<void> {
 	const targetRos2Distro = core.getInput(targetROS2DistroInput);
 	const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
 	let vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
+	const skipTests = core.getInput("skip-tests") === "true";
 
 	// Check if PR overrides/adds supplemental repos files
 	const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
@@ -483,46 +484,50 @@ done`;
 	}
 	await execBashCommand(colconBuildCmd, colconCommandPrefix, options);
 
-	// ignoreReturnCode is set to true to avoid having a lack of coverage
-	// data fail the build.
-	const colconLcovInitialCmd = "colcon lcov-result --initial";
-	await execBashCommand(colconLcovInitialCmd, colconCommandPrefix, {
-		...options,
-		ignoreReturnCode: true,
-	});
+	if (!skipTests) {
+		// ignoreReturnCode is set to true to avoid having a lack of coverage
+		// data fail the build.
+		const colconLcovInitialCmd = "colcon lcov-result --initial";
+		await execBashCommand(colconLcovInitialCmd, colconCommandPrefix, {
+			...options,
+			ignoreReturnCode: true,
+		});
 
-	const colconTestCmd = filterNonEmptyJoin([
-		`colcon test`,
-		`--event-handlers console_cohesion+`,
-		`--return-code-on-test-failure`,
-		testPackageSelection,
-		`${extra_options.join(" ")}`,
-	]);
-	await execBashCommand(colconTestCmd, colconCommandPrefix, options);
+		const colconTestCmd = filterNonEmptyJoin([
+			`colcon test`,
+			`--event-handlers console_cohesion+`,
+			`--return-code-on-test-failure`,
+			testPackageSelection,
+			`${extra_options.join(" ")}`,
+		]);
+		await execBashCommand(colconTestCmd, colconCommandPrefix, options);
 
-	// ignoreReturnCode, check comment above in --initial
-	const colconLcovResultCmd = filterNonEmptyJoin([
-		`colcon lcov-result`,
-		coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
-		testPackageSelection,
-		`--verbose`,
-	]);
-	await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
-		...options,
-		ignoreReturnCode: true,
-	});
+		// ignoreReturnCode, check comment above in --initial
+		const colconLcovResultCmd = filterNonEmptyJoin([
+			`colcon lcov-result`,
+			coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
+			testPackageSelection,
+			`--verbose`,
+		]);
+		await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
+			...options,
+			ignoreReturnCode: true,
+		});
 
-	const colconCoveragepyResultCmd = filterNonEmptyJoin([
-		`colcon coveragepy-result`,
-		testPackageSelection,
-		`--verbose`,
-		`--coverage-report-args -m`,
-	]);
-	await execBashCommand(
-		colconCoveragepyResultCmd,
-		colconCommandPrefix,
-		options
-	);
+		const colconCoveragepyResultCmd = filterNonEmptyJoin([
+			`colcon coveragepy-result`,
+			testPackageSelection,
+			`--verbose`,
+			`--coverage-report-args -m`,
+		]);
+		await execBashCommand(
+			colconCoveragepyResultCmd,
+			colconCommandPrefix,
+			options
+		);
+	} else {
+		core.info("Skipping tests");
+	}
 
 	if (importToken !== "") {
 		// Unset config so that it doesn't leak to other actions
