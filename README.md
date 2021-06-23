@@ -13,6 +13,7 @@ This action builds and tests a [ROS](http://wiki.ros.org/) or [ROS 2](https://do
    1. [Build and run tests for your ROS 2 package](#Build-and-run-tests-for-your-ROS-2-package)
    1. [Build with a custom `repos` or `rosinstall` file](#Build-with-a-custom-repos-or-rosinstall-file)
    1. [Build a ROS 1 workspace](#Build-a-ROS-1-workspace)
+   1. [Skip tests](#Skip-tests)
    1. [Use a `colcon` `defaults.yaml` file](#Use-a-colcon-defaultsyaml-file)
    1. [Enable Address Sanitizer to automatically report memory issues](#Enable-Address-Sanitizer-to-automatically-report-memory-issues)
    1. [Generate and process code coverage data](#Generate-and-process-code-coverage-data)
@@ -47,7 +48,7 @@ The workspace is built by running:
 - checkout the code under test in the workspace using `vcs`
 - `rosdep install` for the workspace, to get its dependencies
 - run `colcon build` (optionally limited to packages specified in `package-name`)
-- run `colcon test` (optionally limited to packages specified in `package-name`)
+- run `colcon test` (optionally limited to packages specified in `package-name`; optionally [skipped](#Skip-tests))
 
 This action requires targeting a ROS or ROS 2 distribution explicitly.
 This is provided via the `target-ros1-distro` or `target-ros2-distro` inputs, respectively.
@@ -137,6 +138,22 @@ steps:
     with:
       package-name: my_package
       target-ros1-distro: melodic
+```
+
+### Skip tests
+
+To skip tests and code coverage data processing, set the `skip-tests` option to `true`.
+
+```yaml
+steps:
+  - uses: ros-tooling/setup-ros@v0.2
+    with:
+      required-ros-distributions: galactic
+  - uses: ros-tooling/action-ros-ci@v0.2
+    with:
+      package-name: my_package
+      target-ros2-distro: galactic
+      skip-tests: true
 ```
 
 ### Use a `colcon` `defaults.yaml` file
