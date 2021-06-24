@@ -71,6 +71,12 @@ inputs:
       For example, for ROS 2 Rolling source repositories, use:
       https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
     default: ""
+  skip-tests:
+    default: ""
+    description: |
+      Skip tests and code coverage data processing.
+      Set to 'true'.
+    required: false
 outputs:
   ros-workspace-directory-name:
     description: |
