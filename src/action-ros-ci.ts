@@ -194,6 +194,64 @@ async function installRosdeps(
 	return exitCode;
 }
 
+/**
+ * Run tests and process & aggregate coverage results.
+ *
+ * @param colconCommandPrefix the prefix to use before colcon commands
+ * @param options the exec options
+ * @param testPackageSelection the package selection option string
+ * @param extra_options the extra options for 'colcon test'
+ * @param coverageIgnorePattern the coverage filter pattern to use for lcov, or an empty string
+ */
+async function runTests(
+	colconCommandPrefix: string,
+	options: im.ExecOptions,
+	testPackageSelection: string,
+	extra_options: string[],
+	coverageIgnorePattern: string
+): Promise<void> {
+	// ignoreReturnCode is set to true to avoid having a lack of coverage
+	// data fail the build.
+	const colconLcovInitialCmd = "colcon lcov-result --initial";
+	await execBashCommand(colconLcovInitialCmd, colconCommandPrefix, {
+		...options,
+		ignoreReturnCode: true,
+	});
+
+	const colconTestCmd = filterNonEmptyJoin([
+		`colcon test`,
+		`--event-handlers console_cohesion+`,
+		`--return-code-on-test-failure`,
+		testPackageSelection,
+		`${extra_options.join(" ")}`,
+	]);
+	await execBashCommand(colconTestCmd, colconCommandPrefix, options);
+
+	// ignoreReturnCode, check comment above in --initial
+	const colconLcovResultCmd = filterNonEmptyJoin([
+		`colcon lcov-result`,
+		coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
+		testPackageSelection,
+		`--verbose`,
+	]);
+	await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
+		...options,
+		ignoreReturnCode: true,
+	});
+
+	const colconCoveragepyResultCmd = filterNonEmptyJoin([
+		`colcon coveragepy-result`,
+		testPackageSelection,
+		`--verbose`,
+		`--coverage-report-args -m`,
+	]);
+	await execBashCommand(
+		colconCoveragepyResultCmd,
+		colconCommandPrefix,
+		options
+	);
+}
+
 async function run_throw(): Promise<void> {
 	const repo = github.context.repo;
 	const workspace = process.env.GITHUB_WORKSPACE as string;
@@ -485,45 +543,12 @@ done`;
 	await execBashCommand(colconBuildCmd, colconCommandPrefix, options);
 
 	if (!skipTests) {
-		// ignoreReturnCode is set to true to avoid having a lack of coverage
-		// data fail the build.
-		const colconLcovInitialCmd = "colcon lcov-result --initial";
-		await execBashCommand(colconLcovInitialCmd, colconCommandPrefix, {
-			...options,
-			ignoreReturnCode: true,
-		});
-
-		const colconTestCmd = filterNonEmptyJoin([
-			`colcon test`,
-			`--event-handlers console_cohesion+`,
-			`--return-code-on-test-failure`,
-			testPackageSelection,
-			`${extra_options.join(" ")}`,
-		]);
-		await execBashCommand(colconTestCmd, colconCommandPrefix, options);
-
-		// ignoreReturnCode, check comment above in --initial
-		const colconLcovResultCmd = filterNonEmptyJoin([
-			`colcon lcov-result`,
-			coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
-			testPackageSelection,
-			`--verbose`,
-		]);
-		await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
-			...options,
-			ignoreReturnCode: true,
-		});
-
-		const colconCoveragepyResultCmd = filterNonEmptyJoin([
-			`colcon coveragepy-result`,
-			testPackageSelection,
-			`--verbose`,
-			`--coverage-report-args -m`,
-		]);
-		await execBashCommand(
-			colconCoveragepyResultCmd,
+		await runTests(
 			colconCommandPrefix,
-			options
+			options,
+			testPackageSelection,
+			extra_options,
+			coverageIgnorePattern
 		);
 	} else {
 		core.info("Skipping tests");
