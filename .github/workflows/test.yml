@@ -30,7 +30,7 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.1.5
+      - uses: actions/setup-node@v2.2.0
         with:
           node-version: "12.x"
       - run: npm install && npm run lint
@@ -64,7 +64,7 @@ jobs:
       image: ${{ matrix.docker_image }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.1.5
+      - uses: actions/setup-node@v2.2.0
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
@@ -88,7 +88,7 @@ jobs:
         ros_distribution: [foxy, galactic]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.1.5
+      - uses: actions/setup-node@v2.2.0
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
@@ -171,7 +171,7 @@ jobs:
       image: ${{ matrix.docker_image }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.1.5
+      - uses: actions/setup-node@v2.2.0
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
@@ -208,7 +208,7 @@ jobs:
       DISTRO_REPOS_URL: "https://raw.githubusercontent.com/ros2/ros2/${{ matrix.ros_distribution == 'rolling' && 'master' || matrix.ros_distribution }}/ros2.repos"
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.1.5
+      - uses: actions/setup-node@v2.2.0
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
@@ -385,7 +385,7 @@ jobs:
       image: ${{ matrix.docker_image }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.1.5
+      - uses: actions/setup-node@v2.2.0
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
