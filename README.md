@@ -338,10 +338,10 @@ steps:
 
 ### Use with private repos
 
-`action-ros-ci` needs a personal access token to be able to clone private repositories.
-This may include the repository that is being tested as well as other repositories included in repos files provided through `vcs-repo-file-url`.
-Generate a [personal access token](https://github.com/settings/tokens) with the "repo" scope and add it to your repo's [secrets][creating-encrypted-secrets].
-For example, if your secret is called `REPO_TOKEN`:
+`action-ros-ci` needs a token to be able to clone private repositories.
+If the only private repository your workflow needs is the one against which it runs, using the default `GITHUB_TOKEN` will work.
+However, if your workflow also clones other private repositories (e.g., repositories included in repos files provided through `vcs-repo-file-url`), you will need to generate a [personal access token](https://github.com/settings/tokens) (PAT) with the "repo" scope and add it to your repo's [secrets][creating-encrypted-secrets].
+For example, if this secret is called `REPO_TOKEN`:
 
 ```yaml
 steps:
@@ -349,6 +349,9 @@ steps:
   - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
+      # If there are no private dependencies, no need to create a PAT or add a secret
+      import-token: ${{ secrets.GITHUB_TOKEN }}
+      # If there are private dependencies (e.g., in a file provided through vcs-repo-file-url), a PAT is required
       import-token: ${{ secrets.REPO_TOKEN }}
       # ...
 ```
