@@ -11239,7 +11239,7 @@ function run_throw() {
             yield execBashCommand(String.raw `/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader'` +
                 ` && git config --local --unset-all 'http.https://github.com/.extraheader' || true`, undefined, options);
             // Use a global insteadof entry because local configs aren't observed by git clone
-            yield execBashCommand(`/usr/bin/git config --global url.https://${importToken}@github.com.insteadof 'https://github.com'`, undefined, options);
+            yield execBashCommand(`/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com.insteadof 'https://github.com'`, undefined, options);
             if (core.isDebug()) {
                 yield execBashCommand(`/usr/bin/git config --list --show-origin || true`, undefined, options);
             }
@@ -11366,7 +11366,7 @@ done`;
         }
         if (importToken !== "") {
             // Unset config so that it doesn't leak to other actions
-            yield execBashCommand(`/usr/bin/git config --global --unset-all url.https://${importToken}@github.com.insteadof`, undefined, options);
+            yield execBashCommand(`/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@github.com.insteadof`, undefined, options);
         }
     });
 }

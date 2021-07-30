@@ -382,7 +382,7 @@ async function run_throw(): Promise<void> {
 		);
 		// Use a global insteadof entry because local configs aren't observed by git clone
 		await execBashCommand(
-			`/usr/bin/git config --global url.https://${importToken}@github.com.insteadof 'https://github.com'`,
+			`/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com.insteadof 'https://github.com'`,
 			undefined,
 			options
 		);
@@ -557,7 +557,7 @@ done`;
 	if (importToken !== "") {
 		// Unset config so that it doesn't leak to other actions
 		await execBashCommand(
-			`/usr/bin/git config --global --unset-all url.https://${importToken}@github.com.insteadof`,
+			`/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@github.com.insteadof`,
 			undefined,
 			options
 		);
