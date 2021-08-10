@@ -156,6 +156,7 @@ export function validateDistros(
 async function installRosdeps(
 	packageSelection: string,
 	workspaceDir: string,
+	commandPrefix: string,
 	ros1Distro?: string,
 	ros2Distro?: string
 ): Promise<number> {
@@ -180,14 +181,14 @@ async function installRosdeps(
 	if (ros1Distro) {
 		exitCode += await execBashCommand(
 			`./${scriptName} ${ros1Distro}`,
-			"",
+			commandPrefix,
 			options
 		);
 	}
 	if (ros2Distro) {
 		exitCode += await execBashCommand(
 			`./${scriptName} ${ros2Distro}`,
-			"",
+			commandPrefix,
 			options
 		);
 	}
@@ -465,6 +466,31 @@ done`;
 	// Print HEAD commits of all repos
 	await execBashCommand("vcs log -l1 src/", undefined, options);
 
+	// Source any installed ROS distributions if they are present
+	let sourceCommandPrefix = "";
+	if (isLinux) {
+		if (targetRos1Distro) {
+			const ros1SetupPath = `/opt/ros/${targetRos1Distro}/setup.sh`;
+			if (fs.existsSync(ros1SetupPath)) {
+				sourceCommandPrefix += `source ${ros1SetupPath} && `;
+			}
+		}
+		if (targetRos2Distro) {
+			const ros2SetupPath = `/opt/ros/${targetRos2Distro}/setup.sh`;
+			if (fs.existsSync(ros2SetupPath)) {
+				sourceCommandPrefix += `source ${ros2SetupPath} && `;
+			}
+		}
+	} else if (isWindows) {
+		// Windows only supports ROS2
+		if (targetRos2Distro) {
+			const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
+			if (fs.existsSync(ros2SetupPath)) {
+				sourceCommandPrefix += `${ros2SetupPath} && `;
+			}
+		}
+	}
+
 	if (isLinux) {
 		// Always update APT before installing packages on Ubuntu
 		await execBashCommand("sudo apt-get update");
@@ -472,6 +498,7 @@ done`;
 	await installRosdeps(
 		buildPackageSelection,
 		rosWorkspaceDir,
+		sourceCommandPrefix,
 		targetRos1Distro,
 		targetRos2Distro
 	);
@@ -505,31 +532,6 @@ done`;
 	// where this does not happen. See issue #26 for relevant CI logs.
 	core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
 
-	// Source any installed ROS distributions if they are present
-	let colconCommandPrefix = "";
-	if (isLinux) {
-		if (targetRos1Distro) {
-			const ros1SetupPath = `/opt/ros/${targetRos1Distro}/setup.sh`;
-			if (fs.existsSync(ros1SetupPath)) {
-				colconCommandPrefix += `source ${ros1SetupPath} && `;
-			}
-		}
-		if (targetRos2Distro) {
-			const ros2SetupPath = `/opt/ros/${targetRos2Distro}/setup.sh`;
-			if (fs.existsSync(ros2SetupPath)) {
-				colconCommandPrefix += `source ${ros2SetupPath} && `;
-			}
-		}
-	} else if (isWindows) {
-		// Windows only supports ROS2
-		if (targetRos2Distro) {
-			const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
-			if (fs.existsSync(ros2SetupPath)) {
-				colconCommandPrefix += `${ros2SetupPath} && `;
-			}
-		}
-	}
-
 	let colconBuildCmd = filterNonEmptyJoin([
 		`colcon build`,
 		`--event-handlers console_cohesion+`,
@@ -540,6 +542,7 @@ done`;
 	if (!isWindows) {
 		colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
 	}
+	const colconCommandPrefix = sourceCommandPrefix;
 	await execBashCommand(colconBuildCmd, colconCommandPrefix, options);
 
 	if (!skipTests) {
