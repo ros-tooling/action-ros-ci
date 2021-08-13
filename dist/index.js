@@ -11084,7 +11084,7 @@ exports.validateDistros = validateDistros;
 /**
  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
  */
-function installRosdeps(packageSelection, workspaceDir, ros1Distro, ros2Distro) {
+function installRosdeps(packageSelection, workspaceDir, options, ros1Distro, ros2Distro) {
     return __awaiter(this, void 0, void 0, function* () {
         const scriptName = "install_rosdeps.sh";
         const scriptPath = path.join(workspaceDir, scriptName);
@@ -11102,7 +11102,6 @@ function installRosdeps(packageSelection, workspaceDir, ros1Distro, ros2Distro) 
 	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys rti-connext-dds-5.3.1 --rosdistro $DISTRO -y || true`;
         fs_1.default.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
         let exitCode = 0;
-        const options = { cwd: workspaceDir };
         if (ros1Distro) {
             exitCode += yield execBashCommand(`./${scriptName} ${ros1Distro}`, "", options);
         }
@@ -11231,9 +11230,10 @@ function run_throw() {
         yield io.mkdirP(rosWorkspaceDir + "/src");
         const options = {
             cwd: rosWorkspaceDir,
+            env: Object.assign(Object.assign({}, process.env), { ROS_VERSION: targetRos1Distro ? "1" : "2", ROS_PYTHON_VERSION: targetRos1Distro && targetRos1Distro != "noetic" ? "2" : "3" }),
         };
         if (colconDefaultsFile !== "") {
-            options.env = Object.assign(Object.assign({}, process.env), { COLCON_DEFAULTS_FILE: colconDefaultsFile });
+            options.env = Object.assign(Object.assign({}, options.env), { COLCON_DEFAULTS_FILE: colconDefaultsFile });
         }
         if (importToken !== "") {
             // Unset all local extraheader config entries possibly set by actions/checkout,
@@ -11303,7 +11303,7 @@ done`;
             // Always update APT before installing packages on Ubuntu
             yield execBashCommand("sudo apt-get update");
         }
-        yield installRosdeps(buildPackageSelection, rosWorkspaceDir, targetRos1Distro, targetRos2Distro);
+        yield installRosdeps(buildPackageSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
         if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
             yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, undefined, options);
             yield execBashCommand("colcon mixin update default", undefined, options);

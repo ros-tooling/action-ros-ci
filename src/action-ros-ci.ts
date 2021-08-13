@@ -156,6 +156,7 @@ export function validateDistros(
 async function installRosdeps(
 	packageSelection: string,
 	workspaceDir: string,
+	options: im.ExecOptions,
 	ros1Distro?: string,
 	ros2Distro?: string
 ): Promise<number> {
@@ -176,7 +177,6 @@ async function installRosdeps(
 	fs.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
 
 	let exitCode = 0;
-	const options = { cwd: workspaceDir };
 	if (ros1Distro) {
 		exitCode += await execBashCommand(
 			`./${scriptName} ${ros1Distro}`,
@@ -357,10 +357,16 @@ async function run_throw(): Promise<void> {
 
 	const options: im.ExecOptions = {
 		cwd: rosWorkspaceDir,
+		env: {
+			...process.env,
+			ROS_VERSION: targetRos1Distro ? "1" : "2",
+			ROS_PYTHON_VERSION:
+				targetRos1Distro && targetRos1Distro != "noetic" ? "2" : "3",
+		},
 	};
 	if (colconDefaultsFile !== "") {
 		options.env = {
-			...process.env,
+			...options.env,
 			COLCON_DEFAULTS_FILE: colconDefaultsFile,
 		};
 	}
@@ -472,6 +478,7 @@ done`;
 	await installRosdeps(
 		buildPackageSelection,
 		rosWorkspaceDir,
+		options,
 		targetRos1Distro,
 		targetRos2Distro
 	);
