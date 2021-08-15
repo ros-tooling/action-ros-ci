@@ -372,6 +372,12 @@ async function run_throw(): Promise<void> {
 			COLCON_DEFAULTS_FILE: colconDefaultsFile,
 		};
 	}
+	if (isLinux) {
+		options.env = {
+			...options.env,
+			DEBIAN_FRONTEND: "noninteractive",
+		};
+	}
 
 	if (importToken !== "") {
 		// Unset all local extraheader config entries possibly set by actions/checkout,

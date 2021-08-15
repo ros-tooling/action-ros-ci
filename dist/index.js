@@ -11237,6 +11237,9 @@ function run_throw() {
         if (colconDefaultsFile !== "") {
             options.env = Object.assign(Object.assign({}, options.env), { COLCON_DEFAULTS_FILE: colconDefaultsFile });
         }
+        if (isLinux) {
+            options.env = Object.assign(Object.assign({}, options.env), { DEBIAN_FRONTEND: "noninteractive" });
+        }
         if (importToken !== "") {
             // Unset all local extraheader config entries possibly set by actions/checkout,
             // because local settings take precedence and the default token used by
