@@ -11144,7 +11144,10 @@ function runTests(colconCommandPrefix, options, testPackageSelection, extra_opti
         if (isWindows) {
             colconTestCmd = [...colconTestCmd, `--merge-install`];
         }
-        yield execShellCommand([...colconCommandPrefix, ...colconTestCmd], options, false);
+        // Temporarily disable colcon test on Windows to unblock Windows CI builds: https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
+        if (!isWindows) {
+            yield execShellCommand([...colconCommandPrefix, ...colconTestCmd], options, false);
+        }
         if (!isWindows) {
             // colcon lcov-result not supported in Windows right now
             // ignoreReturnCode, check comment above in --initial
