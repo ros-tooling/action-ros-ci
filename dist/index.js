@@ -11348,7 +11348,7 @@ done`;
         }
         yield installRosdeps(buildPackageSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
         if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
-            yield execShellCommand([`colcon`, `mixin`, `add`, `default`, `'${colconMixinRepo}'`], options, false);
+            yield execShellCommand([`colcon`, `mixin`, `add`, `default`, `${colconMixinRepo}`], options, false);
             yield execShellCommand([`colcon`, `mixin`, `update`, `default`], options, false);
         }
         // Add the future install bin directory to PATH.

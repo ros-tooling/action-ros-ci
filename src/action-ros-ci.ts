@@ -543,7 +543,7 @@ done`;
 
 	if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
 		await execShellCommand(
-			[`colcon`, `mixin`, `add`, `default`, `'${colconMixinRepo}'`],
+			[`colcon`, `mixin`, `add`, `default`, `${colconMixinRepo}`],
 			options,
 			false
 		);
