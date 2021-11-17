@@ -82,7 +82,9 @@ export async function execShellCommand(
 	log_message?: string
 ): Promise<number> {
 	if (use_bash) {
+		console.log("melvin1: " + command);
 		command = [filterNonEmptyJoin(command)];
+		console.log("melvin2: " + command);
 	}
 
 	let toolRunnerCommandLine = "";

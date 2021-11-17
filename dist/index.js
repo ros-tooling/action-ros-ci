@@ -11025,7 +11025,9 @@ function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
 function execShellCommand(command, options, use_bash = true, log_message) {
     return __awaiter(this, void 0, void 0, function* () {
         if (use_bash) {
+            console.log("melvin1: " + command);
             command = [filterNonEmptyJoin(command)];
+            console.log("melvin2: " + command);
         }
         let toolRunnerCommandLine = "";
         let toolRunnerCommandLineArgs = [];
