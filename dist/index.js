@@ -11017,25 +11017,28 @@ function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
  * Execute a shell command and wrap the output in a log group.
  *
  * @param   command         command to execute w/ any params
- * @param   use_bash        optionally use bash shell, instead of os default. defaults to true.
+ * @param   force_bash      force running in bash shell, instead of os default. defaults to true.
  * @param   options         optional exec options.  See ExecOptions
  * @param   log_message     log group title.
  * @returns Promise<number> exit code
  */
-function execShellCommand(command, options, use_bash = true, log_message) {
+function execShellCommand(command, options, force_bash = true, log_message) {
     return __awaiter(this, void 0, void 0, function* () {
+        const use_bash = !isWindows || force_bash;
         if (use_bash) {
-            console.log("melvin1: " + command);
+            // Bash command needs to be flattened into a single string when passed to bash with "-c" switch
             command = [filterNonEmptyJoin(command)];
-            console.log("melvin2: " + command);
+            if (isWindows) {
+                command = [
+                    ...[`C:\\Program Files\\Git\\bin\\bash.exe`, `-c`],
+                    ...command,
+                ];
+            }
         }
         let toolRunnerCommandLine = "";
         let toolRunnerCommandLineArgs = [];
         if (isWindows) {
             toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
-            const bash_prefix = use_bash
-                ? [`C:\\Program Files\\Git\\bin\\bash.exe`, `-c`]
-                : [];
             // This passes the same flags to cmd.exe that "run:" in a workflow.
             // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
             // Except for /D, which disables the AutoRun functionality from command prompt
@@ -11049,7 +11052,6 @@ function execShellCommand(command, options, use_bash = true, log_message) {
                 "call",
                 "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
                 "&&",
-                ...bash_prefix,
                 ...command,
             ];
         }
