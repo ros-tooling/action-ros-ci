@@ -83,7 +83,7 @@ export async function execShellCommand(
 ): Promise<number> {
 	const use_bash = !isWindows || force_bash;
 	if (use_bash) {
-		// Bash command needs to be flattened into a single string when passed to bash with "-c" switch
+		// Bash commands needs to be flattened into a single string when passed to bash with "-c" switch
 		command = [filterNonEmptyJoin(command)];
 		if (isWindows) {
 			command = [
@@ -162,7 +162,7 @@ export function validateDistros(
  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
  */
 async function installRosdeps(
-	packageSelection: string,
+	packageSelection: string[],
 	workspaceDir: string,
 	options: im.ExecOptions,
 	ros1Distro?: string,
@@ -177,7 +177,9 @@ async function installRosdeps(
 		exit 1
 	fi
 	DISTRO=$1
-	package_paths=$(colcon list --paths-only ${packageSelection})
+	package_paths=$(colcon list --paths-only ${filterNonEmptyJoin(
+		packageSelection
+	)})
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
@@ -205,16 +207,16 @@ async function installRosdeps(
  *
  * @param colconCommandPrefix the prefix to use before colcon commands
  * @param options the exec options
- * @param testPackageSelection the package selection option string
- * @param extra_options the extra options for 'colcon test'
- * @param coverageIgnorePattern the coverage filter pattern to use for lcov, or an empty string
+ * @param testPackageSelection the package selection option
+ * @param colconExtraArgs the extra args for 'colcon test'
+ * @param coverageIgnorePattern the coverage filter pattern to use for lcov
  */
 async function runTests(
 	colconCommandPrefix: string[],
 	options: im.ExecOptions,
-	testPackageSelection: string,
-	extra_options: string[],
-	coverageIgnorePattern: string
+	testPackageSelection: string[],
+	colconExtraArgs: string[],
+	coverageIgnorePattern: string[]
 ): Promise<void> {
 	if (!isWindows) {
 		// lcov-result not supported in Windows
@@ -231,18 +233,13 @@ async function runTests(
 		);
 	}
 
-	const colconTestCmdOptionsStr = filterNonEmptyJoin([
-		testPackageSelection,
-		`${extra_options.join(" ")}`,
-	]);
-	const colconTestCmdOptions =
-		colconTestCmdOptionsStr !== "" ? [colconTestCmdOptionsStr] : [];
 	let colconTestCmd = [
 		`colcon`,
 		`test`,
 		`--event-handlers=console_cohesion+`,
 		`--return-code-on-test-failure`,
-		...colconTestCmdOptions,
+		...testPackageSelection,
+		...colconExtraArgs,
 	];
 	if (isWindows) {
 		colconTestCmd = [...colconTestCmd, `--merge-install`];
@@ -260,16 +257,11 @@ async function runTests(
 	if (!isWindows) {
 		// colcon lcov-result not supported in Windows right now
 		// ignoreReturnCode, check comment above in --initial
-		const colconLcovCmdOptionsStr = filterNonEmptyJoin([
-			coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
-			testPackageSelection,
-		]);
-		const colconLcovCmdOptions =
-			colconLcovCmdOptionsStr !== "" ? [colconLcovCmdOptionsStr] : [];
 		const colconLcovResultCmd = [
 			`colcon`,
 			`lcov-result`,
-			...colconLcovCmdOptions,
+			...testPackageSelection,
+			...coverageIgnorePattern,
 			`--verbose`,
 		];
 		await execShellCommand(
@@ -282,15 +274,10 @@ async function runTests(
 		);
 	}
 
-	const colconCoveragepyCmdOptionsStr = filterNonEmptyJoin([
-		testPackageSelection,
-	]);
-	const colconCoveragepyCmdOptions =
-		colconCoveragepyCmdOptionsStr !== "" ? [colconCoveragepyCmdOptionsStr] : [];
 	const colconCoveragepyResultCmd = [
 		`colcon`,
 		`coveragepy-result`,
-		...colconCoveragepyCmdOptions,
+		...testPackageSelection,
 		`--verbose`,
 		`--coverage-report-args`,
 		`-m`,
@@ -308,19 +295,32 @@ async function run_throw(): Promise<void> {
 
 	const colconDefaults = core.getInput("colcon-defaults");
 	const colconMixinRepo = core.getInput("colcon-mixin-repository");
-	const extraCmakeArgs = core.getInput("extra-cmake-args");
-	const colconExtraArgs = core.getInput("colcon-extra-args");
+
+	const extraCmakeArgsInput = core.getInput("extra-cmake-args");
+	const extraCmakeArgs = extraCmakeArgsInput
+		? ["--cmake-args", extraCmakeArgsInput]
+		: [];
+
+	const coverageIgnorePatternInput = core.getInput("coverage-ignore-pattern");
+	const coverageIgnorePattern = coverageIgnorePatternInput
+		? ["--filter", coverageIgnorePatternInput]
+		: [];
+
+	const colconExtraArgsInput = core.getInput("colcon-extra-args");
+	const colconExtraArgs = colconExtraArgsInput ? [colconExtraArgsInput] : [];
+
 	const importToken = core.getInput("import-token");
+
 	const packageNameInput = core.getInput("package-name");
 	const packageNames = packageNameInput
-		? filterNonEmptyJoin(packageNameInput.split(RegExp("\\s")))
+		? packageNameInput.split(RegExp("\\s"))
 		: undefined;
 	const buildPackageSelection = packageNames
-		? `--packages-up-to ${packageNames}`
-		: "";
+		? ["--packages-up-to", ...packageNames]
+		: [];
 	const testPackageSelection = packageNames
-		? `--packages-select ${packageNames}`
-		: "";
+		? ["--packages-select", ...packageNames]
+		: [];
 
 	const rosWorkspaceName = "ros_ws";
 	core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
@@ -361,8 +361,6 @@ async function run_throw(): Promise<void> {
 	vcsRepoFileUrlList = vcsRepoFileUrlList.concat(vcsReposSupplemental);
 
 	const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
-
-	const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
 
 	if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
 		return;
@@ -556,11 +554,6 @@ done`;
 		);
 	}
 
-	let extra_options: string[] = [];
-	if (colconExtraArgs !== "") {
-		extra_options = extra_options.concat(colconExtraArgs);
-	}
-
 	// Add the future install bin directory to PATH.
 	// This enables cmake find_package to find packages installed in the
 	// colcon install directory, even if local_setup.sh has not been sourced.
@@ -613,18 +606,13 @@ done`;
 		}
 	}
 
-	const colconBuildCmdOptionsStr = filterNonEmptyJoin([
-		buildPackageSelection,
-		`${extra_options.join(" ")}`,
-		extraCmakeArgs !== "" ? `--cmake-args ${extraCmakeArgs}` : "",
-	]);
-	const colconBuildCmdOptions =
-		colconBuildCmdOptionsStr !== "" ? [colconBuildCmdOptionsStr] : [];
 	let colconBuildCmd = [
 		`colcon`,
 		`build`,
 		`--symlink-install`,
-		...colconBuildCmdOptions,
+		...buildPackageSelection,
+		...colconExtraArgs,
+		...extraCmakeArgs,
 		`--event-handlers=console_cohesion+`,
 	];
 	if (isWindows) {
@@ -641,7 +629,7 @@ done`;
 			colconCommandPrefix,
 			options,
 			testPackageSelection,
-			extra_options,
+			colconExtraArgs,
 			coverageIgnorePattern
 		);
 	} else {
