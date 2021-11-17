@@ -221,7 +221,11 @@ jobs:
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
-        name: "Check that ament_copyright install directory is present"
+        name: "Check that ament_copyright install directory is present (Non-Windows only)"
+        if: matrix.os != 'windows-latest'
+      - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/share/ament_copyright"
+        name: "Check that ament_copyright install directory is present in merged install space (Windows only)"
+        if: matrix.os == 'windows-latest'
 
       - uses: ./
         id: test_multiple_packages
@@ -231,9 +235,17 @@ jobs:
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_copyright"
-        name: "Check that ament_copyright install directory is present"
+        name: "Check that ament_copyright install directory is present (Non-Windows only)"
+        if: matrix.os != 'windows-latest'
+      - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/share/ament_copyright"
+        name: "Check that ament_copyright install directory is present in merged install space (Windows only)"
+        if: matrix.os == 'windows-latest'
       - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
-        name: "Check that ament_lint install directory is present"
+        name: "Check that ament_lint install directory is present (Non-Windows only)"
+        if: matrix.os != 'windows-latest'
+      - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/share/ament_lint"
+        name: "Check that ament_lint install directory is present in merged install space (Windows only)"
+        if: matrix.os == 'windows-latest'
 
       - uses: ./
         id: test_connext_dependency
@@ -262,7 +274,11 @@ jobs:
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/install/ament_copyright"
-        name: "Check that ament_copyright install directory is present"
+        name: "Check that ament_copyright install directory is present (Non-Windows only)"
+        if: matrix.os != 'windows-latest'
+      - run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/install/share/ament_copyright"
+        name: "Check that ament_copyright install directory is present in merged install space (Windows only)"
+        if: matrix.os == 'windows-latest'
 
       - uses: ./
         id: test_repo
@@ -272,6 +288,11 @@ jobs:
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+        name: "Check that ament_copyright install directory is present (Non-Windows only)"
+        if: matrix.os != 'windows-latest'
+      - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/share/ament_copyright"
+        name: "Check that ament_copyright install directory is present in merged install space (Windows only)"
+        if: matrix.os == 'windows-latest'
 
       - uses: ./
         id: test_colcon_defaults
@@ -287,6 +308,11 @@ jobs:
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_colcon_defaults.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+        name: "Check that ament_copyright install directory is present (Non-Windows only)"
+        if: matrix.os != 'windows-latest'
+      - run: test -d "${{ steps.test_colcon_defaults.outputs.ros-workspace-directory-name }}/install/share/ament_copyright"
+        name: "Check that ament_copyright install directory is present in merged install space (Windows only)"
+        if: matrix.os == 'windows-latest'
       - run: test -d "${{ steps.test_colcon_defaults.outputs.ros-workspace-directory-name }}/build-custom"
 
       # The second repo file is ignored, but will get vcs-import'ed anyway.
@@ -302,6 +328,11 @@ jobs:
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+        name: "Check that ament_copyright install directory is present (Non-Windows only)"
+        if: matrix.os != 'windows-latest'
+      - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/install/share/ament_copyright"
+        name: "Check that ament_copyright install directory is present in merged install space (Windows only)"
+        if: matrix.os == 'windows-latest'
       - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/ament_lint"
       - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/osrf_testing_tools_cpp"
 
