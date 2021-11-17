@@ -1,20 +1,20 @@
 import * as core from "@actions/core";
 import * as actionRosCi from "../src/action-ros-ci";
 import * as dep from "../src/dependencies";
-import { execBashCommand } from "../src/action-ros-ci";
+import { execShellCommand } from "../src/action-ros-ci";
 
 jest.setTimeout(20000); // in milliseconds
 
-describe("execBashCommand test suite", () => {
+describe("execShellCommand test suite", () => {
 	it("calls coreGroup", async () => {
 		const mockGroup = jest.spyOn(core, "group");
-		const result = await execBashCommand('echo "Hello World"');
+		const result = await execShellCommand(["echo Hello World"]);
 		expect(mockGroup).toBeCalled();
 		expect(result).toEqual(0);
 	});
 	it("uses a prefix", async () => {
 		const mockGroup = jest.spyOn(core, "group");
-		const result = await execBashCommand("Hello World", "echo ");
+		const result = await execShellCommand(["echo", "Hello World"]);
 		expect(mockGroup).toBeCalled();
 		expect(result).toEqual(0);
 	});
@@ -23,7 +23,7 @@ describe("execBashCommand test suite", () => {
 		const options = {
 			ignoreReturnCode: true,
 		};
-		const result = execBashCommand("somebadcommand", "", options);
+		const result = execShellCommand(["somebadcommand"], options);
 		expect(mockGroup).toBeCalled();
 		expect(result).not.toEqual(0);
 	});
