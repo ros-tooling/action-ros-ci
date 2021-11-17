@@ -11024,11 +11024,14 @@ function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
  */
 function execShellCommand(command, options, use_bash = true, log_message) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (use_bash) {
+            command = [filterNonEmptyJoin(command)];
+        }
         let toolRunnerCommandLine = "";
         let toolRunnerCommandLineArgs = [];
         if (isWindows) {
             toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
-            const bash_options = use_bash
+            const bash_prefix = use_bash
                 ? [`C:\\Program Files\\Git\\bin\\bash.exe`, `-c`]
                 : [];
             // This passes the same flags to cmd.exe that "run:" in a workflow.
@@ -11044,7 +11047,7 @@ function execShellCommand(command, options, use_bash = true, log_message) {
                 "call",
                 "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
                 "&&",
-                ...bash_options,
+                ...bash_prefix,
                 ...command,
             ];
         }

@@ -81,11 +81,15 @@ export async function execShellCommand(
 	use_bash: boolean = true,
 	log_message?: string
 ): Promise<number> {
+	if (use_bash) {
+		command = [filterNonEmptyJoin(command)];
+	}
+
 	let toolRunnerCommandLine = "";
 	let toolRunnerCommandLineArgs: string[] = [];
 	if (isWindows) {
 		toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
-		const bash_options: string[] = use_bash
+		const bash_prefix: string[] = use_bash
 			? [`C:\\Program Files\\Git\\bin\\bash.exe`, `-c`]
 			: [];
 		// This passes the same flags to cmd.exe that "run:" in a workflow.
@@ -101,7 +105,7 @@ export async function execShellCommand(
 			"call",
 			"%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
 			"&&",
-			...bash_options,
+			...bash_prefix,
 			...command,
 		];
 	} else {
