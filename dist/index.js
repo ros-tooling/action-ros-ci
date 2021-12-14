@@ -10970,6 +10970,7 @@ const targetROS1DistroInput = "target-ros1-distro";
 const targetROS2DistroInput = "target-ros2-distro";
 const isLinux = process.platform == "linux";
 const isWindows = process.platform == "win32";
+const useMergeInstall = isWindows;
 /**
  * Join string array using a single space and make sure to filter out empty elements.
  *
@@ -11028,12 +11029,6 @@ function execShellCommand(command, options, force_bash = true, log_message) {
         if (use_bash) {
             // Bash commands needs to be flattened into a single string when passed to bash with "-c" switch
             command = [filterNonEmptyJoin(command)];
-            if (isWindows) {
-                command = [
-                    ...[`C:\\Program Files\\Git\\bin\\bash.exe`, `-c`],
-                    ...command,
-                ];
-            }
         }
         let toolRunnerCommandLine = "";
         let toolRunnerCommandLineArgs = [];
@@ -11052,6 +11047,7 @@ function execShellCommand(command, options, force_bash = true, log_message) {
                 "call",
                 "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
                 "&&",
+                ...(use_bash ? [`C:\\Program Files\\Git\\bin\\bash.exe`, `-c`] : []),
                 ...command,
             ];
         }
@@ -11129,8 +11125,9 @@ function installRosdeps(packageSelection, workspaceDir, options, ros1Distro, ros
  */
 function runTests(colconCommandPrefix, options, testPackageSelection, colconExtraArgs, coverageIgnorePattern) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!isWindows) {
-            // lcov-result not supported in Windows
+        const doLcovResult = !isWindows; // lcov-result not supported in Windows
+        const doTests = !isWindows; // Temporarily disable colcon test on Windows to unblock Windows CI builds: https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
+        if (doLcovResult) {
             // ignoreReturnCode is set to true to avoid having a lack of coverage
             // data fail the build.
             const colconLcovInitialCmd = [`colcon`, `lcov-result`, `--initial`];
@@ -11144,15 +11141,13 @@ function runTests(colconCommandPrefix, options, testPackageSelection, colconExtr
             ...testPackageSelection,
             ...colconExtraArgs,
         ];
-        if (isWindows) {
+        if (useMergeInstall) {
             colconTestCmd = [...colconTestCmd, `--merge-install`];
         }
-        // Temporarily disable colcon test on Windows to unblock Windows CI builds: https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
-        if (!isWindows) {
+        if (doTests) {
             yield execShellCommand([...colconCommandPrefix, ...colconTestCmd], options, false);
         }
-        if (!isWindows) {
-            // colcon lcov-result not supported in Windows right now
+        if (doLcovResult) {
             // ignoreReturnCode, check comment above in --initial
             const colconLcovResultCmd = [
                 `colcon`,
@@ -11411,7 +11406,7 @@ done`;
             ...extraCmakeArgs,
             `--event-handlers=console_cohesion+`,
         ];
-        if (isWindows) {
+        if (useMergeInstall) {
             colconBuildCmd = [...colconBuildCmd, `--merge-install`];
         }
         yield execShellCommand([...colconCommandPrefix, ...colconBuildCmd], options, false);
