@@ -10947,7 +10947,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.validateDistros = exports.execBashCommand = exports.filterNonEmptyJoin = void 0;
+exports.validateDistros = exports.execShellCommand = exports.filterNonEmptyJoin = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const tr = __importStar(__nccwpck_require__(8159));
@@ -10970,6 +10970,7 @@ const targetROS1DistroInput = "target-ros1-distro";
 const targetROS2DistroInput = "target-ros2-distro";
 const isLinux = process.platform == "linux";
 const isWindows = process.platform == "win32";
+const useMergeInstall = isWindows;
 /**
  * Join string array using a single space and make sure to filter out empty elements.
  *
@@ -11014,19 +11015,21 @@ function resolveVcsRepoFileUrl(vcsRepoFileUrl) {
     }
 }
 /**
- * Execute a command in bash and wrap the output in a log group.
+ * Execute a shell command and wrap the output in a log group.
  *
- * @param   commandLine     command to execute (can include additional args). Must be correctly escaped.
- * @param   commandPrefix    optional string used to prefix the command to be executed.
+ * @param   command         command to execute w/ any params
+ * @param   force_bash      force running in bash shell, instead of os default. defaults to true.
  * @param   options         optional exec options.  See ExecOptions
  * @param   log_message     log group title.
  * @returns Promise<number> exit code
  */
-function execBashCommand(commandLine, commandPrefix, options, log_message) {
+function execShellCommand(command, options, force_bash = true, log_message) {
     return __awaiter(this, void 0, void 0, function* () {
-        commandPrefix = commandPrefix || "";
-        const bashScript = `${commandPrefix}${commandLine}`;
-        const message = log_message || `Invoking: bash -c '${bashScript}'`;
+        const use_bash = !isWindows || force_bash;
+        if (use_bash) {
+            // Bash commands needs to be flattened into a single string when passed to bash with "-c" switch
+            command = [filterNonEmptyJoin(command)];
+        }
         let toolRunnerCommandLine = "";
         let toolRunnerCommandLineArgs = [];
         if (isWindows) {
@@ -11042,18 +11045,18 @@ function execBashCommand(commandLine, commandPrefix, options, log_message) {
                 "/S",
                 "/C",
                 "call",
-                "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat",
-                "amd64",
-                "&",
-                "C:\\Program Files\\Git\\bin\\bash.exe",
-                "-c",
-                bashScript,
+                "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
+                "&&",
+                ...(use_bash ? [`C:\\Program Files\\Git\\bin\\bash.exe`, `-c`] : []),
+                ...command,
             ];
         }
         else {
             toolRunnerCommandLine = "bash";
-            toolRunnerCommandLineArgs = ["-c", bashScript];
+            toolRunnerCommandLineArgs = ["-c", ...command];
         }
+        const message = log_message ||
+            `Invoking: ${toolRunnerCommandLine} ${toolRunnerCommandLineArgs}`;
         const runner = new tr.ToolRunner(toolRunnerCommandLine, toolRunnerCommandLineArgs, options);
         if (options && options.silent) {
             return runner.exec();
@@ -11063,7 +11066,7 @@ function execBashCommand(commandLine, commandPrefix, options, log_message) {
         });
     });
 }
-exports.execBashCommand = execBashCommand;
+exports.execShellCommand = execShellCommand;
 //Determine whether all inputs name supported ROS distributions.
 function validateDistros(ros1Distro, ros2Distro) {
     if (!ros1Distro && !ros2Distro) {
@@ -11095,7 +11098,7 @@ function installRosdeps(packageSelection, workspaceDir, options, ros1Distro, ros
 		exit 1
 	fi
 	DISTRO=$1
-	package_paths=$(colcon list --paths-only ${packageSelection})
+	package_paths=$(colcon list --paths-only ${filterNonEmptyJoin(packageSelection)})
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
@@ -11103,10 +11106,10 @@ function installRosdeps(packageSelection, workspaceDir, options, ros1Distro, ros
         fs_1.default.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
         let exitCode = 0;
         if (ros1Distro) {
-            exitCode += yield execBashCommand(`./${scriptName} ${ros1Distro}`, "", options);
+            exitCode += yield execShellCommand([`./${scriptName} ${ros1Distro}`], options);
         }
         if (ros2Distro) {
-            exitCode += yield execBashCommand(`./${scriptName} ${ros2Distro}`, "", options);
+            exitCode += yield execShellCommand([`./${scriptName} ${ros2Distro}`], options);
         }
         return exitCode;
     });
@@ -11116,39 +11119,54 @@ function installRosdeps(packageSelection, workspaceDir, options, ros1Distro, ros
  *
  * @param colconCommandPrefix the prefix to use before colcon commands
  * @param options the exec options
- * @param testPackageSelection the package selection option string
- * @param extra_options the extra options for 'colcon test'
- * @param coverageIgnorePattern the coverage filter pattern to use for lcov, or an empty string
+ * @param testPackageSelection the package selection option
+ * @param colconExtraArgs the extra args for 'colcon test'
+ * @param coverageIgnorePattern the coverage filter pattern to use for lcov
  */
-function runTests(colconCommandPrefix, options, testPackageSelection, extra_options, coverageIgnorePattern) {
+function runTests(colconCommandPrefix, options, testPackageSelection, colconExtraArgs, coverageIgnorePattern) {
     return __awaiter(this, void 0, void 0, function* () {
-        // ignoreReturnCode is set to true to avoid having a lack of coverage
-        // data fail the build.
-        const colconLcovInitialCmd = "colcon lcov-result --initial";
-        yield execBashCommand(colconLcovInitialCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
-        const colconTestCmd = filterNonEmptyJoin([
-            `colcon test`,
-            `--event-handlers console_cohesion+`,
+        const doLcovResult = !isWindows; // lcov-result not supported in Windows
+        const doTests = !isWindows; // Temporarily disable colcon test on Windows to unblock Windows CI builds: https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
+        if (doLcovResult) {
+            // ignoreReturnCode is set to true to avoid having a lack of coverage
+            // data fail the build.
+            const colconLcovInitialCmd = [`colcon`, `lcov-result`, `--initial`];
+            yield execShellCommand([...colconCommandPrefix, ...colconLcovInitialCmd], Object.assign(Object.assign({}, options), { ignoreReturnCode: true }), false);
+        }
+        let colconTestCmd = [
+            `colcon`,
+            `test`,
+            `--event-handlers=console_cohesion+`,
             `--return-code-on-test-failure`,
-            testPackageSelection,
-            `${extra_options.join(" ")}`,
-        ]);
-        yield execBashCommand(colconTestCmd, colconCommandPrefix, options);
-        // ignoreReturnCode, check comment above in --initial
-        const colconLcovResultCmd = filterNonEmptyJoin([
-            `colcon lcov-result`,
-            coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
-            testPackageSelection,
+            ...testPackageSelection,
+            ...colconExtraArgs,
+        ];
+        if (useMergeInstall) {
+            colconTestCmd = [...colconTestCmd, `--merge-install`];
+        }
+        if (doTests) {
+            yield execShellCommand([...colconCommandPrefix, ...colconTestCmd], options, false);
+        }
+        if (doLcovResult) {
+            // ignoreReturnCode, check comment above in --initial
+            const colconLcovResultCmd = [
+                `colcon`,
+                `lcov-result`,
+                ...testPackageSelection,
+                ...coverageIgnorePattern,
+                `--verbose`,
+            ];
+            yield execShellCommand([...colconCommandPrefix, ...colconLcovResultCmd], Object.assign(Object.assign({}, options), { ignoreReturnCode: true }), false);
+        }
+        const colconCoveragepyResultCmd = [
+            `colcon`,
+            `coveragepy-result`,
+            ...testPackageSelection,
             `--verbose`,
-        ]);
-        yield execBashCommand(colconLcovResultCmd, colconCommandPrefix, Object.assign(Object.assign({}, options), { ignoreReturnCode: true }));
-        const colconCoveragepyResultCmd = filterNonEmptyJoin([
-            `colcon coveragepy-result`,
-            testPackageSelection,
-            `--verbose`,
-            `--coverage-report-args -m`,
-        ]);
-        yield execBashCommand(colconCoveragepyResultCmd, colconCommandPrefix, options);
+            `--coverage-report-args`,
+            `-m`,
+        ];
+        yield execShellCommand([...colconCommandPrefix, ...colconCoveragepyResultCmd], options, false);
     });
 }
 function run_throw() {
@@ -11157,19 +11175,27 @@ function run_throw() {
         const workspace = process.env.GITHUB_WORKSPACE;
         const colconDefaults = core.getInput("colcon-defaults");
         const colconMixinRepo = core.getInput("colcon-mixin-repository");
-        const extraCmakeArgs = core.getInput("extra-cmake-args");
-        const colconExtraArgs = core.getInput("colcon-extra-args");
+        const extraCmakeArgsInput = core.getInput("extra-cmake-args");
+        const extraCmakeArgs = extraCmakeArgsInput
+            ? ["--cmake-args", extraCmakeArgsInput]
+            : [];
+        const coverageIgnorePatternInput = core.getInput("coverage-ignore-pattern");
+        const coverageIgnorePattern = coverageIgnorePatternInput
+            ? ["--filter", coverageIgnorePatternInput]
+            : [];
+        const colconExtraArgsInput = core.getInput("colcon-extra-args");
+        const colconExtraArgs = colconExtraArgsInput ? [colconExtraArgsInput] : [];
         const importToken = core.getInput("import-token");
         const packageNameInput = core.getInput("package-name");
         const packageNames = packageNameInput
-            ? filterNonEmptyJoin(packageNameInput.split(RegExp("\\s")))
+            ? packageNameInput.split(RegExp("\\s"))
             : undefined;
         const buildPackageSelection = packageNames
-            ? `--packages-up-to ${packageNames}`
-            : "";
+            ? ["--packages-up-to", ...packageNames]
+            : [];
         const testPackageSelection = packageNames
-            ? `--packages-select ${packageNames}`
-            : "";
+            ? ["--packages-select", ...packageNames]
+            : [];
         const rosWorkspaceName = "ros_ws";
         core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
         const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
@@ -11199,7 +11225,6 @@ function run_throw() {
         });
         vcsRepoFileUrlList = vcsRepoFileUrlList.concat(vcsReposSupplemental);
         const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
-        const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
         if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
             return;
         }
@@ -11207,7 +11232,7 @@ function run_throw() {
         // ros-infrastructure/rosdep#610 for instance. So, we do not run it.
         if (!isWindows) {
             yield async_retry_1.default(() => __awaiter(this, void 0, void 0, function* () {
-                yield execBashCommand("rosdep update --include-eol-distros");
+                yield execShellCommand(["rosdep update --include-eol-distros"]);
             }), {
                 retries: 3,
             });
@@ -11244,21 +11269,27 @@ function run_throw() {
             // Unset all local extraheader config entries possibly set by actions/checkout,
             // because local settings take precedence and the default token used by
             // actions/checkout might not have the right permissions for any/all repos
-            yield execBashCommand(`/usr/bin/git config --local --unset-all http.https://github.com/.extraheader || true`, undefined, options);
-            yield execBashCommand(String.raw `/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader'` +
-                ` && git config --local --unset-all 'http.https://github.com/.extraheader' || true`, undefined, options);
+            yield execShellCommand([
+                `/usr/bin/git config --local --unset-all http.https://github.com/.extraheader || true`,
+            ], options);
+            yield execShellCommand([
+                String.raw `/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader'` +
+                    ` && git config --local --unset-all 'http.https://github.com/.extraheader' || true`,
+            ], options);
             // Use a global insteadof entry because local configs aren't observed by git clone
-            yield execBashCommand(`/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com.insteadof 'https://github.com'`, undefined, options);
+            yield execShellCommand([
+                `/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com.insteadof 'https://github.com'`,
+            ], options);
             if (core.isDebug()) {
-                yield execBashCommand(`/usr/bin/git config --list --show-origin || true`, undefined, options);
+                yield execShellCommand([`/usr/bin/git config --list --show-origin || true`], options);
             }
         }
         // Make sure to delete root .colcon directory if it exists
         // This is because, for some reason, using Docker, commands might get run as root
-        yield execBashCommand(`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`, undefined, Object.assign(Object.assign({}, options), { silent: true }));
+        yield execShellCommand([`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`], Object.assign(Object.assign({}, options), { silent: true }));
         for (const vcsRepoFileUrl of vcsRepoFileUrlListNonEmpty) {
             const resolvedUrl = resolveVcsRepoFileUrl(vcsRepoFileUrl);
-            yield execBashCommand(`vcs import --force --recursive src/ --input ${resolvedUrl}`, undefined, options);
+            yield execShellCommand([`vcs import --force --recursive src/ --input ${resolvedUrl}`], options);
         }
         // If the package under tests is part of ros.repos, remove it first.
         // We do not want to allow the "default" head state of the package to
@@ -11280,9 +11311,11 @@ done`;
         const posixRosWorkspaceDir = isWindows
             ? rosWorkspaceDir.replace(/\\/g, "/")
             : rosWorkspaceDir;
-        yield execBashCommand(`vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$"` +
-            (isWindows ? ` | ${posixPathScriptPath}` : "") +
-            ` | xargs rm -rf`);
+        yield execShellCommand([
+            `vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$"` +
+                (isWindows ? ` | ${posixPathScriptPath}` : "") +
+                ` | xargs rm -rf`,
+        ], undefined);
         // The repo file for the repository needs to be generated on-the-fly to
         // incorporate the custom repository URL and branch name, when a PR is
         // being built.
@@ -11301,21 +11334,17 @@ done`;
     url: 'https://github.com/${repoFullName}.git'
     version: '${commitRef}'`;
         fs_1.default.writeFileSync(repoFilePath, repoFileContent);
-        yield execBashCommand("vcs import --force --recursive src/ < package.repo", undefined, options);
+        yield execShellCommand(["vcs import --force --recursive src/ < package.repo"], options);
         // Print HEAD commits of all repos
-        yield execBashCommand("vcs log -l1 src/", undefined, options);
+        yield execShellCommand(["vcs log -l1 src/"], options);
         if (isLinux) {
             // Always update APT before installing packages on Ubuntu
-            yield execBashCommand("sudo apt-get update");
+            yield execShellCommand(["sudo apt-get update"]);
         }
         yield installRosdeps(buildPackageSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
         if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
-            yield execBashCommand(`colcon mixin add default '${colconMixinRepo}'`, undefined, options);
-            yield execBashCommand("colcon mixin update default", undefined, options);
-        }
-        let extra_options = [];
-        if (colconExtraArgs !== "") {
-            extra_options = extra_options.concat(colconExtraArgs);
+            yield execShellCommand([`colcon`, `mixin`, `add`, `default`, `${colconMixinRepo}`], options, false);
+            yield execShellCommand([`colcon`, `mixin`, `update`, `default`], options, false);
         }
         // Add the future install bin directory to PATH.
         // This enables cmake find_package to find packages installed in the
@@ -11332,18 +11361,26 @@ done`;
         // where this does not happen. See issue #26 for relevant CI logs.
         core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
         // Source any installed ROS distributions if they are present
-        let colconCommandPrefix = "";
+        let colconCommandPrefix = [];
         if (isLinux) {
             if (targetRos1Distro) {
                 const ros1SetupPath = `/opt/ros/${targetRos1Distro}/setup.sh`;
                 if (fs_1.default.existsSync(ros1SetupPath)) {
-                    colconCommandPrefix += `source ${ros1SetupPath} && `;
+                    colconCommandPrefix = [
+                        ...colconCommandPrefix,
+                        `source ${ros1SetupPath}`,
+                        `&&`,
+                    ];
                 }
             }
             if (targetRos2Distro) {
                 const ros2SetupPath = `/opt/ros/${targetRos2Distro}/setup.sh`;
                 if (fs_1.default.existsSync(ros2SetupPath)) {
-                    colconCommandPrefix += `source ${ros2SetupPath} && `;
+                    colconCommandPrefix = [
+                        ...colconCommandPrefix,
+                        `source ${ros2SetupPath}`,
+                        `&&`,
+                    ];
                 }
             }
         }
@@ -11352,30 +11389,38 @@ done`;
             if (targetRos2Distro) {
                 const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
                 if (fs_1.default.existsSync(ros2SetupPath)) {
-                    colconCommandPrefix += `${ros2SetupPath} && `;
+                    colconCommandPrefix = [
+                        ...colconCommandPrefix,
+                        `${ros2SetupPath}`,
+                        `&&`,
+                    ];
                 }
             }
         }
-        let colconBuildCmd = filterNonEmptyJoin([
-            `colcon build`,
-            `--event-handlers console_cohesion+`,
-            buildPackageSelection,
-            `${extra_options.join(" ")}`,
-            extraCmakeArgs !== "" ? `--cmake-args ${extraCmakeArgs}` : "",
-        ]);
-        if (!isWindows) {
-            colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
+        let colconBuildCmd = [
+            `colcon`,
+            `build`,
+            `--symlink-install`,
+            ...buildPackageSelection,
+            ...colconExtraArgs,
+            ...extraCmakeArgs,
+            `--event-handlers=console_cohesion+`,
+        ];
+        if (useMergeInstall) {
+            colconBuildCmd = [...colconBuildCmd, `--merge-install`];
         }
-        yield execBashCommand(colconBuildCmd, colconCommandPrefix, options);
+        yield execShellCommand([...colconCommandPrefix, ...colconBuildCmd], options, false);
         if (!skipTests) {
-            yield runTests(colconCommandPrefix, options, testPackageSelection, extra_options, coverageIgnorePattern);
+            yield runTests(colconCommandPrefix, options, testPackageSelection, colconExtraArgs, coverageIgnorePattern);
         }
         else {
             core.info("Skipping tests");
         }
         if (importToken !== "") {
             // Unset config so that it doesn't leak to other actions
-            yield execBashCommand(`/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@github.com.insteadof`, undefined, options);
+            yield execShellCommand([
+                `/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@github.com.insteadof`,
+            ], options);
         }
     });
 }

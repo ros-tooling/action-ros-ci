@@ -22,6 +22,7 @@ const targetROS1DistroInput: string = "target-ros1-distro";
 const targetROS2DistroInput: string = "target-ros2-distro";
 const isLinux: boolean = process.platform == "linux";
 const isWindows: boolean = process.platform == "win32";
+const useMergeInstall: boolean = isWindows;
 
 /**
  * Join string array using a single space and make sure to filter out empty elements.
@@ -67,23 +68,25 @@ function resolveVcsRepoFileUrl(vcsRepoFileUrl: string): string {
 }
 
 /**
- * Execute a command in bash and wrap the output in a log group.
+ * Execute a shell command and wrap the output in a log group.
  *
- * @param   commandLine     command to execute (can include additional args). Must be correctly escaped.
- * @param   commandPrefix    optional string used to prefix the command to be executed.
+ * @param   command         command to execute w/ any params
+ * @param   force_bash      force running in bash shell, instead of os default. defaults to true.
  * @param   options         optional exec options.  See ExecOptions
  * @param   log_message     log group title.
  * @returns Promise<number> exit code
  */
-export async function execBashCommand(
-	commandLine: string,
-	commandPrefix?: string,
+export async function execShellCommand(
+	command: string[],
 	options?: im.ExecOptions,
+	force_bash: boolean = true,
 	log_message?: string
 ): Promise<number> {
-	commandPrefix = commandPrefix || "";
-	const bashScript = `${commandPrefix}${commandLine}`;
-	const message = log_message || `Invoking: bash -c '${bashScript}'`;
+	const use_bash = !isWindows || force_bash;
+	if (use_bash) {
+		// Bash commands needs to be flattened into a single string when passed to bash with "-c" switch
+		command = [filterNonEmptyJoin(command)];
+	}
 
 	let toolRunnerCommandLine = "";
 	let toolRunnerCommandLineArgs: string[] = [];
@@ -100,17 +103,18 @@ export async function execBashCommand(
 			"/S",
 			"/C",
 			"call",
-			"%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat",
-			"amd64",
-			"&",
-			"C:\\Program Files\\Git\\bin\\bash.exe",
-			"-c",
-			bashScript,
+			"%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
+			"&&",
+			...(use_bash ? [`C:\\Program Files\\Git\\bin\\bash.exe`, `-c`] : []),
+			...command,
 		];
 	} else {
 		toolRunnerCommandLine = "bash";
-		toolRunnerCommandLineArgs = ["-c", bashScript];
+		toolRunnerCommandLineArgs = ["-c", ...command];
 	}
+	const message =
+		log_message ||
+		`Invoking: ${toolRunnerCommandLine} ${toolRunnerCommandLineArgs}`;
 	const runner: tr.ToolRunner = new tr.ToolRunner(
 		toolRunnerCommandLine,
 		toolRunnerCommandLineArgs,
@@ -154,7 +158,7 @@ export function validateDistros(
  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
  */
 async function installRosdeps(
-	packageSelection: string,
+	packageSelection: string[],
 	workspaceDir: string,
 	options: im.ExecOptions,
 	ros1Distro?: string,
@@ -169,7 +173,9 @@ async function installRosdeps(
 		exit 1
 	fi
 	DISTRO=$1
-	package_paths=$(colcon list --paths-only ${packageSelection})
+	package_paths=$(colcon list --paths-only ${filterNonEmptyJoin(
+		packageSelection
+	)})
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
@@ -178,16 +184,14 @@ async function installRosdeps(
 
 	let exitCode = 0;
 	if (ros1Distro) {
-		exitCode += await execBashCommand(
-			`./${scriptName} ${ros1Distro}`,
-			"",
+		exitCode += await execShellCommand(
+			[`./${scriptName} ${ros1Distro}`],
 			options
 		);
 	}
 	if (ros2Distro) {
-		exitCode += await execBashCommand(
-			`./${scriptName} ${ros2Distro}`,
-			"",
+		exitCode += await execShellCommand(
+			[`./${scriptName} ${ros2Distro}`],
 			options
 		);
 	}
@@ -199,56 +203,85 @@ async function installRosdeps(
  *
  * @param colconCommandPrefix the prefix to use before colcon commands
  * @param options the exec options
- * @param testPackageSelection the package selection option string
- * @param extra_options the extra options for 'colcon test'
- * @param coverageIgnorePattern the coverage filter pattern to use for lcov, or an empty string
+ * @param testPackageSelection the package selection option
+ * @param colconExtraArgs the extra args for 'colcon test'
+ * @param coverageIgnorePattern the coverage filter pattern to use for lcov
  */
 async function runTests(
-	colconCommandPrefix: string,
+	colconCommandPrefix: string[],
 	options: im.ExecOptions,
-	testPackageSelection: string,
-	extra_options: string[],
-	coverageIgnorePattern: string
+	testPackageSelection: string[],
+	colconExtraArgs: string[],
+	coverageIgnorePattern: string[]
 ): Promise<void> {
-	// ignoreReturnCode is set to true to avoid having a lack of coverage
-	// data fail the build.
-	const colconLcovInitialCmd = "colcon lcov-result --initial";
-	await execBashCommand(colconLcovInitialCmd, colconCommandPrefix, {
-		...options,
-		ignoreReturnCode: true,
-	});
+	const doLcovResult = !isWindows; // lcov-result not supported in Windows
+	const doTests = !isWindows; // Temporarily disable colcon test on Windows to unblock Windows CI builds: https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
 
-	const colconTestCmd = filterNonEmptyJoin([
-		`colcon test`,
-		`--event-handlers console_cohesion+`,
+	if (doLcovResult) {
+		// ignoreReturnCode is set to true to avoid having a lack of coverage
+		// data fail the build.
+		const colconLcovInitialCmd = [`colcon`, `lcov-result`, `--initial`];
+		await execShellCommand(
+			[...colconCommandPrefix, ...colconLcovInitialCmd],
+			{
+				...options,
+				ignoreReturnCode: true,
+			},
+			false
+		);
+	}
+
+	let colconTestCmd = [
+		`colcon`,
+		`test`,
+		`--event-handlers=console_cohesion+`,
 		`--return-code-on-test-failure`,
-		testPackageSelection,
-		`${extra_options.join(" ")}`,
-	]);
-	await execBashCommand(colconTestCmd, colconCommandPrefix, options);
+		...testPackageSelection,
+		...colconExtraArgs,
+	];
+	if (useMergeInstall) {
+		colconTestCmd = [...colconTestCmd, `--merge-install`];
+	}
 
-	// ignoreReturnCode, check comment above in --initial
-	const colconLcovResultCmd = filterNonEmptyJoin([
-		`colcon lcov-result`,
-		coverageIgnorePattern !== "" ? `--filter ${coverageIgnorePattern}` : "",
-		testPackageSelection,
-		`--verbose`,
-	]);
-	await execBashCommand(colconLcovResultCmd, colconCommandPrefix, {
-		...options,
-		ignoreReturnCode: true,
-	});
+	if (doTests) {
+		await execShellCommand(
+			[...colconCommandPrefix, ...colconTestCmd],
+			options,
+			false
+		);
+	}
 
-	const colconCoveragepyResultCmd = filterNonEmptyJoin([
-		`colcon coveragepy-result`,
-		testPackageSelection,
+	if (doLcovResult) {
+		// ignoreReturnCode, check comment above in --initial
+		const colconLcovResultCmd = [
+			`colcon`,
+			`lcov-result`,
+			...testPackageSelection,
+			...coverageIgnorePattern,
+			`--verbose`,
+		];
+		await execShellCommand(
+			[...colconCommandPrefix, ...colconLcovResultCmd],
+			{
+				...options,
+				ignoreReturnCode: true,
+			},
+			false
+		);
+	}
+
+	const colconCoveragepyResultCmd = [
+		`colcon`,
+		`coveragepy-result`,
+		...testPackageSelection,
 		`--verbose`,
-		`--coverage-report-args -m`,
-	]);
-	await execBashCommand(
-		colconCoveragepyResultCmd,
-		colconCommandPrefix,
-		options
+		`--coverage-report-args`,
+		`-m`,
+	];
+	await execShellCommand(
+		[...colconCommandPrefix, ...colconCoveragepyResultCmd],
+		options,
+		false
 	);
 }
 
@@ -258,19 +291,32 @@ async function run_throw(): Promise<void> {
 
 	const colconDefaults = core.getInput("colcon-defaults");
 	const colconMixinRepo = core.getInput("colcon-mixin-repository");
-	const extraCmakeArgs = core.getInput("extra-cmake-args");
-	const colconExtraArgs = core.getInput("colcon-extra-args");
+
+	const extraCmakeArgsInput = core.getInput("extra-cmake-args");
+	const extraCmakeArgs = extraCmakeArgsInput
+		? ["--cmake-args", extraCmakeArgsInput]
+		: [];
+
+	const coverageIgnorePatternInput = core.getInput("coverage-ignore-pattern");
+	const coverageIgnorePattern = coverageIgnorePatternInput
+		? ["--filter", coverageIgnorePatternInput]
+		: [];
+
+	const colconExtraArgsInput = core.getInput("colcon-extra-args");
+	const colconExtraArgs = colconExtraArgsInput ? [colconExtraArgsInput] : [];
+
 	const importToken = core.getInput("import-token");
+
 	const packageNameInput = core.getInput("package-name");
 	const packageNames = packageNameInput
-		? filterNonEmptyJoin(packageNameInput.split(RegExp("\\s")))
+		? packageNameInput.split(RegExp("\\s"))
 		: undefined;
 	const buildPackageSelection = packageNames
-		? `--packages-up-to ${packageNames}`
-		: "";
+		? ["--packages-up-to", ...packageNames]
+		: [];
 	const testPackageSelection = packageNames
-		? `--packages-select ${packageNames}`
-		: "";
+		? ["--packages-select", ...packageNames]
+		: [];
 
 	const rosWorkspaceName = "ros_ws";
 	core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
@@ -312,8 +358,6 @@ async function run_throw(): Promise<void> {
 
 	const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
 
-	const coverageIgnorePattern = core.getInput("coverage-ignore-pattern");
-
 	if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
 		return;
 	}
@@ -323,7 +367,7 @@ async function run_throw(): Promise<void> {
 	if (!isWindows) {
 		await retry(
 			async () => {
-				await execBashCommand("rosdep update --include-eol-distros");
+				await execShellCommand(["rosdep update --include-eol-distros"]);
 			},
 			{
 				retries: 3,
@@ -383,27 +427,29 @@ async function run_throw(): Promise<void> {
 		// Unset all local extraheader config entries possibly set by actions/checkout,
 		// because local settings take precedence and the default token used by
 		// actions/checkout might not have the right permissions for any/all repos
-		await execBashCommand(
-			`/usr/bin/git config --local --unset-all http.https://github.com/.extraheader || true`,
-			undefined,
+		await execShellCommand(
+			[
+				`/usr/bin/git config --local --unset-all http.https://github.com/.extraheader || true`,
+			],
 			options
 		);
-		await execBashCommand(
-			String.raw`/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader'` +
-				` && git config --local --unset-all 'http.https://github.com/.extraheader' || true`,
-			undefined,
+		await execShellCommand(
+			[
+				String.raw`/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader'` +
+					` && git config --local --unset-all 'http.https://github.com/.extraheader' || true`,
+			],
 			options
 		);
 		// Use a global insteadof entry because local configs aren't observed by git clone
-		await execBashCommand(
-			`/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com.insteadof 'https://github.com'`,
-			undefined,
+		await execShellCommand(
+			[
+				`/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com.insteadof 'https://github.com'`,
+			],
 			options
 		);
 		if (core.isDebug()) {
-			await execBashCommand(
-				`/usr/bin/git config --list --show-origin || true`,
-				undefined,
+			await execShellCommand(
+				[`/usr/bin/git config --list --show-origin || true`],
 				options
 			);
 		}
@@ -411,17 +457,15 @@ async function run_throw(): Promise<void> {
 
 	// Make sure to delete root .colcon directory if it exists
 	// This is because, for some reason, using Docker, commands might get run as root
-	await execBashCommand(
-		`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`,
-		undefined,
+	await execShellCommand(
+		[`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`],
 		{ ...options, silent: true }
 	);
 
 	for (const vcsRepoFileUrl of vcsRepoFileUrlListNonEmpty) {
 		const resolvedUrl = resolveVcsRepoFileUrl(vcsRepoFileUrl);
-		await execBashCommand(
-			`vcs import --force --recursive src/ --input ${resolvedUrl}`,
-			undefined,
+		await execShellCommand(
+			[`vcs import --force --recursive src/ --input ${resolvedUrl}`],
 			options
 		);
 	}
@@ -446,10 +490,13 @@ done`;
 	const posixRosWorkspaceDir = isWindows
 		? rosWorkspaceDir.replace(/\\/g, "/")
 		: rosWorkspaceDir;
-	await execBashCommand(
-		`vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$"` +
-			(isWindows ? ` | ${posixPathScriptPath}` : "") +
-			` | xargs rm -rf`
+	await execShellCommand(
+		[
+			`vcs diff -s --repos ${posixRosWorkspaceDir} | cut -d ' ' -f 1 | grep "${repo["repo"]}$"` +
+				(isWindows ? ` | ${posixPathScriptPath}` : "") +
+				` | xargs rm -rf`,
+		],
+		undefined
 	);
 
 	// The repo file for the repository needs to be generated on-the-fly to
@@ -470,18 +517,17 @@ done`;
     url: 'https://github.com/${repoFullName}.git'
     version: '${commitRef}'`;
 	fs.writeFileSync(repoFilePath, repoFileContent);
-	await execBashCommand(
-		"vcs import --force --recursive src/ < package.repo",
-		undefined,
+	await execShellCommand(
+		["vcs import --force --recursive src/ < package.repo"],
 		options
 	);
 
 	// Print HEAD commits of all repos
-	await execBashCommand("vcs log -l1 src/", undefined, options);
+	await execShellCommand(["vcs log -l1 src/"], options);
 
 	if (isLinux) {
 		// Always update APT before installing packages on Ubuntu
-		await execBashCommand("sudo apt-get update");
+		await execShellCommand(["sudo apt-get update"]);
 	}
 	await installRosdeps(
 		buildPackageSelection,
@@ -492,17 +538,16 @@ done`;
 	);
 
 	if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
-		await execBashCommand(
-			`colcon mixin add default '${colconMixinRepo}'`,
-			undefined,
-			options
+		await execShellCommand(
+			[`colcon`, `mixin`, `add`, `default`, `${colconMixinRepo}`],
+			options,
+			false
 		);
-		await execBashCommand("colcon mixin update default", undefined, options);
-	}
-
-	let extra_options: string[] = [];
-	if (colconExtraArgs !== "") {
-		extra_options = extra_options.concat(colconExtraArgs);
+		await execShellCommand(
+			[`colcon`, `mixin`, `update`, `default`],
+			options,
+			false
+		);
 	}
 
 	// Add the future install bin directory to PATH.
@@ -521,18 +566,26 @@ done`;
 	core.addPath(path.join(rosWorkspaceDir, "install", "bin"));
 
 	// Source any installed ROS distributions if they are present
-	let colconCommandPrefix = "";
+	let colconCommandPrefix: string[] = [];
 	if (isLinux) {
 		if (targetRos1Distro) {
 			const ros1SetupPath = `/opt/ros/${targetRos1Distro}/setup.sh`;
 			if (fs.existsSync(ros1SetupPath)) {
-				colconCommandPrefix += `source ${ros1SetupPath} && `;
+				colconCommandPrefix = [
+					...colconCommandPrefix,
+					`source ${ros1SetupPath}`,
+					`&&`,
+				];
 			}
 		}
 		if (targetRos2Distro) {
 			const ros2SetupPath = `/opt/ros/${targetRos2Distro}/setup.sh`;
 			if (fs.existsSync(ros2SetupPath)) {
-				colconCommandPrefix += `source ${ros2SetupPath} && `;
+				colconCommandPrefix = [
+					...colconCommandPrefix,
+					`source ${ros2SetupPath}`,
+					`&&`,
+				];
 			}
 		}
 	} else if (isWindows) {
@@ -540,29 +593,39 @@ done`;
 		if (targetRos2Distro) {
 			const ros2SetupPath = `c:/dev/${targetRos2Distro}/ros2-windows/setup.bat`;
 			if (fs.existsSync(ros2SetupPath)) {
-				colconCommandPrefix += `${ros2SetupPath} && `;
+				colconCommandPrefix = [
+					...colconCommandPrefix,
+					`${ros2SetupPath}`,
+					`&&`,
+				];
 			}
 		}
 	}
 
-	let colconBuildCmd = filterNonEmptyJoin([
-		`colcon build`,
-		`--event-handlers console_cohesion+`,
-		buildPackageSelection,
-		`${extra_options.join(" ")}`,
-		extraCmakeArgs !== "" ? `--cmake-args ${extraCmakeArgs}` : "",
-	]);
-	if (!isWindows) {
-		colconBuildCmd = colconBuildCmd.concat(" --symlink-install");
+	let colconBuildCmd = [
+		`colcon`,
+		`build`,
+		`--symlink-install`,
+		...buildPackageSelection,
+		...colconExtraArgs,
+		...extraCmakeArgs,
+		`--event-handlers=console_cohesion+`,
+	];
+	if (useMergeInstall) {
+		colconBuildCmd = [...colconBuildCmd, `--merge-install`];
 	}
-	await execBashCommand(colconBuildCmd, colconCommandPrefix, options);
+	await execShellCommand(
+		[...colconCommandPrefix, ...colconBuildCmd],
+		options,
+		false
+	);
 
 	if (!skipTests) {
 		await runTests(
 			colconCommandPrefix,
 			options,
 			testPackageSelection,
-			extra_options,
+			colconExtraArgs,
 			coverageIgnorePattern
 		);
 	} else {
@@ -571,9 +634,10 @@ done`;
 
 	if (importToken !== "") {
 		// Unset config so that it doesn't leak to other actions
-		await execBashCommand(
-			`/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@github.com.insteadof`,
-			undefined,
+		await execShellCommand(
+			[
+				`/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@github.com.insteadof`,
+			],
 			options
 		);
 	}
