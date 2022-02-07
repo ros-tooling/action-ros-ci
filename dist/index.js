@@ -11395,7 +11395,7 @@ done`;
         }
         for (const vcsRepoFileUrl of vcsRepoFileUrlListNonEmpty) {
           const resolvedUrl = resolveVcsRepoFileUrl(vcsRepoFileUrl);
-          yield execShellCommand([`vcs import --force --recursive src/ --input ${resolvedUrl}`], options);
+          yield execShellCommand([`vcs import --force --recursive src/ --input src/${randomStringPrefix}/${repo["repo"]}/${resolvedUrl}`], options);
         }
         let colconBuildCmd = [
             `colcon`,
