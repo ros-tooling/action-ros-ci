@@ -11287,10 +11287,6 @@ function run_throw() {
         // Make sure to delete root .colcon directory if it exists
         // This is because, for some reason, using Docker, commands might get run as root
         yield execShellCommand([`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`], Object.assign(Object.assign({}, options), { silent: true }));
-        for (const vcsRepoFileUrl of vcsRepoFileUrlListNonEmpty) {
-            const resolvedUrl = resolveVcsRepoFileUrl(vcsRepoFileUrl);
-            yield execShellCommand([`vcs import --force --recursive src/ --input ${resolvedUrl}`], options);
-        }
         // If the package under tests is part of ros.repos, remove it first.
         // We do not want to allow the "default" head state of the package to
         // to be present in the workspace, and colcon will fail stating it found twice
@@ -11396,6 +11392,10 @@ done`;
                     ];
                 }
             }
+        }
+        for (const vcsRepoFileUrl of vcsRepoFileUrlListNonEmpty) {
+          const resolvedUrl = resolveVcsRepoFileUrl(vcsRepoFileUrl);
+          yield execShellCommand([`vcs import --force --recursive src/ --input ${resolvedUrl}`], options);
         }
         let colconBuildCmd = [
             `colcon`,
