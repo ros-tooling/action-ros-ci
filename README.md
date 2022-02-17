@@ -38,6 +38,8 @@ vcstool
 
 On Linux, the setup can be done through [`ros-tooling/setup-ros`](https://github.com/ros-tooling/setup-ros), or by running the action in a Docker image containing the appropriate binaries.
 
+**Note**: for Windows, `action-ros-ci` currently needs to be run on `windows-2019` or needs another action to install Visual Studio 2019.
+
 ## Overview
 
 The action first assembles a workspace, then runs `colcon build`, and `colcon test` in it.
