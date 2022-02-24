@@ -30,7 +30,7 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
       - run: npm install && npm run lint
@@ -64,7 +64,7 @@ jobs:
       image: ${{ matrix.docker_image }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
@@ -91,7 +91,7 @@ jobs:
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
@@ -171,7 +171,7 @@ jobs:
       image: ${{ matrix.docker_image }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
@@ -210,7 +210,7 @@ jobs:
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
@@ -386,7 +386,7 @@ jobs:
       image: ${{ matrix.docker_image }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.5.1
+      - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
