@@ -175,6 +175,10 @@ jobs:
           # TODO uncomment once humble is supported by setup-ros-docker
           # - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-ros-base-latest
           #   ros_distribution: humble
+
+          # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
+          - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-rolling-ros-base-latest
+            ros_distribution: rolling
     container:
       image: ${{ matrix.docker_image }}
     steps:
@@ -383,6 +387,7 @@ jobs:
           - foxy
           - galactic
           - humble
+          - rolling
 
         # Define the Docker image(s) associated with each ROS distribution.
         # The include syntax allows additional variables to be defined, like
@@ -405,6 +410,11 @@ jobs:
           - docker_image: ubuntu:jammy
             ros_distribution: humble
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+
+          # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
+          - docker_image: ubuntu:jammy
+            ros_distribution: rolling
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
     container:
       image: ${{ matrix.docker_image }}
     steps:
