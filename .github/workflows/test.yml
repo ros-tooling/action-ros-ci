@@ -210,8 +210,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-latest, windows-2019, ubuntu-20.04]
+        os: [macOS-latest, windows-2019, ubuntu-20.04, ubuntu-22.04]
         ros_distribution: [foxy, galactic, humble, rolling]
+        exclude:
+          - os: ubuntu-22.04
+            ros_distribution: foxy
+          - os: ubuntu-22.04
+            ros_distribution: galactic
+          - os: ubuntu-20.04
+            ros_distribution: humble
+          - os: ubuntu-20.04
+            ros_distribution: rolling
     env:
       DISTRO_REPOS_URL: "https://raw.githubusercontent.com/ros2/ros2/${{ matrix.ros_distribution == 'rolling' && 'master' || matrix.ros_distribution }}/ros2.repos"
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
@@ -246,14 +255,14 @@ jobs:
       - uses: ./
         id: test_connext_dependency
         name: "Test single package with Connext dependency, default options"
-        if: matrix.os == 'ubuntu-20.04'
+        if: startsWith(matrix.os, 'ubuntu-')
         with:
           package-name: rmw_implementation
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_connext_dependency.outputs.ros-workspace-directory-name }}/install/rmw_implementation"
         name: "Check that rmw_implementation install directory is present"
-        if: matrix.os == 'ubuntu-20.04'
+        if: startsWith(matrix.os, 'ubuntu-')
 
       - uses: ./
         id: test_mixin
