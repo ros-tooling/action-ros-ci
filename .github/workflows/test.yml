@@ -214,17 +214,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-latest, windows-2019, ubuntu-20.04, ubuntu-22.04]
+        # TODO add ubuntu-22.04 for humble+rolling once available and uncomment code below
+        os: [macOS-latest, windows-2019, ubuntu-20.04]
         ros_distribution: [foxy, galactic, humble, rolling]
-        exclude:
-          - os: ubuntu-22.04
-            ros_distribution: foxy
-          - os: ubuntu-22.04
-            ros_distribution: galactic
-          - os: ubuntu-20.04
-            ros_distribution: humble
-          - os: ubuntu-20.04
-            ros_distribution: rolling
+        # exclude:
+        #   - os: ubuntu-22.04
+        #     ros_distribution: foxy
+        #   - os: ubuntu-22.04
+        #     ros_distribution: galactic
+        #   - os: ubuntu-20.04
+        #     ros_distribution: humble
+        #   - os: ubuntu-20.04
+        #     ros_distribution: rolling
     env:
       DISTRO_REPOS_URL: "https://raw.githubusercontent.com/ros2/ros2/${{ matrix.ros_distribution == 'rolling' && 'master' || matrix.ros_distribution }}/ros2.repos"
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
