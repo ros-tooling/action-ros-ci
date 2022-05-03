@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: pre_condition
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
@@ -63,7 +63,7 @@ jobs:
     container:
       image: ${{ matrix.docker_image }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
@@ -90,7 +90,7 @@ jobs:
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
@@ -117,7 +117,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: pre_condition
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: ros-tooling/setup-ros@v0.3
         with:
           required-ros-distributions: foxy
@@ -134,7 +134,7 @@ jobs:
     # We don't have access to the secret token for the test repo on a fork
     if: ${{ !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: ros-tooling/setup-ros@v0.3
         with:
           required-ros-distributions: foxy
@@ -182,7 +182,7 @@ jobs:
     container:
       image: ${{ matrix.docker_image }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
@@ -231,7 +231,7 @@ jobs:
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
@@ -419,7 +419,7 @@ jobs:
     container:
       image: ${{ matrix.docker_image }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.0.0
         with:
           node-version: "12.x"
