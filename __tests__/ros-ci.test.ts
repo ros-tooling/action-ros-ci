@@ -39,10 +39,12 @@ describe("validate distribution test", () => {
 		expect(actionRosCi.validateDistros("", "eloquent")).toBe(true);
 		expect(actionRosCi.validateDistros("", "foxy")).toBe(true);
 		expect(actionRosCi.validateDistros("", "galactic")).toBe(true);
+		expect(actionRosCi.validateDistros("", "humble")).toBe(true);
 		expect(actionRosCi.validateDistros("", "rolling")).toBe(true);
 
 		expect(actionRosCi.validateDistros("noetic", "rolling")).toBe(true);
 		expect(actionRosCi.validateDistros("melodic", "dashing")).toBe(true);
+		expect(actionRosCi.validateDistros("noetic", "humble")).toBe(true);
 
 		expect(actionRosCi.validateDistros("", "")).toBe(false);
 		expect(actionRosCi.validateDistros("groovy", "")).toBe(false);

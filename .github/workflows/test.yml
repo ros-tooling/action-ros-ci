@@ -85,7 +85,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, windows-2019]
-        ros_distribution: [foxy, galactic]
+        ros_distribution: [foxy, galactic, humble]
     env: 
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
@@ -95,9 +95,11 @@ jobs:
         with:
           node-version: "12.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@v0.3
+      - uses: ros-tooling/setup-ros@master
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
+          # TODO remove this once Humble has been officially released
+          use-ros2-testing: ${{ matrix.ros_distribution == 'humble' }}
       - uses: ./
         id: test_all_packages_in_repo
         name: "Test all packages in single repo, default options"
@@ -153,6 +155,7 @@ jobs:
         ros_distribution:
           - foxy
           - galactic
+          # - humble
         # Define the Docker image(s) associated with each ROS distribution.
         # The include syntax allows additional variables to be defined, like
         # docker_image in this case. See documentation:
@@ -167,6 +170,15 @@ jobs:
           # Galactic Geochelone (May 2021 - November 2022)
           - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-galactic-ros-base-latest
             ros_distribution: galactic
+
+          # Humble Hawksbill (May 2022 - May 2027)
+          # TODO uncomment once humble is supported by setup-ros-docker
+          # - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-ros-base-latest
+          #   ros_distribution: humble
+
+          # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
+          - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-rolling-ros-base-latest
+            ros_distribution: rolling
     container:
       image: ${{ matrix.docker_image }}
     steps:
@@ -202,8 +214,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # TODO add ubuntu-22.04 for humble+rolling once available and uncomment code below
         os: [macOS-latest, windows-2019, ubuntu-20.04]
-        ros_distribution: [foxy, galactic, rolling]
+        ros_distribution: [foxy, galactic, humble, rolling]
+        # exclude:
+        #   - os: ubuntu-22.04
+        #     ros_distribution: foxy
+        #   - os: ubuntu-22.04
+        #     ros_distribution: galactic
+        #   - os: ubuntu-20.04
+        #     ros_distribution: humble
+        #   - os: ubuntu-20.04
+        #     ros_distribution: rolling
     env:
       DISTRO_REPOS_URL: "https://raw.githubusercontent.com/ros2/ros2/${{ matrix.ros_distribution == 'rolling' && 'master' || matrix.ros_distribution }}/ros2.repos"
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
@@ -238,14 +260,14 @@ jobs:
       - uses: ./
         id: test_connext_dependency
         name: "Test single package with Connext dependency, default options"
-        if: matrix.os == 'ubuntu-20.04'
+        if: startsWith(matrix.os, 'ubuntu-')
         with:
           package-name: rmw_implementation
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
       - run: test -d "${{ steps.test_connext_dependency.outputs.ros-workspace-directory-name }}/install/rmw_implementation"
         name: "Check that rmw_implementation install directory is present"
-        if: matrix.os == 'ubuntu-20.04'
+        if: startsWith(matrix.os, 'ubuntu-')
 
       - uses: ./
         id: test_mixin
@@ -365,6 +387,8 @@ jobs:
         ros_distribution:
           - foxy
           - galactic
+          - humble
+          - rolling
 
         # Define the Docker image(s) associated with each ROS distribution.
         # The include syntax allows additional variables to be defined, like
@@ -382,6 +406,16 @@ jobs:
           - docker_image: ubuntu:focal
             ros_distribution: galactic
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/galactic/ros2.repos
+
+          # Humble Hawksbill (May 2022 - May 2027)
+          - docker_image: ubuntu:jammy
+            ros_distribution: humble
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+
+          # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
+          - docker_image: ubuntu:jammy
+            ros_distribution: rolling
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
     container:
       image: ${{ matrix.docker_image }}
     steps:
