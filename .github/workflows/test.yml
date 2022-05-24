@@ -98,8 +98,6 @@ jobs:
       - uses: ros-tooling/setup-ros@master
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
-          # TODO remove this once Humble has been officially released
-          use-ros2-testing: ${{ matrix.ros_distribution == 'humble' }}
       - uses: ./
         id: test_all_packages_in_repo
         name: "Test all packages in single repo, default options"
@@ -172,9 +170,8 @@ jobs:
             ros_distribution: galactic
 
           # Humble Hawksbill (May 2022 - May 2027)
-          # TODO uncomment once humble is supported by setup-ros-docker
-          # - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-ros-base-latest
-          #   ros_distribution: humble
+          - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-ros-base-latest
+            ros_distribution: humble
 
           # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
           - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-rolling-ros-base-latest
