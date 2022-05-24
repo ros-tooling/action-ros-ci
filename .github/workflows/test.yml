@@ -43,8 +43,8 @@ jobs:
       fail-fast: false
       matrix:
         ros_distribution: # ROS 1 tests only run on Ubuntu
-          - kinetic
           - melodic
+          - noetic
 
         # Define the Docker image(s) associated with each ROS distribution.
         # The include syntax allows additional variables to be defined, like
@@ -53,13 +53,13 @@ jobs:
         #
         # Platforms are defined in REP 3: https://ros.org/reps/rep-0003.html
         include:
-          # Kinetic Kame (May 2016 - May 2021)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-xenial-ros-kinetic-ros-base-latest
-            ros_distribution: kinetic
-
           # Melodic Morenia (May 2018 - May 2023)
           - docker_image: rostooling/setup-ros-docker:ubuntu-bionic-ros-melodic-ros-base-latest
             ros_distribution: melodic
+
+          # Noetic Ninjemys (May 2020 - May 2025)
+          - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-noetic-ros-base-latest
+            ros_distribution: noetic
     container:
       image: ${{ matrix.docker_image }}
     steps:
