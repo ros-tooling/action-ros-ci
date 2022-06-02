@@ -160,6 +160,7 @@ export function validateDistros(
  */
 async function installRosdeps(
 	packageSelection: string[],
+	skipKeys: string[],
 	workspaceDir: string,
 	options: im.ExecOptions,
 	ros1Distro?: string,
@@ -180,7 +181,9 @@ async function installRosdeps(
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
-	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys rti-connext-dds-5.3.1 --rosdistro $DISTRO -y || true`;
+	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys rti-connext-dds-5.3.1 ${filterNonEmptyJoin(
+		skipKeys
+	)} --rosdistro $DISTRO -y || true`;
 	fs.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
 
 	let exitCode = 0;
@@ -318,6 +321,12 @@ async function run_throw(): Promise<void> {
 	const testPackageSelection = packageNames
 		? ["--packages-select", ...packageNames]
 		: [];
+
+	const rosdepSkipKeysInput = core.getInput("rosdep-skip-keys");
+	const rosdepSkipKeys = rosdepSkipKeysInput
+		? rosdepSkipKeysInput.split(RegExp("\\s"))
+		: undefined;
+	const rosdepSkipKeysSelection = rosdepSkipKeys ? [...rosdepSkipKeys] : [];
 
 	const rosWorkspaceName = "ros_ws";
 	core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
@@ -532,6 +541,7 @@ done`;
 	}
 	await installRosdeps(
 		buildPackageSelection,
+		rosdepSkipKeysSelection,
 		rosWorkspaceDir,
 		options,
 		targetRos1Distro,

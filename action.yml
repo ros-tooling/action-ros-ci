@@ -77,6 +77,13 @@ inputs:
       Skip tests and code coverage data processing.
       Set to 'true'.
     required: false
+  rosdep-skip-keys:
+    default: ""
+    description: |
+      Keys to be skipped when installing dependencies via rosdep.
+      Passing multiple keys is allowed.
+      Keys names can be separated by any whitespace character.
+    required: false
 outputs:
   ros-workspace-directory-name:
     description: |
