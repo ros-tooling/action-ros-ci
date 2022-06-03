@@ -13297,7 +13297,7 @@ exports.validateDistros = validateDistros;
 /**
  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
  */
-function installRosdeps(packageSelection, workspaceDir, options, ros1Distro, ros2Distro) {
+function installRosdeps(packageSelection, skipKeys, workspaceDir, options, ros1Distro, ros2Distro) {
     return __awaiter(this, void 0, void 0, function* () {
         const scriptName = "install_rosdeps.sh";
         const scriptPath = path.join(workspaceDir, scriptName);
@@ -13312,7 +13312,7 @@ function installRosdeps(packageSelection, workspaceDir, options, ros1Distro, ros
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
-	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys rti-connext-dds-5.3.1 --rosdistro $DISTRO -y || true`;
+	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys "rti-connext-dds-5.3.1 ${filterNonEmptyJoin(skipKeys)}" --rosdistro $DISTRO -y || true`;
         fs_1.default.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
         let exitCode = 0;
         if (ros1Distro) {
@@ -13406,6 +13406,11 @@ function run_throw() {
         const testPackageSelection = packageNames
             ? ["--packages-select", ...packageNames]
             : [];
+        const rosdepSkipKeysInput = core.getInput("rosdep-skip-keys");
+        const rosdepSkipKeys = rosdepSkipKeysInput
+            ? rosdepSkipKeysInput.split(RegExp("\\s"))
+            : undefined;
+        const rosdepSkipKeysSelection = rosdepSkipKeys ? [...rosdepSkipKeys] : [];
         const rosWorkspaceName = "ros_ws";
         core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
         const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
@@ -13551,7 +13556,7 @@ done`;
             // Always update APT before installing packages on Ubuntu
             yield execShellCommand(["sudo apt-get update"]);
         }
-        yield installRosdeps(buildPackageSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
+        yield installRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
         if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
             yield execShellCommand([`colcon`, `mixin`, `add`, `default`, `${colconMixinRepo}`], options, false);
             yield execShellCommand([`colcon`, `mixin`, `update`, `default`], options, false);

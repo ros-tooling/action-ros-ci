@@ -125,6 +125,39 @@ jobs:
           target-ros2-distro: foxy
           vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
 
+  test_ros2_foxy_rosdep_skip_keys:
+    name: "Test with rosdep-skip-keys option"
+    runs-on: ubuntu-20.04
+    needs: pre_condition
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ros-tooling/setup-ros@v0.3
+        with:
+          required-ros-distributions: foxy
+      # Skip installing test_depend dependency and verifies it isn't installed.
+      - uses: ./
+        with:
+          package-name: rmw
+          target-ros2-distro: foxy
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
+          extra-cmake-args: -DBUILD_TESTING=Off
+          skip-tests: true
+          rosdep-skip-keys: osrf_testing_tools_cpp
+      - name: Install dpkg
+        run: sudo apt -y install dpkg
+      - name: "Verify dependencies were skipped"
+        run: |
+          [[ $(dpkg -s ros-foxy-osrf-testing-tools-cpp) -eq 0 ]]
+      # Install dependencies as usual and verifies it is now installed.
+      - uses: ./
+        with:
+          package-name: rmw
+          target-ros2-distro: foxy
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
+      - name: "Verify dependencies weren't skipped"
+        run: |
+          dpkg -s ros-foxy-osrf-testing-tools-cpp
+
   test_private_repo:
     name: "Test with private repos"
     runs-on: ubuntu-20.04
