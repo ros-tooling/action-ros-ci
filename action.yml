@@ -69,7 +69,7 @@ inputs:
       Repo file URL passed to vcs to initialize the colcon workspace.
       The URL may point to a local file, such as file://path/to/file.txt.
       For example, for ROS 2 Rolling source repositories, use:
-      https://raw.githubusercontent.com/ros2/ros2/master/ros2.repos
+      https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos
     default: ""
   skip-tests:
     default: ""
