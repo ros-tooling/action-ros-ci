@@ -13308,7 +13308,7 @@ function installRosdeps(packageSelection, skipKeys, workspaceDir, options, ros1D
 		exit 1
 	fi
 	DISTRO=$1
-	package_paths=$(colcon list --paths-only ${filterNonEmptyJoin(packageSelection)})
+	package_paths=$(colcon list --paths-only ${filterNonEmptyJoin(packageSelection)} | tr '\n' ' ')
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep

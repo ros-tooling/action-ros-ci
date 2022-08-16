@@ -166,6 +166,7 @@ async function installRosdeps(
 	ros1Distro?: string,
 	ros2Distro?: string
 ): Promise<number> {
+	const lineEnding = isWindows ? "\r" : "" + "\n";
 	const scriptName = "install_rosdeps.sh";
 	const scriptPath = path.join(workspaceDir, scriptName);
 	const scriptContent = `#!/bin/bash
@@ -177,7 +178,7 @@ async function installRosdeps(
 	DISTRO=$1
 	package_paths=$(colcon list --paths-only ${filterNonEmptyJoin(
 		packageSelection
-	)})
+	)} | tr '${lineEnding}' ' ')
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
