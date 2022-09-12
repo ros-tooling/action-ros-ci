@@ -24,17 +24,6 @@ jobs:
     steps:
       - run: 'true'
 
-  test_lint:
-    name: "Lint sources"
-    runs-on: ubuntu-latest
-    needs: pre_condition
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3.4.1
-        with:
-          node-version: "12.x"
-      - run: npm install && npm run lint
-
   test_ros:
     name: "Test ROS package"
     runs-on: ubuntu-latest
