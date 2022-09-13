@@ -1,0 +1,19 @@
+name: "PR checks"
+on:
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test_lint_and_build:
+    name: "Lint sources and check build artifacts"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3.4.1
+        with:
+          node-version: "12.x"
+      - run: npm install && npm run lint
+      - run: npm run build && git diff --exit-code
