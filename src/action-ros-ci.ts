@@ -539,14 +539,18 @@ done`;
 		// Always update APT before installing packages on Ubuntu
 		await execShellCommand(["sudo apt-get update"]);
 	}
-	await installRosdeps(
-		buildPackageSelection,
-		rosdepSkipKeysSelection,
-		rosWorkspaceDir,
-		options,
-		targetRos1Distro,
-		targetRos2Distro
-	);
+	// rosdep does not really work on Windows, so do not use it
+	// See: https://github.com/ros-infrastructure/rosdep/issues/610
+	if (!isWindows) {
+		await installRosdeps(
+			buildPackageSelection,
+			rosdepSkipKeysSelection,
+			rosWorkspaceDir,
+			options,
+			targetRos1Distro,
+			targetRos2Distro
+		);
+	}
 
 	if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
 		await execShellCommand(
