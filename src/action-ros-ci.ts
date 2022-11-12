@@ -9,6 +9,8 @@ import * as url from "url";
 import fs from "fs";
 import retry from "async-retry";
 import * as dep from "./dependencies";
+import { Context } from "@actions/github/lib/context";
+import { WebhookPayload } from "@actions/github/lib/interfaces";
 
 const validROS1Distros: string[] = ["kinetic", "lunar", "melodic", "noetic"];
 const validROS2Distros: string[] = [
@@ -289,9 +291,43 @@ async function runTests(
 	);
 }
 
+export function createReposFile(
+	rosWorkspaceDir: string,
+	githubRepository: string,
+	githubHeadRef: string,
+	sha: string,
+	repo: Context["repo"],
+	pullRequestPayload: WebhookPayload["pull_request"],
+	ref: string,
+): string {
+	const commitRef = githubHeadRef || sha;
+	const repoVersion = ref === "" ? commitRef : ref;
+
+	// The repo file for the repository needs to be generated on-the-fly to
+	// incorporate the custom repository URL and branch name, when a PR is
+	// being built.
+	let repoFullName = githubRepository;
+	if (pullRequestPayload) {
+		repoFullName = pullRequestPayload.head.repo.full_name;
+	}
+	const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
+	// Add a random string prefix to avoid naming collisions when checking out the test repository
+	const randomStringPrefix = Math.random().toString(36).substring(2, 15);
+	const repoFileContent = `repositories:
+  ${randomStringPrefix}/${repo["repo"]}:
+    type: git
+    url: 'https://github.com/${repoFullName}.git'
+    version: '${repoVersion}'`;
+	fs.writeFileSync(repoFilePath, repoFileContent);
+
+	return repoFilePath;
+}
+
 async function run_throw(): Promise<void> {
 	const repo = github.context.repo;
 	const workspace = process.env.GITHUB_WORKSPACE as string;
+
+	const ref = core.getInput("ref");
 
 	const colconDefaults = core.getInput("colcon-defaults");
 	const colconMixinRepo = core.getInput("colcon-mixin-repository");
@@ -509,26 +545,17 @@ done`;
 		undefined
 	);
 
-	// The repo file for the repository needs to be generated on-the-fly to
-	// incorporate the custom repository URL and branch name, when a PR is
-	// being built.
-	let repoFullName = process.env.GITHUB_REPOSITORY as string;
-	if (github.context.payload.pull_request) {
-		repoFullName = github.context.payload.pull_request.head.repo.full_name;
-	}
-	const headRef = process.env.GITHUB_HEAD_REF as string;
-	const commitRef = headRef || github.context.sha;
-	const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
-	// Add a random string prefix to avoid naming collisions when checking out the test repository
-	const randomStringPrefix = Math.random().toString(36).substring(2, 15);
-	const repoFileContent = `repositories:
-  ${randomStringPrefix}/${repo["repo"]}:
-    type: git
-    url: 'https://github.com/${repoFullName}.git'
-    version: '${commitRef}'`;
-	fs.writeFileSync(repoFilePath, repoFileContent);
+	const reposFilePath = createReposFile(
+		rosWorkspaceDir,
+		process.env.GITHUB_REPOSITORY as string,
+		process.env.GITHUB_HEAD_REF as string,
+		github.context.sha,
+		github.context.repo,
+		github.context.payload.pull_request,
+		ref,
+	);
 	await execShellCommand(
-		["vcs import --force --recursive src/ < package.repo"],
+		[`vcs import --force --recursive src/ < ${reposFilePath}`],
 		options
 	);
 

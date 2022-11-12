@@ -11,6 +11,7 @@ This action builds and tests a [ROS](http://wiki.ros.org/) or [ROS 2](https://do
 1. [Action Output](#Action-Output)
 1. [Usage](#Usage)
    1. [Build and run tests for your ROS 2 package](#Build-and-run-tests-for-your-ROS-2-package)
+   1. [Build a different branch or commit](#Build-a-different-branch-or-commit)
    1. [Build with a custom `repos` or `rosinstall` file](#Build-with-a-custom-repos-or-rosinstall-file)
    1. [Build a ROS 1 workspace](#Build-a-ROS-1-workspace)
    1. [Skip tests](#Skip-tests)
@@ -101,6 +102,21 @@ steps:
       package-name: my_package
       target-ros2-distro: humble
       vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+```
+
+### Build a different branch or commit
+
+You can provide a specific branch, tag, or commit SHA to use instead of the commit on which the workflow runs.
+For example, this configuration would use the `galactic` branch of your repository, no matter which branch the workflow runs against:
+
+```yaml
+steps:
+  - uses: ros-tooling/setup-ros@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.2
+    with:
+      package-name: my_package
+      target-ros2-distro: galactic
+      ref: galactic
 ```
 
 ### Build with a custom `repos` or `rosinstall` file

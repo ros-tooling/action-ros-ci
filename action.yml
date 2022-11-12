@@ -5,6 +5,10 @@ branding:
   icon: "activity"
   color: "gray-dark"
 inputs:
+  ref:
+    default: ""
+    description: |
+      The branch, tag or SHA to checkout for this repository. Otherwise, uses the current SHA.
   colcon-defaults:
     default: ""
     description: |

@@ -2,6 +2,8 @@ import * as core from "@actions/core";
 import * as actionRosCi from "../src/action-ros-ci";
 import * as dep from "../src/dependencies";
 import { execShellCommand } from "../src/action-ros-ci";
+import { tmpdir } from "os";
+import { Context } from "@actions/github/lib/context";
 
 jest.setTimeout(20000); // in milliseconds
 
@@ -117,5 +119,38 @@ action-ros-ci-repos-supplemental:  file://path/to/some/file.txt
 		expect(dep.getReposFilesSupplemental(payload)).toEqual(
 			expect.arrayContaining(expectedSupplemental)
 		);
+	});
+});
+
+
+describe("ref option", () => {
+	it("should use the current HEAD ref if option is not defined", async () => {
+		// Default value; not defined
+		const sha = "123456abc";
+		const repo = {
+			owner: "the-user",
+			repo: "the-repo",
+		};
+		const pullRequestPayload = {
+			head: {
+				repo: {
+					full_name: "the-user/the-repo",
+				},
+			},
+			number: 42,
+		}
+		const ref = "";
+		const reposFilePath = actionRosCi.createReposFile(
+			tmpdir(),
+			"the-user/the-repo",
+			"123456abc",
+			sha,
+			repo,
+			pullRequestPayload,
+			ref,
+		);
+	});
+
+	it("should use the provided ref if option is defined", async () => {
 	});
 });
