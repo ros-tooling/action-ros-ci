@@ -15411,6 +15411,18 @@ function run_throw() {
             yield execShellCommand([
                 `/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com.insteadof 'https://github.com'`,
             ], options);
+            // same as last three comands but for ssh urls
+            yield execShellCommand([
+                `/usr/bin/git config --local --unset-all git@github.com:.extraheader || true`,
+            ], options);
+            yield execShellCommand([
+                String.raw `/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'git@github\.com:.extraheader'` +
+                    ` && git config --local --unset-all 'git@github.com:.extraheader' || true`,
+            ], options);
+            // Use a global insteadof entry because local configs aren't observed by git clone (ssh)
+            yield execShellCommand([
+                `/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com/.insteadof 'git@github.com:'`,
+            ], options);
             if (core.isDebug()) {
                 yield execShellCommand([`/usr/bin/git config --list --show-origin || true`], options);
             }
