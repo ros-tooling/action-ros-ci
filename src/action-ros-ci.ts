@@ -457,6 +457,27 @@ async function run_throw(): Promise<void> {
 			],
 			options
 		);
+		// same as last three comands but for ssh urls
+		await execShellCommand(
+			[
+				`/usr/bin/git config --local --unset-all git@github.com:.extraheader || true`,
+			],
+			options
+		);
+		await execShellCommand(
+			[
+				String.raw`/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'git@github\.com:.extraheader'` +
+					` && git config --local --unset-all 'git@github.com:.extraheader' || true`,
+			],
+			options
+		);
+		// Use a global insteadof entry because local configs aren't observed by git clone (ssh)
+		await execShellCommand(
+			[
+				`/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com/.insteadof 'git@github.com:'`,
+			],
+			options
+		);
 		if (core.isDebug()) {
 			await execShellCommand(
 				[`/usr/bin/git config --list --show-origin || true`],
