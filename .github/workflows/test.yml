@@ -105,7 +105,7 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@v0.3
+      - uses: ros-tooling/setup-ros@master
         with:
           required-ros-distributions: foxy
       - uses: ./
@@ -120,7 +120,7 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@v0.3
+      - uses: ros-tooling/setup-ros@master
         with:
           required-ros-distributions: foxy
       # Skip installing test_depend dependency and verifies it isn't installed.
@@ -155,7 +155,7 @@ jobs:
     if: ${{ !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@v0.3
+      - uses: ros-tooling/setup-ros@master
         with:
           required-ros-distributions: foxy
       - uses: ./
@@ -247,7 +247,7 @@ jobs:
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@v0.3
+      - uses: ros-tooling/setup-ros@master
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
@@ -429,7 +429,7 @@ jobs:
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@v0.3
+      - uses: ros-tooling/setup-ros@master
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
