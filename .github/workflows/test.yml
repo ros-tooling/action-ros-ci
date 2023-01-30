@@ -74,7 +74,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, windows-2019]
-        ros_distribution: [foxy, galactic, humble]
+        ros_distribution: [foxy, humble]
     env: 
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
@@ -174,7 +174,6 @@ jobs:
       matrix:
         ros_distribution:
           - foxy
-          - galactic
           # - humble
         # Define the Docker image(s) associated with each ROS distribution.
         # The include syntax allows additional variables to be defined, like
@@ -186,10 +185,6 @@ jobs:
           # Foxy Fitzroy (May 2020 - May 2023)
           - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-foxy-ros-base-latest
             ros_distribution: foxy
-
-          # Galactic Geochelone (May 2021 - November 2022)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-galactic-ros-base-latest
-            ros_distribution: galactic
 
           # Humble Hawksbill (May 2022 - May 2027)
           - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-ros-base-latest
@@ -234,12 +229,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, windows-2019, ubuntu-20.04, ubuntu-22.04]
-        ros_distribution: [foxy, galactic, humble, rolling]
+        ros_distribution: [foxy, humble, rolling]
         exclude:
           - os: ubuntu-22.04
             ros_distribution: foxy
-          - os: ubuntu-22.04
-            ros_distribution: galactic
           - os: ubuntu-20.04
             ros_distribution: humble
           - os: ubuntu-20.04
@@ -404,7 +397,6 @@ jobs:
       matrix:
         ros_distribution:
           - foxy
-          - galactic
           - humble
           - rolling
 
@@ -419,11 +411,6 @@ jobs:
           - docker_image: ubuntu:focal
             ros_distribution: foxy
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/foxy/ros2.repos
-
-          # Galactic Geochelone (May 2021 - November 2022)
-          - docker_image: ubuntu:focal
-            ros_distribution: galactic
-            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/galactic/ros2.repos
 
           # Humble Hawksbill (May 2022 - May 2027)
           - docker_image: ubuntu:jammy
