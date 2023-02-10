@@ -11337,7 +11337,6 @@ function runTests(colconCommandPrefix, options, testPackageSelection, colconExtr
             `colcon`,
             `test`,
             `--event-handlers=console_cohesion+`,
-            `--return-code-on-test-failure`,
             ...testPackageSelection,
             ...colconExtraArgs,
         ];
@@ -11346,6 +11345,15 @@ function runTests(colconCommandPrefix, options, testPackageSelection, colconExtr
         }
         if (doTests) {
             yield execShellCommand([...colconCommandPrefix, ...colconTestCmd], options, false);
+            /**
+             * Display all test results first and ignore the return code. Then, display only failing
+             * tests with their output and let non-zero return code fail the job.
+             */
+            const colconTestResultCmd = ["colcon", "test-result"];
+            const colconTestResultAllCmd = [...colconTestResultCmd, "--all"];
+            const colconTestResultVerboseCmd = [...colconTestResultCmd, "--verbose"];
+            yield execShellCommand([...colconCommandPrefix, ...colconTestResultAllCmd], Object.assign(Object.assign({}, options), { ignoreReturnCode: true }), false);
+            yield execShellCommand([...colconCommandPrefix, ...colconTestResultVerboseCmd], options, false);
         }
         if (doLcovResult) {
             // ignoreReturnCode, check comment above in --initial

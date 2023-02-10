@@ -239,7 +239,6 @@ async function runTests(
 		`colcon`,
 		`test`,
 		`--event-handlers=console_cohesion+`,
-		`--return-code-on-test-failure`,
 		...testPackageSelection,
 		...colconExtraArgs,
 	];
@@ -250,6 +249,27 @@ async function runTests(
 	if (doTests) {
 		await execShellCommand(
 			[...colconCommandPrefix, ...colconTestCmd],
+			options,
+			false
+		);
+
+		/**
+		 * Display all test results first and ignore the return code. Then, display only failing
+		 * tests with their output and let non-zero return code fail the job.
+		 */
+		const colconTestResultCmd = ["colcon", "test-result"];
+		const colconTestResultAllCmd = [...colconTestResultCmd, "--all"];
+		const colconTestResultVerboseCmd = [...colconTestResultCmd, "--verbose"];
+		await execShellCommand(
+			[...colconCommandPrefix, ...colconTestResultAllCmd],
+			{
+				...options,
+				ignoreReturnCode: true,
+			},
+			false
+		);
+		await execShellCommand(
+			[...colconCommandPrefix, ...colconTestResultVerboseCmd],
 			options,
 			false
 		);
