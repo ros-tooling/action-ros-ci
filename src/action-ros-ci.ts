@@ -683,7 +683,11 @@ async function run(): Promise<void> {
 	try {
 		await run_throw();
 	} catch (error) {
-		core.setFailed(error.message);
+		let errorMessage = "Unknown error";
+		if (error instanceof Error) {
+			errorMessage = error.message;
+		}
+		core.setFailed(errorMessage);
 	}
 }
 
