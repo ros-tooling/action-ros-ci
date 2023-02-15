@@ -55,7 +55,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.6.0
         with:
-          node-version: "12.x"
+          node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
       - uses: ./
         id: action-ros-ci
@@ -82,7 +82,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.6.0
         with:
-          node-version: "12.x"
+          node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
       - uses: ros-tooling/setup-ros@master
         with:
@@ -105,7 +105,7 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@v0.3
+      - uses: ros-tooling/setup-ros@master
         with:
           required-ros-distributions: foxy
       - uses: ./
@@ -120,7 +120,7 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@v0.3
+      - uses: ros-tooling/setup-ros@master
         with:
           required-ros-distributions: foxy
       # Skip installing test_depend dependency and verifies it isn't installed.
@@ -155,7 +155,7 @@ jobs:
     if: ${{ !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@v0.3
+      - uses: ros-tooling/setup-ros@master
         with:
           required-ros-distributions: foxy
       - uses: ./
@@ -199,7 +199,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.6.0
         with:
-          node-version: "12.x"
+          node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
       - uses: ./
         name: "Test rosdep installs from correct distro"
@@ -245,9 +245,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.6.0
         with:
-          node-version: "12.x"
+          node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@v0.3
+      - uses: ros-tooling/setup-ros@master
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
@@ -427,9 +427,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3.6.0
         with:
-          node-version: "12.x"
+          node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@v0.3
+      - uses: ros-tooling/setup-ros@master
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
