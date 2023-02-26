@@ -83,7 +83,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
       target-ros2-distro: humble
@@ -96,7 +96,7 @@ In this case, `action-ros-ci` will build all necessary ROS 2 dependencies of `my
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@v0.6
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
       target-ros2-distro: humble
@@ -117,7 +117,7 @@ steps:
       rosinstall_generator <package-name> --rosdistro <target-distro> \
       --deps-only --deps --upstream-development > /tmp/deps.repos
   # Pass the file to the action
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
       target-ros2-distro: humble
@@ -136,7 +136,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: noetic
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
       target-ros1-distro: noetic
@@ -151,7 +151,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
       target-ros2-distro: humble
@@ -168,7 +168,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
       target-ros2-distro: humble
@@ -192,7 +192,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
       colcon-defaults: |
         {
@@ -228,7 +228,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
       target-ros2-distro: humble
@@ -253,7 +253,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
       target-ros2-distro: humble
@@ -284,7 +284,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
       target-ros2-distro: humble
@@ -326,7 +326,7 @@ GitHub workflows can persist data generated in workers during the build using [a
 ```yaml
 steps:
   # ...
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     id: action_ros_ci_step
     with:
       package-name: ament_copyright
@@ -348,7 +348,7 @@ For example, if this secret is called `REPO_TOKEN`:
 ```yaml
 steps:
   # ...
-  - uses: ros-tooling/action-ros-ci@v0.2
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
       # If there are no private dependencies, no need to create a PAT or add a secret
