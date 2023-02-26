@@ -80,7 +80,7 @@ In this case, `action-ros-ci` will rely on `setup-ros` for installing ROS 2 bina
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.3
+  - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.2
@@ -95,7 +95,7 @@ In this case, `action-ros-ci` will build all necessary ROS 2 dependencies of `my
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.3
+  - uses: ros-tooling/setup-ros@v0.6
   - uses: ros-tooling/action-ros-ci@v0.2
     with:
       package-name: my_package
@@ -111,7 +111,7 @@ You can also automatically generate your package's dependencies using the follow
 ```yaml
 steps:
   - uses: actions/checkout@v2
-  - uses: ros-tooling/setup-ros@v0.3
+  - uses: ros-tooling/setup-ros@v0.6
   # Run the generator and output the results to a file.
   - run: |
       rosinstall_generator <package-name> --rosdistro <target-distro> \
@@ -133,7 +133,7 @@ Simply use `target-ros1-distro` instead of `target-ros2-distro`.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.3
+  - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: noetic
   - uses: ros-tooling/action-ros-ci@v0.2
@@ -148,7 +148,7 @@ To skip tests and code coverage data processing, set the `skip-tests` option to 
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.3
+  - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.2
@@ -165,7 +165,7 @@ This allows using a `colcon` option/argument that is not exposed by this action'
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.3
+  - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.2
@@ -189,7 +189,7 @@ memory corruption bugs.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.3
+  - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.2
@@ -225,7 +225,7 @@ preferable to use a `colcon` mixin (through [`colcon-defaults`](#Use-a-colcon-de
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.3
+  - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.2
@@ -250,7 +250,7 @@ Generate code coverage information for Python files using the appropriate mixins
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.3
+  - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.2
@@ -281,7 +281,7 @@ See [`codecov/codecov-action`](https://github.com/codecov/codecov-action) docume
 ```yaml
 steps:
   - uses: actions/checkout@v2
-  - uses: ros-tooling/setup-ros@v0.3
+  - uses: ros-tooling/setup-ros@v0.6
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.2
