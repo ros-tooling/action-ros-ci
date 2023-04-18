@@ -11559,7 +11559,7 @@ done`;
     url: 'https://github.com/${repoFullName}.git'
     version: '${commitRef}'`;
         fs_1.default.writeFileSync(repoFilePath, repoFileContent);
-        yield execShellCommand(["cat package.repo"]);
+        yield execShellCommand(["cat package.repo"], options);
         yield execShellCommand(["vcs import --force --recursive src/ < package.repo"], options);
         // Print HEAD commits of all repos
         yield execShellCommand(["vcs log -l1 src/"], options);
