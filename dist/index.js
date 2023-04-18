@@ -11546,10 +11546,13 @@ done`;
         // being built.
         let repoFullName = process.env.GITHUB_REPOSITORY;
         if (github.context.payload.pull_request) {
-            repoFullName = github.context.payload.pull_request.head.repo.full_name;
+            repoFullName = github.context.payload.pull_request.base.repo.full_name;
         }
         const headRef = process.env.GITHUB_HEAD_REF;
-        const commitRef = headRef || github.context.sha;
+        let commitRef = headRef || github.context.sha;
+        if (github.context.payload.pull_request) {
+            commitRef = github.context.sha;
+        }
         const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
         // Add a random string prefix to avoid naming collisions when checking out the test repository
         const randomStringPrefix = Math.random().toString(36).substring(2, 15);
