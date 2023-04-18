@@ -11,7 +11,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/ros-tooling/action-ros-ci.git"
+		"url": "git+https://github.com/timor-raiman/action-ros-ci.git"
 	},
 	"keywords": [
 		"actions",
