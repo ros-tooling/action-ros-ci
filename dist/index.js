@@ -11546,7 +11546,7 @@ done`;
         // being built.
         let repoFullName = process.env.GITHUB_REPOSITORY;
         if (github.context.payload.pull_request) {
-            repoFullName = github.context.payload.pull_request.head.repo.full_name;
+            repoFullName = github.context.payload.pull_request.base.repo.full_name;
         }
         const headRef = process.env.GITHUB_HEAD_REF;
         const commitRef = headRef || github.context.sha;
@@ -11559,6 +11559,7 @@ done`;
     url: 'https://github.com/${repoFullName}.git'
     version: '${commitRef}'`;
         fs_1.default.writeFileSync(repoFilePath, repoFileContent);
+        yield execShellCommand(["cat package.repo"]);
         yield execShellCommand(["vcs import --force --recursive src/ < package.repo"], options);
         // Print HEAD commits of all repos
         yield execShellCommand(["vcs log -l1 src/"], options);
