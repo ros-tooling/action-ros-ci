@@ -568,9 +568,7 @@ done`;
     url: 'https://github.com/${repoFullName}.git'
     version: '${commitRef}'`;
 	fs.writeFileSync(repoFilePath, repoFileContent);
-	await execShellCommand(
-		["cat package.repo"],
-	);
+	await execShellCommand(["cat package.repo"]);
 	await execShellCommand(
 		["vcs import --force --recursive src/ < package.repo"],
 		options
