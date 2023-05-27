@@ -84,6 +84,13 @@ inputs:
       Passing multiple keys is allowed.
       Keys names can be separated by any whitespace character.
     required: false
+  branch-iff-on-schedule:
+    default: ""
+    description: |
+      Branch to use if and only if the job is a github action event_name is schedule.
+      Otherwise github scheduled events default to latest commit of default branch.
+      Set this to the branch you want the scheduled job to run on.
+    required: false
 outputs:
   ros-workspace-directory-name:
     description: |
