@@ -229,12 +229,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, windows-2019, ubuntu-20.04, ubuntu-22.04]
-        ros_distribution: [foxy, humble, rolling]
+        ros_distribution: [foxy, humble, iron, rolling]
         exclude:
           - os: ubuntu-22.04
             ros_distribution: foxy
           - os: ubuntu-20.04
             ros_distribution: humble
+          - os: ubuntu-20.04
+            ros_distribution: iron
           - os: ubuntu-20.04
             ros_distribution: rolling
     env:

@@ -17,6 +17,7 @@ const validROS2Distros: string[] = [
 	"foxy",
 	"galactic",
 	"humble",
+	"iron",
 	"rolling",
 ];
 const targetROS1DistroInput: string = "target-ros1-distro";

@@ -40,6 +40,7 @@ describe("validate distribution test", () => {
 		expect(actionRosCi.validateDistros("", "foxy")).toBe(true);
 		expect(actionRosCi.validateDistros("", "galactic")).toBe(true);
 		expect(actionRosCi.validateDistros("", "humble")).toBe(true);
+		expect(actionRosCi.validateDistros("", "iron")).toBe(true);
 		expect(actionRosCi.validateDistros("", "rolling")).toBe(true);
 
 		expect(actionRosCi.validateDistros("noetic", "rolling")).toBe(true);
