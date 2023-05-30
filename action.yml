@@ -84,12 +84,13 @@ inputs:
       Passing multiple keys is allowed.
       Keys names can be separated by any whitespace character.
     required: false
-  branch-iff-on-schedule:
+  ref:
     default: ""
     description: |
-      Branch to use if and only if the job is a github action event_name is schedule.
-      Otherwise github scheduled events default to latest commit of default branch.
-      Set this to the branch you want the scheduled job to run on.
+      Branch or reference to checkout via vcstool.
+      If unset will use the branch from where this action was triggered.
+      Scheduled events default to latest commit of default branch.
+      Set this if you want the scheduled job to run on on a specific branch.
     required: false
 outputs:
   ros-workspace-directory-name:

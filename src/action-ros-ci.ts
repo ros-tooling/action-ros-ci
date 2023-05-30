@@ -560,12 +560,8 @@ done`;
 	}
 	const headRef = process.env.GITHUB_HEAD_REF as string;
 	let commitRef = headRef || github.context.sha;
-	// https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
-	// If this job is triggerd on a schedule GITHUB_HEAD_REF and GITHUB_REF point to default branch latest commit
-	if ( github.context.event_name === "schedule") {
-		// if branch-iff-on-schedule not set use commitRef
-		commitRef = core.getInput("branch-iff-on-schedule") || commitRef
-	}
+	// if ref is set this overrides anything calculated above
+	commitRef = core.getInput("ref") || commitRef;
 	const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
 	// Add a random string prefix to avoid naming collisions when checking out the test repository
 	const randomStringPrefix = Math.random().toString(36).substring(2, 15);
