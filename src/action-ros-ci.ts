@@ -559,7 +559,9 @@ done`;
 		repoFullName = github.context.payload.pull_request.head.repo.full_name;
 	}
 	const headRef = process.env.GITHUB_HEAD_REF as string;
-	const commitRef = headRef || github.context.sha;
+	let commitRef = headRef || github.context.sha;
+	// if ref is set this overrides anything calculated above
+	commitRef = core.getInput("ref") || commitRef;
 	const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
 	// Add a random string prefix to avoid naming collisions when checking out the test repository
 	const randomStringPrefix = Math.random().toString(36).substring(2, 15);

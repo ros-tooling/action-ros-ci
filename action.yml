@@ -84,6 +84,14 @@ inputs:
       Passing multiple keys is allowed.
       Keys names can be separated by any whitespace character.
     required: false
+  ref:
+    default: ""
+    description: |
+      Branch or reference to checkout via vcstool.
+      If unset will use the branch from where this action was triggered.
+      Scheduled events default to latest commit of default branch.
+      Set this if you want the scheduled job to run on on a specific branch.
+    required: false
 outputs:
   ros-workspace-directory-name:
     description: |

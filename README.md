@@ -103,6 +103,33 @@ steps:
       vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
 ```
 
+### Schedule an action on a specific branch
+
+If you want to continue supporting older ROS releases while developing on an the main branch use `acton-ros-ci` with `ref` on a scheduled job.
+Without setting ref the default branch and most recent commit will be used.
+
+```yaml
+name: Humble Source Build
+on:
+  schedule:
+    # At 00:00 on Sunday.
+    - cron '0 0 * * 0'
+
+jobs:
+  humble_source:
+    runs_on: ubuntu-22.04
+    steps:
+      - uses: ros-tooling/setup-ros@v0.6
+        with:
+          required-ros-distributions: humble
+      - uses: ros-tooling/action-ros-ci@v0.3
+        with:
+          package-name: my_package
+          ref: humble
+          target-ros2-distro: humble
+          vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+```
+
 ### Build with a custom `repos` or `rosinstall` file
 
 You can specify your own repos file using the `vcs-repo-file-url` input.
