@@ -239,7 +239,7 @@ async function runTests(
 	let colconTestCmd = [
 		`colcon`,
 		`test`,
-		`--event-handlers=console_cohesion+`,
+		`--event-handlers=console_direct+`,
 		...testPackageSelection,
 		...colconExtraArgs,
 	];
