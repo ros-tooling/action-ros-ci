@@ -11337,7 +11337,7 @@ function runTests(colconCommandPrefix, options, testPackageSelection, colconExtr
         let colconTestCmd = [
             `colcon`,
             `test`,
-            `--event-handlers=console_cohesion+`,
+            `--event-handlers=console_direct+`,
             ...testPackageSelection,
             ...colconExtraArgs,
         ];
