@@ -11418,6 +11418,7 @@ function run_throw() {
         const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
         let vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
         const skipTests = core.getInput("skip-tests") === "true";
+        const skipRosdepInstall = core.getInput("skip-rosdep-install") === "true";
         // Check if PR overrides/adds supplemental repos files
         const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
         const vcsReposSupplemental = dep.getReposFilesSupplemental(github.context.payload);
@@ -11572,7 +11573,7 @@ done`;
         }
         // rosdep does not really work on Windows, so do not use it
         // See: https://github.com/ros-infrastructure/rosdep/issues/610
-        if (!isWindows) {
+        if (!isWindows && !skipRosdepInstall) {
             yield installRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
         }
         if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {

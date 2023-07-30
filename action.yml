@@ -77,6 +77,12 @@ inputs:
       Skip tests and code coverage data processing.
       Set to 'true'.
     required: false
+  skip-rosdep-install:
+    default: ""
+    description: |
+      Skip rosdep install.
+      Set to 'true'.
+    required: false
   rosdep-skip-keys:
     default: ""
     description: |
