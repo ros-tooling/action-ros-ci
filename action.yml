@@ -83,6 +83,12 @@ inputs:
       Skip rosdep install.
       Set to 'true'.
     required: false
+  rosdep-check:
+    default: ""
+    description: |
+      Check ros dependency when use with skip-rosdep-install.
+      Set to 'true'.
+    required: false
   rosdep-skip-keys:
     default: ""
     description: |

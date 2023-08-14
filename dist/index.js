@@ -11316,6 +11316,33 @@ function installRosdeps(packageSelection, skipKeys, workspaceDir, options, ros1D
     });
 }
 /**
+ * Check ROS dependencies have been satisfied for the workspace.
+ */
+function checkRosdeps(packageSelection, skipKeys, workspaceDir, options, ros1Distro, ros2Distro) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const scriptName = "check_rosdeps.sh";
+        const scriptPath = path.join(workspaceDir, scriptName);
+        const scriptContent = `#!/bin/bash
+	set -euxo pipefail
+	if [ $# != 1 ]; then
+		echo "Specify rosdistro name as single argument to this script"
+		exit 1
+	fi
+	DISTRO=$1
+	package_paths=$(colcon list --paths-only ${filterNonEmptyJoin(packageSelection)})
+	rosdep check --from-paths $package_paths --ignore-src --skip-keys "${filterNonEmptyJoin(skipKeys)}" --rosdistro $DISTRO`;
+        fs_1.default.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
+        let exitCode = 0;
+        if (ros1Distro) {
+            exitCode += yield execShellCommand([`./${scriptName} ${ros1Distro}`], options);
+        }
+        if (ros2Distro) {
+            exitCode += yield execShellCommand([`./${scriptName} ${ros2Distro}`], options);
+        }
+        return exitCode;
+    });
+}
+/**
  * Run tests and process & aggregate coverage results.
  *
  * @param colconCommandPrefix the prefix to use before colcon commands
@@ -11419,6 +11446,7 @@ function run_throw() {
         let vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
         const skipTests = core.getInput("skip-tests") === "true";
         const skipRosdepInstall = core.getInput("skip-rosdep-install") === "true";
+        const rosdepCheck = core.getInput("rosdep-check") === "true";
         // Check if PR overrides/adds supplemental repos files
         const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
         const vcsReposSupplemental = dep.getReposFilesSupplemental(github.context.payload);
@@ -11575,6 +11603,9 @@ done`;
         // See: https://github.com/ros-infrastructure/rosdep/issues/610
         if (!isWindows && !skipRosdepInstall) {
             yield installRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
+        }
+        if (skipRosdepInstall && rosdepCheck) {
+            yield checkRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
         }
         if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
             yield execShellCommand([`colcon`, `mixin`, `add`, `default`, `${colconMixinRepo}`], options, false);
