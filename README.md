@@ -80,7 +80,7 @@ In this case, `action-ros-ci` will rely on `setup-ros` for installing ROS 2 bina
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.6
+  - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.3
@@ -95,7 +95,7 @@ In this case, `action-ros-ci` will build all necessary ROS 2 dependencies of `my
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.6
+  - uses: ros-tooling/setup-ros@v0.7
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
@@ -119,7 +119,7 @@ jobs:
   humble_source:
     runs_on: ubuntu-22.04
     steps:
-      - uses: ros-tooling/setup-ros@v0.6
+      - uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: humble
       - uses: ros-tooling/action-ros-ci@v0.3
@@ -138,7 +138,7 @@ You can also automatically generate your package's dependencies using the follow
 ```yaml
 steps:
   - uses: actions/checkout@v2
-  - uses: ros-tooling/setup-ros@v0.6
+  - uses: ros-tooling/setup-ros@v0.7
   # Run the generator and output the results to a file.
   - run: |
       rosinstall_generator <package-name> --rosdistro <target-distro> \
@@ -160,7 +160,7 @@ Simply use `target-ros1-distro` instead of `target-ros2-distro`.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.6
+  - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: noetic
   - uses: ros-tooling/action-ros-ci@v0.3
@@ -175,7 +175,7 @@ To skip tests and code coverage data processing, set the `skip-tests` option to 
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.6
+  - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.3
@@ -192,7 +192,7 @@ This allows using a `colcon` option/argument that is not exposed by this action'
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.6
+  - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.3
@@ -216,7 +216,7 @@ memory corruption bugs.
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.6
+  - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.3
@@ -252,7 +252,7 @@ preferable to use a `colcon` mixin (through [`colcon-defaults`](#Use-a-colcon-de
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.6
+  - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.3
@@ -277,7 +277,7 @@ Generate code coverage information for Python files using the appropriate mixins
 
 ```yaml
 steps:
-  - uses: ros-tooling/setup-ros@v0.6
+  - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.3
@@ -308,7 +308,7 @@ See [`codecov/codecov-action`](https://github.com/codecov/codecov-action) docume
 ```yaml
 steps:
   - uses: actions/checkout@v2
-  - uses: ros-tooling/setup-ros@v0.6
+  - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: humble
   - uses: ros-tooling/action-ros-ci@v0.3
