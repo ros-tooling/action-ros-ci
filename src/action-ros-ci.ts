@@ -563,12 +563,13 @@ done`;
 	// if ref is set this overrides anything calculated above
 	commitRef = core.getInput("ref") || commitRef;
 	const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
+	const githubServerUrl = process.env.GITHUB_SERVER_URL as string;
 	// Add a random string prefix to avoid naming collisions when checking out the test repository
 	const randomStringPrefix = Math.random().toString(36).substring(2, 15);
 	const repoFileContent = `repositories:
   ${randomStringPrefix}/${repo["repo"]}:
     type: git
-    url: 'https://github.com/${repoFullName}.git'
+    url: '${githubServerUrl}/${repoFullName}.git'
     version: '${commitRef}'`;
 	fs.writeFileSync(repoFilePath, repoFileContent);
 	await execShellCommand(
