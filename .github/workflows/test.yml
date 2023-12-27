@@ -141,6 +141,23 @@ jobs:
         run: |
           dpkg -s ros-humble-osrf-testing-tools-cpp
 
+  test_ros2_iron_skip_rosdep_install:
+    name: Build and test current ROS repo
+    runs-on: ubuntu-latest
+    needs: pre_condition
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-ros-base-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          import-token: ${{ secrets.GITHUB_TOKEN }}
+          target-ros2-distro: iron
+          package-name: ament_copyright
+          vcs-repo-file-url: "https://raw.githubusercontent.com/ros2/ros2/release-iron-20231120/ros2.repos"
+          skip-rosdep-install: true
+          rosdep-check: true
+
   test_private_repo:
     name: "Test with private repos"
     runs-on: ubuntu-22.04
