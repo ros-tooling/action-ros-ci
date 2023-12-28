@@ -19,6 +19,7 @@ This action builds and tests a [ROS](http://wiki.ros.org/) or [ROS 2](https://do
    1. [Generate and process code coverage data](#Generate-and-process-code-coverage-data)
    1. [Store `colcon` logs as build artifacts](#Store-colcon-logs-as-build-artifacts)
    1. [Use with private repos](#Use-with-private-repos)
+   1. [Skip `rosdep install`](#Skip-rosdep-install)
    1. [Interdependent pull requests or merge requests](#Interdependent-pull-requests-or-merge-requests)
 1. [Developing](#Developing)
 1. [License](#License)
@@ -383,6 +384,26 @@ steps:
       # If there are private dependencies (e.g., in a file provided through vcs-repo-file-url), a PAT is required
       import-token: ${{ secrets.REPO_TOKEN }}
       # ...
+```
+
+### Skip rosdep install
+
+Include an option to bypass `rosdep install` for workflow that uses specific docker image and better control of dependencies. To check for missing dependencies within the workflow's image, user can run with `rosdep-check: true` flag.
+
+```yaml
+runs-on: ubuntu-latest
+container:
+  image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-ros-base-latest
+steps:
+  # ...
+  - uses: ros-tooling/action-ros-ci@v0.3.6
+    with:
+      import-token: ${{ secrets.GITHUB_TOKEN }}
+      target-ros2-distro: iron
+      package-name: ament_copyright
+      vcs-repo-file-url: "https://raw.githubusercontent.com/ros2/ros2/release-iron-20231120/ros2.repos"
+      skip-rosdep-install: true
+      rosdep-check: true
 ```
 
 ### Interdependent pull requests or merge requests
