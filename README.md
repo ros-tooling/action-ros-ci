@@ -386,7 +386,7 @@ steps:
       # ...
 ```
 
-### Skip rosdep install
+### Skip `rosdep install`
 
 Include an option to bypass `rosdep install` for workflow that uses specific docker image and better control of dependencies. To check for missing dependencies within the workflow's image, user can run with `rosdep-check: true` flag.
 
@@ -396,9 +396,8 @@ container:
   image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-ros-base-latest
 steps:
   # ...
-  - uses: ros-tooling/action-ros-ci@v0.3.6
+  - uses: ros-tooling/action-ros-ci@v0.3
     with:
-      import-token: ${{ secrets.GITHUB_TOKEN }}
       target-ros2-distro: iron
       package-name: ament_copyright
       vcs-repo-file-url: "https://raw.githubusercontent.com/ros2/ros2/release-iron-20231120/ros2.repos"
