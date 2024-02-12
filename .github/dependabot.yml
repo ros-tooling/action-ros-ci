@@ -3,12 +3,11 @@ updates:
   - package-ecosystem: npm
     directory: "/"
     schedule:
-      interval: daily
-      time: "16:00"
-    open-pull-requests-limit: 1
+      interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: daily
-      time: "16:00"
-    open-pull-requests-limit: 1
+      interval: weekly
