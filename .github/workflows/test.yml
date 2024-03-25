@@ -234,17 +234,19 @@ jobs:
 
   test_ros2_from_source:
     name: "ROS 2 from source"
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ startsWith(matrix.os, 'ubuntu') && 'ubuntu-latest' || matrix.os }}
     needs: pre_condition
+    container:
+      image: ${{ startsWith(matrix.os, 'ubuntu') && matrix.os || '' }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu:22.04
             ros_distribution: humble
-          - os: ubuntu-22.04
+          - os: ubuntu:22.04
             ros_distribution: iron
-          - os: ubuntu-24.04
+          - os: ubuntu:24.04
             ros_distribution: rolling
           - os: windows-2019
             ros_distribution: humble
