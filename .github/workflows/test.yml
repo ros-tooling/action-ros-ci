@@ -79,7 +79,7 @@ jobs:
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - uses: ./
@@ -99,7 +99,7 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
         with:
           required-ros-distributions: humble
       - uses: ./
@@ -114,7 +114,7 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
         with:
           required-ros-distributions: humble
       # Skip installing test_depend dependency and verifies it isn't installed.
@@ -165,7 +165,7 @@ jobs:
     if: ${{ !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
         with:
           required-ros-distributions: humble
       - uses: ./
@@ -270,7 +270,7 @@ jobs:
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
@@ -452,7 +452,7 @@ jobs:
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
