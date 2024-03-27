@@ -48,7 +48,7 @@ jobs:
       image: ${{ matrix.docker_image }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3.6.0
+      - uses: actions/setup-node@v4.0.2
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
@@ -75,7 +75,7 @@ jobs:
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3.6.0
+      - uses: actions/setup-node@v4.0.2
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
@@ -208,7 +208,7 @@ jobs:
       image: ${{ matrix.docker_image }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3.6.0
+      - uses: actions/setup-node@v4.0.2
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
@@ -266,7 +266,7 @@ jobs:
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3.6.0
+      - uses: actions/setup-node@v4.0.2
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
@@ -448,7 +448,7 @@ jobs:
       image: ${{ matrix.docker_image }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3.6.0
+      - uses: actions/setup-node@v4.0.2
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
