@@ -47,7 +47,7 @@ jobs:
     container:
       image: ${{ matrix.docker_image }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4.0.2
         with:
           node-version: "16.x"
@@ -74,7 +74,7 @@ jobs:
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4.0.2
         with:
           node-version: "16.x"
@@ -98,7 +98,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: pre_condition
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ros-tooling/setup-ros@master
         with:
           required-ros-distributions: humble
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: pre_condition
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ros-tooling/setup-ros@master
         with:
           required-ros-distributions: humble
@@ -148,7 +148,7 @@ jobs:
     container:
       image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-ros-base-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./
         with:
           target-ros2-distro: iron
@@ -164,7 +164,7 @@ jobs:
     # We don't have access to the secret token for the test repo on a fork
     if: ${{ !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ros-tooling/setup-ros@master
         with:
           required-ros-distributions: humble
@@ -207,7 +207,7 @@ jobs:
     container:
       image: ${{ matrix.docker_image }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4.0.2
         with:
           node-version: "16.x"
@@ -265,7 +265,7 @@ jobs:
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4.0.2
         with:
           node-version: "16.x"
@@ -447,7 +447,7 @@ jobs:
     container:
       image: ${{ matrix.docker_image }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4.0.2
         with:
           node-version: "16.x"
