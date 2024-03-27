@@ -79,7 +79,7 @@ jobs:
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - uses: ./
@@ -99,7 +99,7 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
         with:
           required-ros-distributions: humble
       - uses: ./
@@ -114,7 +114,7 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
         with:
           required-ros-distributions: humble
       # Skip installing test_depend dependency and verifies it isn't installed.
@@ -143,7 +143,7 @@ jobs:
 
   test_ros2_iron_skip_rosdep_install:
     name: Test rosdep check/skip install options
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: pre_condition
     container:
       image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-ros-base-latest
@@ -153,7 +153,7 @@ jobs:
         with:
           target-ros2-distro: iron
           package-name: ament_copyright
-          vcs-repo-file-url: "https://raw.githubusercontent.com/ros2/ros2/release-iron-20231120/ros2.repos"
+          vcs-repo-file-url: "https://raw.githubusercontent.com/ros2/ros2/release-iron-20240209/ros2.repos"
           skip-rosdep-install: true
           rosdep-check: true
 
@@ -165,7 +165,7 @@ jobs:
     if: ${{ !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
     steps:
       - uses: actions/checkout@v3
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
         with:
           required-ros-distributions: humble
       - uses: ./
@@ -202,7 +202,7 @@ jobs:
             ros_distribution: iron
 
           # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-rolling-ros-base-latest
+          - docker_image: rostooling/setup-ros-docker:ubuntu-noble-ros-rolling-ros-base-latest
             ros_distribution: rolling
     container:
       image: ${{ matrix.docker_image }}
@@ -234,13 +234,32 @@ jobs:
 
   test_ros2_from_source:
     name: "ROS 2 from source"
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ startsWith(matrix.os, 'ubuntu') && 'ubuntu-latest' || matrix.os }}
     needs: pre_condition
+    container:
+      image: ${{ startsWith(matrix.os, 'ubuntu') && matrix.os || '' }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-latest, windows-2019, ubuntu-22.04]
-        ros_distribution: [humble, iron, rolling]
+        include:
+          - os: ubuntu:22.04
+            ros_distribution: humble
+          - os: ubuntu:22.04
+            ros_distribution: iron
+          - os: ubuntu:24.04
+            ros_distribution: rolling
+          - os: windows-2019
+            ros_distribution: humble
+          - os: windows-2019
+            ros_distribution: iron
+          - os: windows-2019
+            ros_distribution: rolling
+          - os: macOS-latest
+            ros_distribution: humble
+          - os: macOS-latest
+            ros_distribution: iron
+          - os: macOS-latest
+            ros_distribution: rolling
     env:
       DISTRO_REPOS_URL: "https://raw.githubusercontent.com/ros2/ros2/${{ matrix.ros_distribution }}/ros2.repos"
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
@@ -251,7 +270,7 @@ jobs:
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
@@ -304,7 +323,7 @@ jobs:
         id: test_repo
         name: "Test single package, with custom repository file"
         with:
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos"
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - name: "Check that ament_copyright install directory is present in ${{ env.INSTALL_TYPE }} install space"
@@ -334,7 +353,7 @@ jobs:
         name: "Test single package, with multiple custom repository files"
         with:
           vcs-repo-file-url: |
-            .github/workflows/repo_file_for_test.repos
+            .github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos
             .github/workflows/repo_file_for_test_cpp_package.repos
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
@@ -368,7 +387,7 @@ jobs:
         with:
           package-name: ament_cmake_core
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos"
           # We use a long unique string here to make sure that if this string
           # is found in CMakeCache.txt, it means the additional CMake flag has
           # been passed successfully. Non recognized flags are also written by
@@ -422,7 +441,7 @@ jobs:
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/iron/ros2.repos
 
           # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
-          - docker_image: ubuntu:jammy
+          - docker_image: ubuntu:noble
             ros_distribution: rolling
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos
     container:
@@ -433,7 +452,7 @@ jobs:
         with:
           node-version: "16.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@christophebedard/ubuntu-noble-rolling
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
@@ -487,7 +506,7 @@ jobs:
         id: test_repo
         name: "Test single package, with custom repository file"
         with:
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos"
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
@@ -500,7 +519,7 @@ jobs:
         name: "Test single package, with multiple custom repository files"
         with:
           vcs-repo-file-url: |
-            .github/workflows/repo_file_for_test.repos
+            .github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos
             .github/workflows/repo_file_for_test_cpp_package.repos
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
@@ -531,7 +550,7 @@ jobs:
         with:
           package-name: ament_cmake_core
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos"
           # We use a long unique string here to make sure that if this string
           # is found in CMakeCache.txt, it means the additional CMake flag has
           # been passed successfully. Non recognized flags are also written by
@@ -548,6 +567,6 @@ jobs:
         with:
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_dirs_with_same_name_as_repo.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_dirs_with_same_name_as_repo${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos"
       - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/action-ros-ci/foo"
       - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/foo/action-ros-ci/bar"
