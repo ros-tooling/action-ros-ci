@@ -411,6 +411,17 @@ jobs:
       - run: test ! -f "${{ steps.test_skip_tests.outputs.ros-workspace-directory-name }}/build/ament_copyright/colcon_test.rc"
         name: "Check that 'colcon test' wasn't run on ament_copyright"
 
+      - uses: ./
+        id: test_no_symlink_install
+        name: "Test single package, with no --symlink-install"
+        with:
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
+          no-symlink-install: true
+      - run: test ! -f "${{ steps.test_no_symlink_install.outputs.ros-workspace-directory-name }}/install/ament_copyright/lib/python3.*/site-packages/ament-copyright.egg-link"
+        name: "Check that an .egg-link file in the install dir does not exist for ament_copyright"
+
   test_ros2_from_source_docker:
     name: "Test ROS 2 from source Docker"
     runs-on: ubuntu-latest
