@@ -1,6 +1,6 @@
 {
 	"name": "action-ros-ci",
-	"version": "0.3.6",
+	"version": "0.3.7",
 	"description": "GitHub Action compiling and testing a ROS 2 package",
 	"main": "lib/main.js",
 	"scripts": {
