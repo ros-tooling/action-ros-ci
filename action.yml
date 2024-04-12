@@ -83,6 +83,12 @@ inputs:
       Skip rosdep install.
       Set to 'true'.
     required: false
+  no-symlink-install:
+    default: ""
+    description: |
+      Do not use '--symlink-install' with 'colcon build'.
+      Set to 'true'.
+    required: false
   rosdep-check:
     default: ""
     description: |

@@ -11411,6 +11411,7 @@ function run_throw() {
         const workspace = process.env.GITHUB_WORKSPACE;
         const colconDefaults = core.getInput("colcon-defaults");
         const colconMixinRepo = core.getInput("colcon-mixin-repository");
+        const noSymlinkInstall = core.getInput("no-symlink-install") === "true";
         const extraCmakeArgsInput = core.getInput("extra-cmake-args");
         const extraCmakeArgs = extraCmakeArgsInput
             ? ["--cmake-args", extraCmakeArgsInput]
@@ -11665,12 +11666,14 @@ done`;
         let colconBuildCmd = [
             `colcon`,
             `build`,
-            `--symlink-install`,
             ...buildPackageSelection,
             ...colconExtraArgs,
             ...extraCmakeArgs,
             `--event-handlers=console_cohesion+`,
         ];
+        if (!noSymlinkInstall) {
+            colconBuildCmd = [...colconBuildCmd, `--symlink-install`];
+        }
         if (useMergeInstall) {
             colconBuildCmd = [...colconBuildCmd, `--merge-install`];
         }

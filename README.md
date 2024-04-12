@@ -15,6 +15,7 @@ This action builds and tests a [ROS](http://wiki.ros.org/) or [ROS 2](https://do
    1. [Build a ROS 1 workspace](#Build-a-ROS-1-workspace)
    1. [Skip tests](#Skip-tests)
    1. [Use a `colcon` `defaults.yaml` file](#Use-a-colcon-defaultsyaml-file)
+   1. [Do not use `--symlink-install` when building](#Do-not-use---symlink-install-when-building)
    1. [Enable Address Sanitizer to automatically report memory issues](#Enable-Address-Sanitizer-to-automatically-report-memory-issues)
    1. [Generate and process code coverage data](#Generate-and-process-code-coverage-data)
    1. [Store `colcon` logs as build artifacts](#Store-colcon-logs-as-build-artifacts)
@@ -208,6 +209,23 @@ steps:
             ]
           }
         }
+```
+
+### Do not use `--symlink-install` when building
+
+By default, [`--symlink-install` is used with `colcon build`](https://colcon.readthedocs.io/en/released/reference/verb/build.html).
+To avoid this, set the `no-symlink-install` input to `true`.
+
+```yaml
+steps:
+  - uses: ros-tooling/setup-ros@v0.7
+    with:
+      required-ros-distributions: humble
+  - uses: ros-tooling/action-ros-ci@v0.3
+    with:
+      package-name: my_package
+      target-ros2-distro: humble
+      no-symlink-install: true
 ```
 
 ### Enable Address Sanitizer to automatically report memory issues
