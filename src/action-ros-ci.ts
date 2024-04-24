@@ -655,6 +655,9 @@ done`;
 		);
 	}
 
+	// Print list of Python packages and their version
+	await execShellCommand(["pip", "freeze"], options);
+
 	if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
 		await execShellCommand(
 			[`colcon`, `mixin`, `add`, `default`, `${colconMixinRepo}`],
