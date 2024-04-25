@@ -41,6 +41,7 @@ describe("validate distribution test", () => {
 		expect(actionRosCi.validateDistros("", "galactic")).toBe(true);
 		expect(actionRosCi.validateDistros("", "humble")).toBe(true);
 		expect(actionRosCi.validateDistros("", "iron")).toBe(true);
+		expect(actionRosCi.validateDistros("", "jazzy")).toBe(true);
 		expect(actionRosCi.validateDistros("", "rolling")).toBe(true);
 
 		expect(actionRosCi.validateDistros("noetic", "rolling")).toBe(true);
@@ -96,12 +97,12 @@ Blah blah.
 Description of the changes.
 Blah blah.
 
-action-ros-ci-repos-override:   
+action-ros-ci-repos-override:
 action-ros-ci-repos-override: https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos
 action-ros-ci-repos-override : https://some.website.repos
  action-ros-ci-repos-override:  https://gist.github.com/some-user/some-gist.repos
  action-ros-ci-repos-supplemental:https://gist.github.com/some-user/some-other-gist.repos
-action-ros-ci-repos-supplemental:  file://path/to/some/file.txt 
+action-ros-ci-repos-supplemental:  file://path/to/some/file.txt
 `;
 		payload = { pull_request: { body: body } };
 		const expectedOverride = [
