@@ -334,7 +334,7 @@ jobs:
         id: test_repo
         name: "Test single package, with custom repository file"
         with:
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos"
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - name: "Check that ament_copyright install directory is present in ${{ env.INSTALL_TYPE }} install space"
@@ -364,7 +364,7 @@ jobs:
         name: "Test single package, with multiple custom repository files"
         with:
           vcs-repo-file-url: |
-            .github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos
+            .github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos
             .github/workflows/repo_file_for_test_cpp_package.repos
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
@@ -398,7 +398,7 @@ jobs:
         with:
           package-name: ament_cmake_core
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos"
           # We use a long unique string here to make sure that if this string
           # is found in CMakeCache.txt, it means the additional CMake flag has
           # been passed successfully. Non recognized flags are also written by
@@ -534,7 +534,7 @@ jobs:
         id: test_repo
         name: "Test single package, with custom repository file"
         with:
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos"
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
@@ -547,7 +547,7 @@ jobs:
         name: "Test single package, with multiple custom repository files"
         with:
           vcs-repo-file-url: |
-            .github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos
+            .github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos
             .github/workflows/repo_file_for_test_cpp_package.repos
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
@@ -578,7 +578,7 @@ jobs:
         with:
           package-name: ament_cmake_core
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos"
           # We use a long unique string here to make sure that if this string
           # is found in CMakeCache.txt, it means the additional CMake flag has
           # been passed successfully. Non recognized flags are also written by
@@ -595,6 +595,6 @@ jobs:
         with:
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_dirs_with_same_name_as_repo${{ matrix.ros_distribution == 'rolling' && '_rolling' || '' }}.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_dirs_with_same_name_as_repo${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos"
       - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/action-ros-ci/foo"
       - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/foo/action-ros-ci/bar"
