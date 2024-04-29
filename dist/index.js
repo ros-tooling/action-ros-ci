@@ -11401,7 +11401,7 @@ function runTests(colconCommandPrefix, options, testPackageSelection, colconExtr
             ...testPackageSelection,
             `--verbose`,
             `--coverage-report-args`,
-            `-m`,
+            `" -m"`,
         ];
         yield execShellCommand([...colconCommandPrefix, ...colconCoveragepyResultCmd], options, false);
     });
