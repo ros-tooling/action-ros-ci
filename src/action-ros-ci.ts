@@ -346,7 +346,7 @@ async function runTests(
 		...testPackageSelection,
 		`--verbose`,
 		`--coverage-report-args`,
-		`-m`,
+		`" -m"`,
 	];
 	await execShellCommand(
 		[...colconCommandPrefix, ...colconCoveragepyResultCmd],
