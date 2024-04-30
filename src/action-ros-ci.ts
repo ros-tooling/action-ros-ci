@@ -657,7 +657,7 @@ done`;
 	}
 
 	// Print list of Python packages and their version
-	await execShellCommand(["pip3", "freeze"], options);
+	await execShellCommand(["pip3 freeze || true"], options);
 
 	if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
 		await execShellCommand(
