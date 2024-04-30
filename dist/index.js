@@ -11610,7 +11610,7 @@ done`;
             yield checkRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
         }
         // Print list of Python packages and their version
-        yield execShellCommand(["pip3", "freeze"], options);
+        yield execShellCommand(["pip3 freeze || true"], options);
         if (colconDefaults.includes(`"mixin"`) && colconMixinRepo !== "") {
             yield execShellCommand([`colcon`, `mixin`, `add`, `default`, `${colconMixinRepo}`], options, false);
             yield execShellCommand([`colcon`, `mixin`, `update`, `default`], options, false);
