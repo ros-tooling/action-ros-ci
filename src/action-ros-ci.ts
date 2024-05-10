@@ -83,7 +83,7 @@ export async function execShellCommand(
 	command: string[],
 	options?: im.ExecOptions,
 	force_bash: boolean = true,
-	log_message?: string
+	log_message?: string,
 ): Promise<number> {
 	const use_bash = !isWindows || force_bash;
 	if (use_bash) {
@@ -121,7 +121,7 @@ export async function execShellCommand(
 	const runner: tr.ToolRunner = new tr.ToolRunner(
 		toolRunnerCommandLine,
 		toolRunnerCommandLineArgs,
-		options
+		options,
 	);
 	if (options && options.silent) {
 		return runner.exec();
@@ -134,23 +134,23 @@ export async function execShellCommand(
 //Determine whether all inputs name supported ROS distributions.
 export function validateDistros(
 	ros1Distro: string,
-	ros2Distro: string
+	ros2Distro: string,
 ): boolean {
 	if (!ros1Distro && !ros2Distro) {
 		core.setFailed(
-			`Neither '${targetROS1DistroInput}' or '${targetROS2DistroInput}' inputs were set, at least one is required.`
+			`Neither '${targetROS1DistroInput}' or '${targetROS2DistroInput}' inputs were set, at least one is required.`,
 		);
 		return false;
 	}
 	if (ros1Distro && validROS1Distros.indexOf(ros1Distro) <= -1) {
 		core.setFailed(
-			`Input ${ros1Distro} was not a valid ROS 1 distribution for '${targetROS1DistroInput}'. Valid values: ${validROS1Distros}`
+			`Input ${ros1Distro} was not a valid ROS 1 distribution for '${targetROS1DistroInput}'. Valid values: ${validROS1Distros}`,
 		);
 		return false;
 	}
 	if (ros2Distro && validROS2Distros.indexOf(ros2Distro) <= -1) {
 		core.setFailed(
-			`Input ${ros2Distro} was not a valid ROS 2 distribution for '${targetROS2DistroInput}'. Valid values: ${validROS2Distros}`
+			`Input ${ros2Distro} was not a valid ROS 2 distribution for '${targetROS2DistroInput}'. Valid values: ${validROS2Distros}`,
 		);
 		return false;
 	}
@@ -166,7 +166,7 @@ async function installRosdeps(
 	workspaceDir: string,
 	options: im.ExecOptions,
 	ros1Distro?: string,
-	ros2Distro?: string
+	ros2Distro?: string,
 ): Promise<number> {
 	const scriptName = "install_rosdeps.sh";
 	const scriptPath = path.join(workspaceDir, scriptName);
@@ -178,13 +178,13 @@ async function installRosdeps(
 	fi
 	DISTRO=$1
 	package_paths=$(colcon list --paths-only ${filterNonEmptyJoin(
-		packageSelection
+		packageSelection,
 	)})
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
 	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys "rti-connext-dds-5.3.1 rti-connext-dds-6.0.1 ${filterNonEmptyJoin(
-		skipKeys
+		skipKeys,
 	)}" --rosdistro $DISTRO -y || true`;
 	fs.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
 
@@ -192,13 +192,13 @@ async function installRosdeps(
 	if (ros1Distro) {
 		exitCode += await execShellCommand(
 			[`./${scriptName} ${ros1Distro}`],
-			options
+			options,
 		);
 	}
 	if (ros2Distro) {
 		exitCode += await execShellCommand(
 			[`./${scriptName} ${ros2Distro}`],
-			options
+			options,
 		);
 	}
 	return exitCode;
@@ -213,7 +213,7 @@ async function checkRosdeps(
 	workspaceDir: string,
 	options: im.ExecOptions,
 	ros1Distro?: string,
-	ros2Distro?: string
+	ros2Distro?: string,
 ): Promise<number> {
 	const scriptName = "check_rosdeps.sh";
 	const scriptPath = path.join(workspaceDir, scriptName);
@@ -225,10 +225,10 @@ async function checkRosdeps(
 	fi
 	DISTRO=$1
 	package_paths=$(colcon list --paths-only ${filterNonEmptyJoin(
-		packageSelection
+		packageSelection,
 	)})
 	rosdep check --from-paths $package_paths --ignore-src --skip-keys "${filterNonEmptyJoin(
-		skipKeys
+		skipKeys,
 	)}" --rosdistro $DISTRO`;
 	fs.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
 
@@ -236,13 +236,13 @@ async function checkRosdeps(
 	if (ros1Distro) {
 		exitCode += await execShellCommand(
 			[`./${scriptName} ${ros1Distro}`],
-			options
+			options,
 		);
 	}
 	if (ros2Distro) {
 		exitCode += await execShellCommand(
 			[`./${scriptName} ${ros2Distro}`],
-			options
+			options,
 		);
 	}
 	return exitCode;
@@ -262,7 +262,7 @@ async function runTests(
 	options: im.ExecOptions,
 	testPackageSelection: string[],
 	colconExtraArgs: string[],
-	coverageIgnorePattern: string[]
+	coverageIgnorePattern: string[],
 ): Promise<void> {
 	const doLcovResult = !isWindows; // lcov-result not supported in Windows
 	const doTests = !isWindows; // Temporarily disable colcon test on Windows to unblock Windows CI builds: https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
@@ -277,7 +277,7 @@ async function runTests(
 				...options,
 				ignoreReturnCode: true,
 			},
-			false
+			false,
 		);
 	}
 
@@ -296,7 +296,7 @@ async function runTests(
 		await execShellCommand(
 			[...colconCommandPrefix, ...colconTestCmd],
 			options,
-			false
+			false,
 		);
 
 		/**
@@ -312,12 +312,12 @@ async function runTests(
 				...options,
 				ignoreReturnCode: true,
 			},
-			false
+			false,
 		);
 		await execShellCommand(
 			[...colconCommandPrefix, ...colconTestResultVerboseCmd],
 			options,
-			false
+			false,
 		);
 	}
 
@@ -336,7 +336,7 @@ async function runTests(
 				...options,
 				ignoreReturnCode: true,
 			},
-			false
+			false,
 		);
 	}
 
@@ -351,7 +351,7 @@ async function runTests(
 	await execShellCommand(
 		[...colconCommandPrefix, ...colconCoveragepyResultCmd],
 		options,
-		false
+		false,
 	);
 }
 
@@ -409,7 +409,7 @@ async function run_throw(): Promise<void> {
 	// Check if PR overrides/adds supplemental repos files
 	const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
 	const vcsReposSupplemental = dep.getReposFilesSupplemental(
-		github.context.payload
+		github.context.payload,
 	);
 	await core.group(
 		"Repos files: override" + (vcsReposOverride.length === 0 ? " - none" : ""),
@@ -418,7 +418,7 @@ async function run_throw(): Promise<void> {
 				core.info("\t" + vcsRepos);
 			}
 			return Promise.resolve();
-		}
+		},
 	);
 	if (vcsReposOverride.length > 0) {
 		vcsRepoFileUrlList = vcsReposOverride;
@@ -431,7 +431,7 @@ async function run_throw(): Promise<void> {
 				core.info("\t" + vcsRepos);
 			}
 			return Promise.resolve();
-		}
+		},
 	);
 	vcsRepoFileUrlList = vcsRepoFileUrlList.concat(vcsReposSupplemental);
 
@@ -450,7 +450,7 @@ async function run_throw(): Promise<void> {
 			},
 			{
 				retries: 3,
-			}
+			},
 		);
 	}
 
@@ -460,13 +460,13 @@ async function run_throw(): Promise<void> {
 	if (colconDefaults.length > 0) {
 		if (!isValidJson(colconDefaults)) {
 			core.setFailed(
-				`colcon-defaults value is not a valid JSON string:\n${colconDefaults}`
+				`colcon-defaults value is not a valid JSON string:\n${colconDefaults}`,
 			);
 			return;
 		}
 		colconDefaultsFile = path.join(
 			fs.mkdtempSync(path.join(os.tmpdir(), "colcon-defaults-")),
-			"defaults.yaml"
+			"defaults.yaml",
 		);
 		fs.writeFileSync(colconDefaultsFile, colconDefaults);
 	}
@@ -510,47 +510,47 @@ async function run_throw(): Promise<void> {
 			[
 				`/usr/bin/git config --local --unset-all http.https://github.com/.extraheader || true`,
 			],
-			options
+			options,
 		);
 		await execShellCommand(
 			[
 				String.raw`/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader'` +
 					` && git config --local --unset-all 'http.https://github.com/.extraheader' || true`,
 			],
-			options
+			options,
 		);
 		// Use a global insteadof entry because local configs aren't observed by git clone
 		await execShellCommand(
 			[
 				`/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com.insteadof 'https://github.com'`,
 			],
-			options
+			options,
 		);
 		// same as last three comands but for ssh urls
 		await execShellCommand(
 			[
 				`/usr/bin/git config --local --unset-all git@github.com:.extraheader || true`,
 			],
-			options
+			options,
 		);
 		await execShellCommand(
 			[
 				String.raw`/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'git@github\.com:.extraheader'` +
 					` && git config --local --unset-all 'git@github.com:.extraheader' || true`,
 			],
-			options
+			options,
 		);
 		// Use a global insteadof entry because local configs aren't observed by git clone (ssh)
 		await execShellCommand(
 			[
 				`/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com/.insteadof 'git@github.com:'`,
 			],
-			options
+			options,
 		);
 		if (core.isDebug()) {
 			await execShellCommand(
 				[`/usr/bin/git config --list --show-origin || true`],
-				options
+				options,
 			);
 		}
 	}
@@ -559,14 +559,14 @@ async function run_throw(): Promise<void> {
 	// This is because, for some reason, using Docker, commands might get run as root
 	await execShellCommand(
 		[`rm -rf ${path.join(path.sep, "root", ".colcon")} || true`],
-		{ ...options, silent: true }
+		{ ...options, silent: true },
 	);
 
 	for (const vcsRepoFileUrl of vcsRepoFileUrlListNonEmpty) {
 		const resolvedUrl = resolveVcsRepoFileUrl(vcsRepoFileUrl);
 		await execShellCommand(
 			[`vcs import --force --recursive src/ --input ${resolvedUrl}`],
-			options
+			options,
 		);
 	}
 
@@ -596,7 +596,7 @@ done`;
 				(isWindows ? ` | ${posixPathScriptPath}` : "") +
 				` | xargs rm -rf`,
 		],
-		undefined
+		undefined,
 	);
 
 	// The repo file for the repository needs to be generated on-the-fly to
@@ -622,7 +622,7 @@ done`;
 	fs.writeFileSync(repoFilePath, repoFileContent);
 	await execShellCommand(
 		["vcs import --force --recursive src/ < package.repo"],
-		options
+		options,
 	);
 
 	// Print HEAD commits of all repos
@@ -641,7 +641,7 @@ done`;
 			rosWorkspaceDir,
 			options,
 			targetRos1Distro,
-			targetRos2Distro
+			targetRos2Distro,
 		);
 	}
 
@@ -652,7 +652,7 @@ done`;
 			rosWorkspaceDir,
 			options,
 			targetRos1Distro,
-			targetRos2Distro
+			targetRos2Distro,
 		);
 	}
 
@@ -663,12 +663,12 @@ done`;
 		await execShellCommand(
 			[`colcon`, `mixin`, `add`, `default`, `${colconMixinRepo}`],
 			options,
-			false
+			false,
 		);
 		await execShellCommand(
 			[`colcon`, `mixin`, `update`, `default`],
 			options,
-			false
+			false,
 		);
 	}
 
@@ -741,7 +741,7 @@ done`;
 	await execShellCommand(
 		[...colconCommandPrefix, ...colconBuildCmd],
 		options,
-		false
+		false,
 	);
 
 	if (!skipTests) {
@@ -750,7 +750,7 @@ done`;
 			options,
 			testPackageSelection,
 			colconExtraArgs,
-			coverageIgnorePattern
+			coverageIgnorePattern,
 		);
 	} else {
 		core.info("Skipping tests");
@@ -762,7 +762,7 @@ done`;
 			[
 				`/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@github.com.insteadof`,
 			],
-			options
+			options,
 		);
 	}
 }

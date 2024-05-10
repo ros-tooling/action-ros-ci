@@ -65,7 +65,7 @@ describe("utilities", () => {
 		expect(actionRosCi.filterNonEmptyJoin(["abc", "def"])).toBe("abc def");
 		expect(actionRosCi.filterNonEmptyJoin(["abc", "def", ""])).toBe("abc def");
 		expect(actionRosCi.filterNonEmptyJoin(["", "abc", "", "", "def"])).toBe(
-			"abc def"
+			"abc def",
 		);
 	});
 });
@@ -114,10 +114,10 @@ action-ros-ci-repos-supplemental:  file://path/to/some/file.txt
 			"file://path/to/some/file.txt",
 		];
 		expect(dep.getReposFilesOverride(payload)).toEqual(
-			expect.arrayContaining(expectedOverride)
+			expect.arrayContaining(expectedOverride),
 		);
 		expect(dep.getReposFilesSupplemental(payload)).toEqual(
-			expect.arrayContaining(expectedSupplemental)
+			expect.arrayContaining(expectedSupplemental),
 		);
 	});
 });
