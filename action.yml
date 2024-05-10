@@ -115,5 +115,5 @@ outputs:
     description: |
       root directory name of the ROS workspace created for this CI code.
 runs:
-  using: "node16"
+  using: "node20"
   main: "dist/index.js"
