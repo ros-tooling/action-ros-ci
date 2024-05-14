@@ -53,6 +53,9 @@ describe("validate distribution test", () => {
 		expect(actionRosCi.validateDistros("", "bouncy")).toBe(false);
 		expect(actionRosCi.validateDistros("apples", "bananas")).toBe(false);
 		expect(actionRosCi.validateDistros("apples", "rolling")).toBe(false);
+		// Check and reset process exit code, which is set when core.setFailed() is called
+		expect(process.exitCode).toBe(core.ExitCode.Failure);
+		process.exitCode = core.ExitCode.Success;
 	});
 });
 
