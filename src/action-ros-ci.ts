@@ -767,7 +767,7 @@ done`;
 	}
 }
 
-async function run(): Promise<void> {
+export async function run(): Promise<void> {
 	try {
 		await run_throw();
 	} catch (error) {
@@ -778,5 +778,3 @@ async function run(): Promise<void> {
 		core.setFailed(errorMessage);
 	}
 }
-
-run();
