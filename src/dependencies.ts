@@ -46,7 +46,7 @@ function extractPrBody(contextPayload: WebhookPayload): string | undefined {
  * @returns an array with all declared repos override files
  */
 export function getReposFilesOverride(
-	contextPayload: WebhookPayload
+	contextPayload: WebhookPayload,
 ): string[] {
 	const prBody = extractPrBody(contextPayload);
 	if (!prBody) {
@@ -65,7 +65,7 @@ export function getReposFilesOverride(
  * @returns an array with all declared override repos files
  */
 export function getReposFilesSupplemental(
-	contextPayload: WebhookPayload
+	contextPayload: WebhookPayload,
 ): string[] {
 	const prBody = extractPrBody(contextPayload);
 	if (!prBody) {
@@ -75,6 +75,6 @@ export function getReposFilesSupplemental(
 	return extractCaptures(prBody, REGEX_REPOS_FILES_SUPPLEMENTAL).map(
 		(capture) => {
 			return capture[0];
-		}
+		},
 	);
 }

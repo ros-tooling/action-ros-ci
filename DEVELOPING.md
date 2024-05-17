@@ -4,7 +4,7 @@
 
 Install [Node.js](https://nodejs.org/en/download/).
 
-We are currently using Node.js v16.
+We are currently using Node.js v20.
 
 ## Build and test
 

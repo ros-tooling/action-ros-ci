@@ -9,13 +9,13 @@ describe("execShellCommand test suite", () => {
 	it("calls coreGroup", async () => {
 		const mockGroup = jest.spyOn(core, "group");
 		const result = await execShellCommand(["echo Hello World"]);
-		expect(mockGroup).toBeCalled();
+		expect(mockGroup).toHaveBeenCalled();
 		expect(result).toEqual(0);
 	});
 	it("uses a prefix", async () => {
 		const mockGroup = jest.spyOn(core, "group");
 		const result = await execShellCommand(["echo", "Hello World"]);
-		expect(mockGroup).toBeCalled();
+		expect(mockGroup).toHaveBeenCalled();
 		expect(result).toEqual(0);
 	});
 	it("ignores return code", async () => {
@@ -24,7 +24,7 @@ describe("execShellCommand test suite", () => {
 			ignoreReturnCode: true,
 		};
 		const result = execShellCommand(["somebadcommand"], options);
-		expect(mockGroup).toBeCalled();
+		expect(mockGroup).toHaveBeenCalled();
 		expect(result).not.toEqual(0);
 	});
 });
@@ -53,6 +53,9 @@ describe("validate distribution test", () => {
 		expect(actionRosCi.validateDistros("", "bouncy")).toBe(false);
 		expect(actionRosCi.validateDistros("apples", "bananas")).toBe(false);
 		expect(actionRosCi.validateDistros("apples", "rolling")).toBe(false);
+		// Check and reset process exit code, which is set when core.setFailed() is called
+		expect(process.exitCode).toBe(core.ExitCode.Failure);
+		process.exitCode = core.ExitCode.Success;
 	});
 });
 
@@ -65,7 +68,7 @@ describe("utilities", () => {
 		expect(actionRosCi.filterNonEmptyJoin(["abc", "def"])).toBe("abc def");
 		expect(actionRosCi.filterNonEmptyJoin(["abc", "def", ""])).toBe("abc def");
 		expect(actionRosCi.filterNonEmptyJoin(["", "abc", "", "", "def"])).toBe(
-			"abc def"
+			"abc def",
 		);
 	});
 });
@@ -114,10 +117,10 @@ action-ros-ci-repos-supplemental:  file://path/to/some/file.txt
 			"file://path/to/some/file.txt",
 		];
 		expect(dep.getReposFilesOverride(payload)).toEqual(
-			expect.arrayContaining(expectedOverride)
+			expect.arrayContaining(expectedOverride),
 		);
 		expect(dep.getReposFilesSupplemental(payload)).toEqual(
-			expect.arrayContaining(expectedSupplemental)
+			expect.arrayContaining(expectedSupplemental),
 		);
 	});
 });
