@@ -203,11 +203,11 @@ jobs:
             ros_distribution: iron
 
           # Jazzy Jalisco (May 2024 - May 2029)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-noble-ros-jazzy-ros-base-latest
+          - docker_image: ghcr.io/christophebedard/setup-ros-docker-ubuntu-noble-ros-jazzy-ros-base:pr-73
             ros_distribution: jazzy
 
           # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-noble-ros-rolling-ros-base-latest
+          - docker_image: ghcr.io/christophebedard/setup-ros-docker-ubuntu-noble-ros-rolling-ros-base:pr-73
             ros_distribution: rolling
     container:
       image: ${{ matrix.docker_image }}
