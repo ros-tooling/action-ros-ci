@@ -146,7 +146,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: pre_condition
     container:
-      image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-ros-base-latest
+      image: ghcr.io/christophebedard/setup-ros-docker-ubuntu-jammy-ros-iron-ros-base:pr-74
     steps:
       - uses: actions/checkout@v4
       - uses: ./
@@ -195,11 +195,11 @@ jobs:
         # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
         include:
           # Humble Hawksbill (May 2022 - May 2027)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-ros-base-latest
+          - docker_image: ghcr.io/christophebedard/setup-ros-docker-ubuntu-jammy-ros-humble-ros-base:pr-74
             ros_distribution: humble
 
           # Iron Irwini (May 2023 - November 2024)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-ros-base-latest
+          - docker_image: ghcr.io/christophebedard/setup-ros-docker-ubuntu-jammy-ros-iron-ros-base:pr-74
             ros_distribution: iron
 
           # Jazzy Jalisco (May 2024 - May 2029)
