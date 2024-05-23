@@ -84,11 +84,11 @@ In this case, `action-ros-ci` will rely on `setup-ros` for installing ROS 2 bina
 steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
-      required-ros-distributions: humble
+      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
-      target-ros2-distro: humble
+      target-ros2-distro: jazzy
 ```
 
 #### Building ROS 2 dependencies from source
@@ -101,8 +101,8 @@ steps:
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
-      target-ros2-distro: humble
-      vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+      target-ros2-distro: jazzy
+      vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/jazzy/ros2.repos
 ```
 
 ### Schedule an action on a specific branch
@@ -111,25 +111,27 @@ If you want to continue supporting older ROS releases while developing on an the
 Without setting ref the default branch and most recent commit will be used.
 
 ```yaml
-name: Humble Source Build
+name: Jazzy Source Build
 on:
   schedule:
     # At 00:00 on Sunday.
     - cron '0 0 * * 0'
 
 jobs:
-  humble_source:
-    runs_on: ubuntu-22.04
+  jazzy_source:
+    runs_on: ubuntu-latest
+    container:
+      image: ubuntu:noble
     steps:
       - uses: ros-tooling/setup-ros@v0.7
         with:
-          required-ros-distributions: humble
+          required-ros-distributions: jazzy
       - uses: ros-tooling/action-ros-ci@v0.3
         with:
           package-name: my_package
-          ref: humble
-          target-ros2-distro: humble
-          vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+          ref: jazzy
+          target-ros2-distro: jazzy
+          vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/jazzy/ros2.repos
 ```
 
 ### Build with a custom `repos` or `rosinstall` file
@@ -139,7 +141,7 @@ You can also automatically generate your package's dependencies using the follow
 
 ```yaml
 steps:
-  - uses: actions/checkout@v2
+  - uses: actions/checkout@v4
   - uses: ros-tooling/setup-ros@v0.7
   # Run the generator and output the results to a file.
   - run: |
@@ -149,7 +151,7 @@ steps:
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
-      target-ros2-distro: humble
+      target-ros2-distro: jazzy
       vcs-repo-file-url: /tmp/deps.repos
 ```
 
@@ -179,11 +181,11 @@ To skip tests and code coverage data processing, set the `skip-tests` option to 
 steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
-      required-ros-distributions: humble
+      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
-      target-ros2-distro: humble
+      target-ros2-distro: jazzy
       skip-tests: true
 ```
 
@@ -196,11 +198,11 @@ This allows using a `colcon` option/argument that is not exposed by this action'
 steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
-      required-ros-distributions: humble
+      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
-      target-ros2-distro: humble
+      target-ros2-distro: jazzy
       colcon-defaults: |
         {
           "build": {
@@ -220,11 +222,11 @@ To avoid this, set the `no-symlink-install` input to `true`.
 steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
-      required-ros-distributions: humble
+      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
-      target-ros2-distro: humble
+      target-ros2-distro: jazzy
       no-symlink-install: true
 ```
 
@@ -237,7 +239,7 @@ memory corruption bugs.
 steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
-      required-ros-distributions: humble
+      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       colcon-defaults: |
@@ -246,9 +248,9 @@ steps:
             "mixin": ["asan-gcc"]
           }
         }
-      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/3e627e0fa30db85aea05a50e2c61a9832664d236/index.yaml
+      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/b8436aa16c0bdbc01081b12caa253cbf16e0fb82/index.yaml
       package-name: my_package
-      target-ros2-distro: humble
+      target-ros2-distro: jazzy
 ```
 
 To look for detected memory errors, check the build logs for entries containing `ERROR: AddressSanitizer`. Example:
@@ -273,11 +275,11 @@ preferable to use a `colcon` mixin (through [`colcon-defaults`](#Use-a-colcon-de
 steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
-      required-ros-distributions: humble
+      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
-      target-ros2-distro: humble
+      target-ros2-distro: jazzy
       colcon-defaults: |
         {
           "build": {
@@ -286,7 +288,7 @@ steps:
         }
       # If possible, pin the repository in the workflow to a specific commit to avoid
       # changes in colcon-mixin-repository from breaking your tests.
-      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
+      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/b8436aa16c0bdbc01081b12caa253cbf16e0fb82/index.yaml
 ```
 
 #### Generate code coverage information using `coveragepy` and `colcon-coveragepy-result`
@@ -298,11 +300,11 @@ Generate code coverage information for Python files using the appropriate mixins
 steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
-      required-ros-distributions: humble
+      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
-      target-ros2-distro: humble
+      target-ros2-distro: jazzy
       colcon-defaults: |
         {
           "build": {
@@ -314,7 +316,7 @@ steps:
         }
       # If possible, pin the repository in the workflow to a specific commit to avoid
       # changes in colcon-mixin-repository from breaking your tests.
-      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
+      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/b8436aa16c0bdbc01081b12caa253cbf16e0fb82/index.yaml
 ```
 
 #### Integrate `action-ros-ci` with `codecov`
@@ -326,14 +328,14 @@ See [`codecov/codecov-action`](https://github.com/codecov/codecov-action) docume
 
 ```yaml
 steps:
-  - uses: actions/checkout@v2
+  - uses: actions/checkout@v4
   - uses: ros-tooling/setup-ros@v0.7
     with:
-      required-ros-distributions: humble
+      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
-      target-ros2-distro: humble
+      target-ros2-distro: jazzy
       colcon-defaults: |
         {
           "build": {
@@ -345,7 +347,7 @@ steps:
         }
       # If possible, pin the repository in the workflow to a specific commit to avoid
       # changes in colcon-mixin-repository from breaking your tests.
-      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
+      colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/b8436aa16c0bdbc01081b12caa253cbf16e0fb82/index.yaml
   - uses: codecov/codecov-action@v1.2.1
     with:
       token: ${{ secrets.CODECOV_TOKEN }}  # only needed for private repos
@@ -376,7 +378,7 @@ steps:
     id: action_ros_ci_step
     with:
       package-name: ament_copyright
-      target-ros2-distro: humble
+      target-ros2-distro: jazzy
   - uses: actions/upload-artifact@v1
     with:
       name: colcon-logs
@@ -411,14 +413,14 @@ Include an option to bypass `rosdep install` for workflow that uses specific doc
 ```yaml
 runs-on: ubuntu-latest
 container:
-  image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-ros-base-latest
+  image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-noble-ros-jazzy-ros-base
 steps:
   # ...
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
-      target-ros2-distro: iron
+      target-ros2-distro: jazzy
       package-name: ament_copyright
-      vcs-repo-file-url: "https://raw.githubusercontent.com/ros2/ros2/release-iron-20231120/ros2.repos"
+      vcs-repo-file-url: "https://raw.githubusercontent.com/ros2/ros2/release-jazzy-20240523/ros2.repos"
       skip-rosdep-install: true
       rosdep-check: true
 ```
