@@ -6,11 +6,23 @@ Install [Node.js](https://nodejs.org/en/download/).
 
 We are currently using Node.js v20.
 
+## Install dependencies
+
+```sh
+npm install
+```
+
+## Setup git hooks
+
+This will setup git hooks to run linters, generate build artifacts, and run tests when committing (pre-commit).
+
+```sh
+npm run prepare
+```
+
 ## Build and test
 
-```
-# install dependencies
-npm install
+```sh
 # autoformat sources to meet enforced linter style
 npm run fixup
 # generate build artifacts

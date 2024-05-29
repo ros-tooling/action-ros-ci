@@ -20,11 +20,5 @@
 	},
 	"plugins": ["@typescript-eslint"],
 	"rules": {},
-        "ignorePatterns": [
-            "dist",
-            "coverage",
-            "*.md",
-            "*.yml",
-            "*.yaml"
-        ]
+	"ignorePatterns": ["dist", "coverage", "*.md", "*.yml", "*.yaml"]
 }
