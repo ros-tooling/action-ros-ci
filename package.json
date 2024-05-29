@@ -4,9 +4,11 @@
 	"description": "GitHub Action compiling and testing a ROS 2 package",
 	"main": "lib/main.js",
 	"scripts": {
+		"prepare": "husky",
 		"build": "ncc build src/run.ts -o dist",
 		"fixup": "eslint . --fix",
 		"lint": "eslint .",
+		"prettier": "prettier --write .",
 		"test": "tsc --noEmit && jest --coverage"
 	},
 	"repository": {
