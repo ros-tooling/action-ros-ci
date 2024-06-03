@@ -158,6 +158,23 @@ export function validateDistros(
 }
 
 /**
+ * Determines the Linux distribution.
+ *
+ * @returns Promise<string> Linux distribution (e.g. "ubuntu")
+ */
+export async function determineDistrib(): Promise<string> {
+	let distrib = "";
+	const options: im.ExecOptions = {};
+	options.listeners = {
+		stdout: (data: Buffer) => {
+			distrib += data.toString();
+		},
+	};
+	await execShellCommand(['source /etc/os-release ; echo -n "$ID"'], options);
+	return distrib;
+}
+
+/**
  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
  */
 async function installRosdeps(
@@ -629,8 +646,17 @@ done`;
 	await execShellCommand(["vcs log -l1 src/"], options);
 
 	if (isLinux) {
-		// Always update APT before installing packages on Ubuntu
-		await execShellCommand(["sudo apt-get update"]);
+		// Always update package index before installing packages
+		const dist: string = await determineDistrib();
+		if (dist === "ubuntu") {
+			await execShellCommand(["apt update || sudo apt update"]);
+		} else if (dist === "almalinux" || dist === "rocky") {
+			await execShellCommand([
+				"dnf check-update || sudo dnf check-update || true",
+			]);
+		} else {
+			core.setFailed(`Unsupported distribution ${dist}`);
+		}
 	}
 	// rosdep does not really work on Windows, so do not use it
 	// See: https://github.com/ros-infrastructure/rosdep/issues/610
