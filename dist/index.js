@@ -30701,7 +30701,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = exports.validateDistros = exports.execShellCommand = exports.filterNonEmptyJoin = void 0;
+exports.run = exports.determineDistrib = exports.validateDistros = exports.execShellCommand = exports.filterNonEmptyJoin = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const tr = __importStar(__nccwpck_require__(8159));
@@ -30841,6 +30841,25 @@ function validateDistros(ros1Distro, ros2Distro) {
     return true;
 }
 exports.validateDistros = validateDistros;
+/**
+ * Determines the Linux distribution.
+ *
+ * @returns Promise<string> Linux distribution (e.g. "ubuntu")
+ */
+function determineDistrib() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let distrib = "";
+        const options = {};
+        options.listeners = {
+            stdout: (data) => {
+                distrib += data.toString();
+            },
+        };
+        yield execShellCommand(['source /etc/os-release ; echo -n "$ID"'], options);
+        return distrib;
+    });
+}
+exports.determineDistrib = determineDistrib;
 /**
  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
  */
@@ -31153,8 +31172,19 @@ done`;
         // Print HEAD commits of all repos
         yield execShellCommand(["vcs log -l1 src/"], options);
         if (isLinux) {
-            // Always update APT before installing packages on Ubuntu
-            yield execShellCommand(["sudo apt-get update"]);
+            // Always update package index before installing packages
+            const dist = yield determineDistrib();
+            if (dist === "ubuntu") {
+                yield execShellCommand(["apt update || sudo apt update"]);
+            }
+            else if (dist === "almalinux" || dist === "rocky") {
+                yield execShellCommand([
+                    "dnf check-update || sudo dnf check-update || true",
+                ]);
+            }
+            else {
+                core.setFailed(`Unsupported distribution ${dist}`);
+            }
         }
         // rosdep does not really work on Windows, so do not use it
         // See: https://github.com/ros-infrastructure/rosdep/issues/610
