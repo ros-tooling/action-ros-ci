@@ -31084,32 +31084,35 @@ function run_throw() {
         if (isLinux) {
             options.env = Object.assign(Object.assign({}, options.env), { DEBIAN_FRONTEND: "noninteractive" });
         }
+        const githubServerUrl = process.env.GITHUB_SERVER_URL;
+        const gihubServerDomain = githubServerUrl.replace("https://", "");
         if (importToken !== "") {
             // Unset all local extraheader config entries possibly set by actions/checkout,
             // because local settings take precedence and the default token used by
             // actions/checkout might not have the right permissions for any/all repos
             yield execShellCommand([
-                `/usr/bin/git config --local --unset-all http.https://github.com/.extraheader || true`,
+                `/usr/bin/git config --local --unset-all http.https://${gihubServerDomain}/.extraheader || true`,
             ], options);
+            const gihubServerDomainRegex = gihubServerDomain.replace(".", String.raw `\.`);
             yield execShellCommand([
-                String.raw `/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader'` +
-                    ` && git config --local --unset-all 'http.https://github.com/.extraheader' || true`,
+                String.raw `/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/${gihubServerDomainRegex}\/\.extraheader'` +
+                    ` && git config --local --unset-all 'http.https://${gihubServerDomain}/.extraheader' || true`,
             ], options);
             // Use a global insteadof entry because local configs aren't observed by git clone
             yield execShellCommand([
-                `/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com.insteadof 'https://github.com'`,
+                `/usr/bin/git config --global url.https://x-access-token:${importToken}@${gihubServerDomain}.insteadof 'https://${gihubServerDomain}'`,
             ], options);
             // same as last three comands but for ssh urls
             yield execShellCommand([
-                `/usr/bin/git config --local --unset-all git@github.com:.extraheader || true`,
+                `/usr/bin/git config --local --unset-all git@${gihubServerDomain}:.extraheader || true`,
             ], options);
             yield execShellCommand([
-                String.raw `/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'git@github\.com:.extraheader'` +
-                    ` && git config --local --unset-all 'git@github.com:.extraheader' || true`,
+                String.raw `/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'git@${gihubServerDomainRegex}:.extraheader'` +
+                    ` && git config --local --unset-all 'git@${gihubServerDomain}:.extraheader' || true`,
             ], options);
             // Use a global insteadof entry because local configs aren't observed by git clone (ssh)
             yield execShellCommand([
-                `/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com/.insteadof 'git@github.com:'`,
+                `/usr/bin/git config --global url.https://x-access-token:${importToken}@${gihubServerDomain}/.insteadof 'git@${gihubServerDomain}:'`,
             ], options);
             if (core.isDebug()) {
                 yield execShellCommand([`/usr/bin/git config --list --show-origin || true`], options);
@@ -31159,7 +31162,6 @@ done`;
         // if ref is set this overrides anything calculated above
         commitRef = core.getInput("ref") || commitRef;
         const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
-        const githubServerUrl = process.env.GITHUB_SERVER_URL;
         // Add a random string prefix to avoid naming collisions when checking out the test repository
         const randomStringPrefix = Math.random().toString(36).substring(2, 15);
         const repoFileContent = `repositories:
@@ -31275,7 +31277,7 @@ done`;
         if (importToken !== "") {
             // Unset config so that it doesn't leak to other actions
             yield execShellCommand([
-                `/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@github.com.insteadof`,
+                `/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@${gihubServerDomain}.insteadof`,
             ], options);
         }
     });
