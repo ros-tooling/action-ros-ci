@@ -399,12 +399,15 @@ steps:
   - uses: ros-tooling/action-ros-ci@v0.3
     with:
       package-name: my_package
-      # If there are no private dependencies, no need to create a PAT or add a secret
+      # If there are no private dependencies, use the default token, no need to create a PAT or add a secret
       import-token: ${{ secrets.GITHUB_TOKEN }}
       # If there are private dependencies (e.g., in a file provided through vcs-repo-file-url), a PAT is required
       import-token: ${{ secrets.REPO_TOKEN }}
       # ...
 ```
+
+Note that this currently only works for tokens for the GitHub server this action runs on.
+For example, it will not work with a token for a private repo on github.com when the action is running on an enterprise GitHub server.
 
 ### Skip `rosdep install`
 

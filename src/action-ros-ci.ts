@@ -519,48 +519,54 @@ async function run_throw(): Promise<void> {
 		};
 	}
 
+	const githubServerUrl = process.env.GITHUB_SERVER_URL as string;
+	const gihubServerDomain = githubServerUrl.replace("https://", "");
 	if (importToken !== "") {
 		// Unset all local extraheader config entries possibly set by actions/checkout,
 		// because local settings take precedence and the default token used by
 		// actions/checkout might not have the right permissions for any/all repos
 		await execShellCommand(
 			[
-				`/usr/bin/git config --local --unset-all http.https://github.com/.extraheader || true`,
+				`/usr/bin/git config --local --unset-all http.https://${gihubServerDomain}/.extraheader || true`,
 			],
 			options,
 		);
+		const gihubServerDomainRegex = gihubServerDomain.replace(
+			".",
+			String.raw`\.`,
+		);
 		await execShellCommand(
 			[
-				String.raw`/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader'` +
-					` && git config --local --unset-all 'http.https://github.com/.extraheader' || true`,
+				String.raw`/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/${gihubServerDomainRegex}\/\.extraheader'` +
+					` && git config --local --unset-all 'http.https://${gihubServerDomain}/.extraheader' || true`,
 			],
 			options,
 		);
 		// Use a global insteadof entry because local configs aren't observed by git clone
 		await execShellCommand(
 			[
-				`/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com.insteadof 'https://github.com'`,
+				`/usr/bin/git config --global url.https://x-access-token:${importToken}@${gihubServerDomain}.insteadof 'https://${gihubServerDomain}'`,
 			],
 			options,
 		);
 		// same as last three comands but for ssh urls
 		await execShellCommand(
 			[
-				`/usr/bin/git config --local --unset-all git@github.com:.extraheader || true`,
+				`/usr/bin/git config --local --unset-all git@${gihubServerDomain}:.extraheader || true`,
 			],
 			options,
 		);
 		await execShellCommand(
 			[
-				String.raw`/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'git@github\.com:.extraheader'` +
-					` && git config --local --unset-all 'git@github.com:.extraheader' || true`,
+				String.raw`/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'git@${gihubServerDomainRegex}:.extraheader'` +
+					` && git config --local --unset-all 'git@${gihubServerDomain}:.extraheader' || true`,
 			],
 			options,
 		);
 		// Use a global insteadof entry because local configs aren't observed by git clone (ssh)
 		await execShellCommand(
 			[
-				`/usr/bin/git config --global url.https://x-access-token:${importToken}@github.com/.insteadof 'git@github.com:'`,
+				`/usr/bin/git config --global url.https://x-access-token:${importToken}@${gihubServerDomain}/.insteadof 'git@${gihubServerDomain}:'`,
 			],
 			options,
 		);
@@ -628,7 +634,6 @@ done`;
 	// if ref is set this overrides anything calculated above
 	commitRef = core.getInput("ref") || commitRef;
 	const repoFilePath = path.join(rosWorkspaceDir, "package.repo");
-	const githubServerUrl = process.env.GITHUB_SERVER_URL as string;
 	// Add a random string prefix to avoid naming collisions when checking out the test repository
 	const randomStringPrefix = Math.random().toString(36).substring(2, 15);
 	const repoFileContent = `repositories:
@@ -786,7 +791,7 @@ done`;
 		// Unset config so that it doesn't leak to other actions
 		await execShellCommand(
 			[
-				`/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@github.com.insteadof`,
+				`/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@${gihubServerDomain}.insteadof`,
 			],
 			options,
 		);
