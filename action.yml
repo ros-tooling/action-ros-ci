@@ -39,6 +39,7 @@ inputs:
       GitHub personal access token (PAT) to use to import the repository.
       Useful if the repo is private.
       The PAT should have the "repo" scope.
+      This currently only works for tokens for the GitHub server this action runs on.
     required: false
   package-name:
     description: |
