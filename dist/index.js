@@ -31173,7 +31173,9 @@ done`;
         yield execShellCommand(["vcs import --force --recursive src/ < package.repo"], options);
         // Print HEAD commits of all repos
         yield execShellCommand(["vcs log -l1 src/"], options);
-        if (isLinux) {
+        // rosdep does not really work on Windows, so do not use it
+        // See: https://github.com/ros-infrastructure/rosdep/issues/610
+        if (!isWindows && !skipRosdepInstall) {
             // Always update package index before installing packages
             const dist = yield determineDistrib();
             if (dist === "ubuntu") {
@@ -31187,10 +31189,6 @@ done`;
             else {
                 core.setFailed(`Unsupported distribution ${dist}`);
             }
-        }
-        // rosdep does not really work on Windows, so do not use it
-        // See: https://github.com/ros-infrastructure/rosdep/issues/610
-        if (!isWindows && !skipRosdepInstall) {
             yield installRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
         }
         if (skipRosdepInstall && rosdepCheck) {
