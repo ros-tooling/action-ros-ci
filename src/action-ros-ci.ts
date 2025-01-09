@@ -650,7 +650,7 @@ done`;
 	// Print HEAD commits of all repos
 	await execShellCommand(["vcs log -l1 src/"], options);
 
-	if (isLinux) {
+	if (isLinux && !skipRosdepInstall) {
 		// Always update package index before installing packages
 		const dist: string = await determineDistrib();
 		if (dist === "ubuntu") {

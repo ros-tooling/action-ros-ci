@@ -81,7 +81,7 @@ inputs:
   skip-rosdep-install:
     default: ""
     description: |
-      Skip rosdep install.
+      Skip rosdep install. This also skips `apt update`/`dnf check-update`.
       Set to 'true'.
     required: false
   no-symlink-install:
