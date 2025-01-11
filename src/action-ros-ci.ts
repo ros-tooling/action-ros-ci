@@ -738,6 +738,8 @@ done`;
 					...colconCommandPrefix,
 					`source ${ros2SetupPath}`,
 					`&&`,
+					`env`,
+					`&&`,
 				];
 			}
 		}
