@@ -31238,6 +31238,10 @@ done`;
                         `&&`,
                         `env`,
                         `&&`,
+                        `export CMAKE_PREFIX_PATH=$AMENT_PREFIX_PATH`,
+                        `&&`,
+                        `env`,
+                        `&&`,
                     ];
                 }
             }
