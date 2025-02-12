@@ -85,7 +85,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: jazzy
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       target-ros2-distro: jazzy
@@ -98,7 +98,7 @@ In this case, `action-ros-ci` will build all necessary ROS 2 dependencies of `my
 ```yaml
 steps:
   - uses: ros-tooling/setup-ros@v0.7
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       target-ros2-distro: jazzy
@@ -126,7 +126,7 @@ jobs:
       - uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: jazzy
-      - uses: ros-tooling/action-ros-ci@v0.3
+      - uses: ros-tooling/action-ros-ci@v0.4
         with:
           package-name: my_package
           ref: jazzy
@@ -148,7 +148,7 @@ steps:
       rosinstall_generator <package-name> --rosdistro <target-distro> \
       --deps-only --deps --upstream-development > /tmp/deps.repos
   # Pass the file to the action
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       target-ros2-distro: jazzy
@@ -167,7 +167,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: noetic
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       target-ros1-distro: noetic
@@ -182,7 +182,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: jazzy
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       target-ros2-distro: jazzy
@@ -199,7 +199,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: jazzy
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       target-ros2-distro: jazzy
@@ -223,7 +223,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: jazzy
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       target-ros2-distro: jazzy
@@ -240,7 +240,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: jazzy
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       colcon-defaults: |
         {
@@ -276,7 +276,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: jazzy
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       target-ros2-distro: jazzy
@@ -301,7 +301,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: jazzy
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       target-ros2-distro: jazzy
@@ -332,7 +332,7 @@ steps:
   - uses: ros-tooling/setup-ros@v0.7
     with:
       required-ros-distributions: jazzy
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       target-ros2-distro: jazzy
@@ -374,7 +374,7 @@ GitHub workflows can persist data generated in workers during the build using [a
 ```yaml
 steps:
   # ...
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     id: action_ros_ci_step
     with:
       package-name: ament_copyright
@@ -396,7 +396,7 @@ For example, if this secret is called `REPO_TOKEN`:
 ```yaml
 steps:
   # ...
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       # If there are no private dependencies, use the default token, no need to create a PAT or add a secret
@@ -419,7 +419,7 @@ container:
   image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-noble-ros-jazzy-ros-base
 steps:
   # ...
-  - uses: ros-tooling/action-ros-ci@v0.3
+  - uses: ros-tooling/action-ros-ci@v0.4
     with:
       target-ros2-distro: jazzy
       package-name: ament_copyright
