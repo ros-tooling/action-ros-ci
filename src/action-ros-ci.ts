@@ -202,7 +202,7 @@ async function installRosdeps(
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
 	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys "rti-connext-dds-5.3.1 rti-connext-dds-6.0.1 ${filterNonEmptyJoin(
 		skipKeys,
-	)}" --rosdistro $DISTRO -y || true`;
+	)}" --rosdistro $DISTRO -y`;
 	fs.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
 
 	let exitCode = 0;

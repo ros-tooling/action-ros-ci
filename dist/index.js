@@ -30878,7 +30878,7 @@ function installRosdeps(packageSelection, skipKeys, workspaceDir, options, ros1D
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
-	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys "rti-connext-dds-5.3.1 rti-connext-dds-6.0.1 ${filterNonEmptyJoin(skipKeys)}" --rosdistro $DISTRO -y || true`;
+	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys "rti-connext-dds-5.3.1 rti-connext-dds-6.0.1 ${filterNonEmptyJoin(skipKeys)}" --rosdistro $DISTRO -y`;
         fs_1.default.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
         let exitCode = 0;
         if (ros1Distro) {
