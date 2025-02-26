@@ -273,6 +273,7 @@ async function checkRosdeps(
  * @param testPackageSelection the package selection option
  * @param colconExtraArgs the extra args for 'colcon test'
  * @param coverageIgnorePattern the coverage filter pattern to use for lcov
+ * @param enableCoverageResult whether to collect coverage results with {lcov,coveragepy}-result
  */
 async function runTests(
 	colconCommandPrefix: string[],
@@ -280,8 +281,10 @@ async function runTests(
 	testPackageSelection: string[],
 	colconExtraArgs: string[],
 	coverageIgnorePattern: string[],
+	enableCoverageResult: boolean,
 ): Promise<void> {
-	const doLcovResult = !isWindows; // lcov-result not supported in Windows
+	const doLcovResult = enableCoverageResult && !isWindows; // lcov-result not supported in Windows
+	const doCoveragepyResult = enableCoverageResult;
 	const doTests = !isWindows; // Temporarily disable colcon test on Windows to unblock Windows CI builds: https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
 
 	if (doLcovResult) {
@@ -357,19 +360,21 @@ async function runTests(
 		);
 	}
 
-	const colconCoveragepyResultCmd = [
-		`colcon`,
-		`coveragepy-result`,
-		...testPackageSelection,
-		`--verbose`,
-		`--coverage-report-args`,
-		`" -m"`,
-	];
-	await execShellCommand(
-		[...colconCommandPrefix, ...colconCoveragepyResultCmd],
-		options,
-		false,
-	);
+	if (doCoveragepyResult) {
+		const colconCoveragepyResultCmd = [
+			`colcon`,
+			`coveragepy-result`,
+			...testPackageSelection,
+			`--verbose`,
+			`--coverage-report-args`,
+			`" -m"`,
+		];
+		await execShellCommand(
+			[...colconCommandPrefix, ...colconCoveragepyResultCmd],
+			options,
+			false,
+		);
+	}
 }
 
 async function run_throw(): Promise<void> {
@@ -385,6 +390,7 @@ async function run_throw(): Promise<void> {
 		? ["--cmake-args", extraCmakeArgsInput]
 		: [];
 
+	const enableCoverageResult = core.getBooleanInput("coverage-result");
 	const coverageIgnorePatternInput = core.getInput("coverage-ignore-pattern");
 	const coverageIgnorePattern = coverageIgnorePatternInput
 		? ["--filter", coverageIgnorePatternInput]
@@ -782,6 +788,7 @@ done`;
 			testPackageSelection,
 			colconExtraArgs,
 			coverageIgnorePattern,
+			enableCoverageResult,
 		);
 	} else {
 		core.info("Skipping tests");

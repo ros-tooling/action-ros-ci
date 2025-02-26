@@ -16,11 +16,18 @@ inputs:
     default: "https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml"
     description: "Mixin repository containing the mixin(s) specified through colcon-defaults or colcon-extra-args"
     required: false
+  coverage-result:
+    default: "true"
+    description: |
+      Enable code coverage results collection using 'colcon lcov-result' and 'colcon coveragepy-result'.
+      Depends on 'skip-tests' not being enabled, i.e., tests being run.
+      Enabled by default; set to 'false' to disable.
+    required: false
   coverage-ignore-pattern:
     default: ""
     description: |
       Ignore all files matching this pattern in the coverage report.
-      It will be injected in colcon-lcov-result --filter option.
+      It will be injected in the 'colcon lcov-result --filter' option.
       Useful for ignoring tests or examples in the coverage report.
     required: false
   extra-cmake-args:

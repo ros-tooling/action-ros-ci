@@ -367,6 +367,20 @@ fixes:
 The configuration file is required to let codecov map the workspace directory structure to the Git repository structure, and setup the links between codecov and GitHub properly.
 Note here that `actions/checkout` is required because `codecov/codecov-action` needs the `codecov.yml` file.
 
+#### Disable code coverage results collection
+
+By default, when tests are run, code coverage data is collected using [`colcon-lcov-result`](#generate-code-coverage-information-using-lcov-and-colcon-lcov-result) and [`colcon-coveragepy-result`](#generate-code-coverage-information-using-coveragepy-and-colcon-coveragepy-result).
+To disable it, set `coverage-result` to `false`.
+
+```yaml
+steps:
+  # ...
+  - uses: ros-tooling/action-ros-ci@v0.4
+    with:
+      # ...
+      coverage-result: false
+```
+
 ### Store `colcon` logs as build artifacts
 
 GitHub workflows can persist data generated in workers during the build using [artifacts](persisting-workflow-data-using-artifacts). `action-ros-ci` generated colcon logs can be saved as follows:
