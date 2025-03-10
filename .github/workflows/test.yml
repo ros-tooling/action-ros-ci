@@ -391,6 +391,21 @@ jobs:
       - run: find ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
         name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
         if: runner.os != 'Windows'
+      - run: test -d ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/lcov/ && rm -rf ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/lcov/
+        name: "Check if lcov-result directory is present (Linux only)"
+        if: runner.os != 'Windows'
+
+      - uses: ./
+        id: test_coverage_disable
+        name: "Test single package, with coverage result disabled"
+        with:
+          package-name: osrf_testing_tools_cpp
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+          coverage-result: false
+      - run: test ! -d ${{ steps.test_coverage_disable.outputs.ros-workspace-directory-name }}/lcov/
+        name: "Check if lcov-result directory is not present"
+        if: runner.os != 'Windows'
 
       - uses: ./
         id: test_extra_cmake

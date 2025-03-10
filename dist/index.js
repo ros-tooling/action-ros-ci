@@ -30925,10 +30925,12 @@ function checkRosdeps(packageSelection, skipKeys, workspaceDir, options, ros1Dis
  * @param testPackageSelection the package selection option
  * @param colconExtraArgs the extra args for 'colcon test'
  * @param coverageIgnorePattern the coverage filter pattern to use for lcov
+ * @param enableCoverageResult whether to collect coverage results with {lcov,coveragepy}-result
  */
-function runTests(colconCommandPrefix, options, testPackageSelection, colconExtraArgs, coverageIgnorePattern) {
+function runTests(colconCommandPrefix, options, testPackageSelection, colconExtraArgs, coverageIgnorePattern, enableCoverageResult) {
     return __awaiter(this, void 0, void 0, function* () {
-        const doLcovResult = !isWindows; // lcov-result not supported in Windows
+        const doLcovResult = enableCoverageResult && !isWindows; // lcov-result not supported in Windows
+        const doCoveragepyResult = enableCoverageResult;
         const doTests = !isWindows; // Temporarily disable colcon test on Windows to unblock Windows CI builds: https://github.com/ros-tooling/action-ros-ci/pull/712#issuecomment-969495087
         if (doLcovResult) {
             // ignoreReturnCode is set to true to avoid having a lack of coverage
@@ -30969,15 +30971,17 @@ function runTests(colconCommandPrefix, options, testPackageSelection, colconExtr
             ];
             yield execShellCommand([...colconCommandPrefix, ...colconLcovResultCmd], Object.assign(Object.assign({}, options), { ignoreReturnCode: true }), false);
         }
-        const colconCoveragepyResultCmd = [
-            `colcon`,
-            `coveragepy-result`,
-            ...testPackageSelection,
-            `--verbose`,
-            `--coverage-report-args`,
-            `" -m"`,
-        ];
-        yield execShellCommand([...colconCommandPrefix, ...colconCoveragepyResultCmd], options, false);
+        if (doCoveragepyResult) {
+            const colconCoveragepyResultCmd = [
+                `colcon`,
+                `coveragepy-result`,
+                ...testPackageSelection,
+                `--verbose`,
+                `--coverage-report-args`,
+                `" -m"`,
+            ];
+            yield execShellCommand([...colconCommandPrefix, ...colconCoveragepyResultCmd], options, false);
+        }
     });
 }
 function run_throw() {
@@ -30991,6 +30995,7 @@ function run_throw() {
         const extraCmakeArgs = extraCmakeArgsInput
             ? ["--cmake-args", extraCmakeArgsInput]
             : [];
+        const enableCoverageResult = core.getBooleanInput("coverage-result");
         const coverageIgnorePatternInput = core.getInput("coverage-ignore-pattern");
         const coverageIgnorePattern = coverageIgnorePatternInput
             ? ["--filter", coverageIgnorePatternInput]
@@ -31269,7 +31274,7 @@ done`;
         }
         yield execShellCommand([...colconCommandPrefix, ...colconBuildCmd], options, false);
         if (!skipTests) {
-            yield runTests(colconCommandPrefix, options, testPackageSelection, colconExtraArgs, coverageIgnorePattern);
+            yield runTests(colconCommandPrefix, options, testPackageSelection, colconExtraArgs, coverageIgnorePattern, enableCoverageResult);
         }
         else {
             core.info("Skipping tests");
