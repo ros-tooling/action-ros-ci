@@ -69,7 +69,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, windows-2019]
-        ros_distribution: [humble, iron, jazzy]
+        ros_distribution: [humble, iron, jazzy, kilted]
     env:
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
@@ -254,6 +254,8 @@ jobs:
           - os: ubuntu:24.04
             ros_distribution: jazzy
           - os: ubuntu:24.04
+            ros_distribution: kilted
+          - os: ubuntu:24.04
             ros_distribution: rolling
           - os: windows-2019
             ros_distribution: humble
@@ -262,6 +264,8 @@ jobs:
           - os: windows-2019
             ros_distribution: jazzy
           - os: windows-2019
+            ros_distribution: kilted
+          - os: windows-2019
             ros_distribution: rolling
           - os: macOS-latest
             ros_distribution: humble
@@ -269,6 +273,8 @@ jobs:
             ros_distribution: iron
           - os: macOS-latest
             ros_distribution: jazzy
+          - os: macOS-latest
+            ros_distribution: kilted
           - os: macOS-latest
             ros_distribution: rolling
     env:
@@ -459,6 +465,7 @@ jobs:
           - humble
           - iron
           - jazzy
+          - kilted
           - rolling
 
         # Define the Docker image(s) associated with each ROS distribution.
@@ -482,6 +489,11 @@ jobs:
           - docker_image: ubuntu:noble
             ros_distribution: jazzy
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/jazzy/ros2.repos
+
+          # Kilted Kaiju (May 2025 - November 2026)
+          - docker_image: ubuntu:noble
+            ros_distribution: kilted
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/kilted/ros2.repos
 
           # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
           - docker_image: ubuntu:noble
