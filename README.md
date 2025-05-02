@@ -27,35 +27,38 @@ This action builds and tests a [ROS](http://wiki.ros.org/) or [ROS 2](https://do
 
 ## Requirements
 
-This action requires the following ROS development tools to be installed (and initialized if applicable) on the CI worker instance:
+This action requires ROS development tools to be installed (and initialized if applicable) on the CI worker instance.
 
-```
-colcon-common-extensions
-colcon-lcov-result  # Optional
-colcon-coveragepy-result
-colcon-mixin
-rosdep
-vcstool
-```
+For Ubuntu Linux builds, it is recommended to run your CI on an appropriate base container image from [`ros-tooling/setup-ros-docker`](https://github.com/ros-tooling/setup-ros-docker).
 
-On Linux, the setup can be done through [`ros-tooling/setup-ros`](https://github.com/ros-tooling/setup-ros), or by running the action in a Docker image containing the appropriate binaries.
+If you want to use a different base environment, you can prepare that environment for building a ROS workspace with [`ros-tooling/setup-ros`](https://github.com/ros-tooling/setup-ros).
+
+For reference, these are the minimum tools needed by the action, which are provided automatically by the options mentioned above:
+
+- Base development tools, `cmake` and compilers for the platform
+- `vcstool`
+- `rosdep`
+- `colcon-common-extensions`
+- `colcon-lcov-result` (Optional)
+- `colcon-coveragepy-result` (Optional)
+- `colcon-mixin` (Optional)
 
 **Note**: for Windows, `action-ros-ci` currently needs to be run on `windows-2019` or needs another action to install Visual Studio 2019.
 
 ## Overview
 
-The action first assembles a workspace, then runs `colcon build`, and `colcon test` in it.
+The action first assembles a workspace with the dependencies needed to build the source, then runs `colcon build` and `colcon test`.
 
-The workspace is built by running:
+Step by step, that process goes like this:
 
-- `vcs import` on the repo file(s) specified through the `vcs-repo-file-url` argument, if any (defaults to none)
+- `vcs import` the repo file(s) specified through the `vcs-repo-file-url` argument, if any (defaults to none)
 - checkout the code under test in the workspace using `vcs`
 - `rosdep install` for the workspace, to get its dependencies
 - run `colcon build` (optionally limited to packages specified in `package-name`)
 - run `colcon test` (optionally limited to packages specified in `package-name`; optionally [skipped](#Skip-tests))
 
 This action requires targeting a ROS or ROS 2 distribution explicitly.
-This is provided via the `target-ros1-distro` or `target-ros2-distro` inputs, respectively.
+This is provided via the `target-ros1-distro` or `target-ros2-distro` inputs.
 Either or both may be specified, if neither is provided an error will be raised.
 This input is used to `source setup.sh` for any installed ROS binaries (e.g. installed using [`ros-tooling/setup-ros`](https://github.com/ros-tooling/setup-ros)), as well as used as an argument to `rosdep install`.
 
@@ -64,7 +67,7 @@ This input is used to `source setup.sh` for any installed ROS binaries (e.g. ins
 This action defines [an output variable](https://help.github.com/en/actions/building-actions/metadata-syntax-for-github-actions#outputs): `ros-workspace-directory-name`.
 It contains the path to the root of the ROS workspace assembled by the action.
 
-The variable value should be used to retrieve logs, binaries, etc. after the action completes.
+The variable value can be used to retrieve logs, binaries, etc. after the action completes.
 
 ## Usage
 
@@ -72,33 +75,54 @@ See [`action.yml`](action.yml) to get the list of inputs supported by this actio
 
 [action-ros-ci-template](https://github.com/ros-tooling/action-ros-ci-template) offers a template for using `action-ros-ci`.
 
-### Build and run tests for your ROS 2 package
+### Core Usage Patterns
 
-Here are the two simplest use-cases.
+In most cases, you will use one of the following two base patterns to set up your build environment and run your build.
 
-#### Using dependencies from binaries
+The sections following cover more specific options.
 
-In this case, `action-ros-ci` will rely on `setup-ros` for installing ROS 2 binaries.
+#### Using a prepared base container image from `setup-ros-docker` (Recommended)
 
 ```yaml
-steps:
-  - uses: ros-tooling/setup-ros@v0.7
-    with:
-      required-ros-distributions: jazzy
-  - uses: ros-tooling/action-ros-ci@v0.4
-    with:
-      package-name: my_package
-      target-ros2-distro: jazzy
+jobs:
+  build_and_test_ros2:
+    runs_on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+    steps:
+      - name: Build and run tests
+        uses: ros-tooling/action-ros-ci@0.7
+        with:
+          package-name: my_package
+          target-ros2-distro: jazzy
 ```
 
-#### Building ROS 2 dependencies from source
+
+#### Using `ros-tooling/setup-ros` to prepare the environment
+
+In this case, `action-ros-ci` will rely on `setup-ros` for installing ROS 2 development tools, instead of a base container.
+
+```yaml
+jobs:
+  build_and_test_ros2:
+    runs_on: ubuntu-latest
+    steps:
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: jazzy
+      - uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: my_package
+          target-ros2-distro: jazzy
+```
+
+### Building ROS 2 core dependencies from source
 
 In this case, `action-ros-ci` will build all necessary ROS 2 dependencies of `my_package` from source.
 
 ```yaml
-steps:
-  - uses: ros-tooling/setup-ros@v0.7
-  - uses: ros-tooling/action-ros-ci@v0.4
+  - name: Build and run tests
+    uses: ros-tooling/action-ros-ci@0.7
     with:
       package-name: my_package
       target-ros2-distro: jazzy
@@ -108,7 +132,7 @@ steps:
 ### Schedule an action on a specific branch
 
 If you want to continue supporting older ROS releases while developing on an the main branch use `acton-ros-ci` with `ref` on a scheduled job.
-Without setting ref the default branch and most recent commit will be used.
+Without setting `ref` the default branch and most recent commit will be used.
 
 ```yaml
 name: Jazzy Source Build
@@ -118,20 +142,8 @@ on:
     - cron '0 0 * * 0'
 
 jobs:
-  jazzy_source:
-    runs_on: ubuntu-latest
-    container:
-      image: ubuntu:noble
-    steps:
-      - uses: ros-tooling/setup-ros@v0.7
-        with:
-          required-ros-distributions: jazzy
-      - uses: ros-tooling/action-ros-ci@v0.4
-        with:
-          package-name: my_package
-          ref: jazzy
-          target-ros2-distro: jazzy
-          vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/jazzy/ros2.repos
+  build_and_test_ros2_from_source:
+    ...
 ```
 
 ### Build with a custom `repos` or `rosinstall` file
@@ -140,10 +152,7 @@ You can specify your own repos file using the `vcs-repo-file-url` input.
 You can also automatically generate your package's dependencies using the following workflow:
 
 ```yaml
-steps:
   - uses: actions/checkout@v4
-  - uses: ros-tooling/setup-ros@v0.7
-  # Run the generator and output the results to a file.
   - run: |
       rosinstall_generator <package-name> --rosdistro <target-distro> \
       --deps-only --deps --upstream-development > /tmp/deps.repos
@@ -163,14 +172,16 @@ Building a ROS 1 workspace works the same way.
 Simply use `target-ros1-distro` instead of `target-ros2-distro`.
 
 ```yaml
-steps:
-  - uses: ros-tooling/setup-ros@v0.7
-    with:
-      required-ros-distributions: noetic
-  - uses: ros-tooling/action-ros-ci@v0.4
-    with:
-      package-name: my_package
-      target-ros1-distro: noetic
+jobs:
+  build_and_test_ros1:
+    runs_on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-focal-latest
+    steps:
+      - uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: my_package
+          target-ros1-distro: noetic
 ```
 
 ### Skip tests
@@ -178,10 +189,6 @@ steps:
 To skip tests and code coverage data processing, set the `skip-tests` option to `true`.
 
 ```yaml
-steps:
-  - uses: ros-tooling/setup-ros@v0.7
-    with:
-      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
@@ -195,10 +202,6 @@ To use a [`colcon` `defaults.yaml` file](https://colcon.readthedocs.io/en/releas
 This allows using a `colcon` option/argument that is not exposed by this action's inputs.
 
 ```yaml
-steps:
-  - uses: ros-tooling/setup-ros@v0.7
-    with:
-      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
@@ -219,10 +222,6 @@ By default, [`--symlink-install` is used with `colcon build`](https://colcon.rea
 To avoid this, set the `no-symlink-install` input to `true`.
 
 ```yaml
-steps:
-  - uses: ros-tooling/setup-ros@v0.7
-    with:
-      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
@@ -236,10 +235,6 @@ steps:
 memory corruption bugs.
 
 ```yaml
-steps:
-  - uses: ros-tooling/setup-ros@v0.7
-    with:
-      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.4
     with:
       colcon-defaults: |
@@ -272,10 +267,6 @@ Flags can be passed manually using, for instance, `extra-cmake-args`, but it is
 preferable to use a `colcon` mixin (through [`colcon-defaults`](#Use-a-colcon-defaultsyaml-file)) to pass the appropriate flags automatically.
 
 ```yaml
-steps:
-  - uses: ros-tooling/setup-ros@v0.7
-    with:
-      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
@@ -297,10 +288,6 @@ Generate code coverage information for Python files using the appropriate mixins
 `action-ros-ci` uses [`colcon-coveragepy-result`](https://github.com/colcon/colcon-coveragepy-result) to aggregate generated coverage information.
 
 ```yaml
-steps:
-  - uses: ros-tooling/setup-ros@v0.7
-    with:
-      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
@@ -327,11 +314,7 @@ For a private repo, you will need to setup a secret `CODECOV_TOKEN` in [your rep
 See [`codecov/codecov-action`](https://github.com/codecov/codecov-action) documentation for more information about how to setup the action.
 
 ```yaml
-steps:
   - uses: actions/checkout@v4
-  - uses: ros-tooling/setup-ros@v0.7
-    with:
-      required-ros-distributions: jazzy
   - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
@@ -373,8 +356,6 @@ By default, when tests are run, code coverage data is collected using [`colcon-l
 To disable it, set `coverage-result` to `false`.
 
 ```yaml
-steps:
-  # ...
   - uses: ros-tooling/action-ros-ci@v0.4
     with:
       # ...
@@ -386,8 +367,6 @@ steps:
 GitHub workflows can persist data generated in workers during the build using [artifacts](persisting-workflow-data-using-artifacts). `action-ros-ci` generated colcon logs can be saved as follows:
 
 ```yaml
-steps:
-  # ...
   - uses: ros-tooling/action-ros-ci@v0.4
     id: action_ros_ci_step
     with:
@@ -408,8 +387,6 @@ However, if your workflow also clones other private repositories (e.g., reposito
 For example, if this secret is called `REPO_TOKEN`:
 
 ```yaml
-steps:
-  # ...
   - uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
@@ -417,7 +394,6 @@ steps:
       import-token: ${{ secrets.GITHUB_TOKEN }}
       # If there are private dependencies (e.g., in a file provided through vcs-repo-file-url), a PAT is required
       import-token: ${{ secrets.REPO_TOKEN }}
-      # ...
 ```
 
 Note that this currently only works for tokens for the GitHub server this action runs on.
@@ -425,12 +401,13 @@ For example, it will not work with a token for a private repo on github.com when
 
 ### Skip `rosdep install`
 
-Include an option to bypass `rosdep install` for workflow that uses specific docker image and better control of dependencies. To check for missing dependencies within the workflow's image, user can run with `rosdep-check: true` flag.
+Include an option to bypass `rosdep install` for workflow that uses specific docker image that is expected to already have all dependencies.
+To check for missing dependencies within the workflow's image, user can run with `rosdep-check: true` flag.
 
 ```yaml
 runs-on: ubuntu-latest
 container:
-  image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-noble-ros-jazzy-ros-base
+  image: my-prepared-docker-image
 steps:
   # ...
   - uses: ros-tooling/action-ros-ci@v0.4
