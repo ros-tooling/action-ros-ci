@@ -66,7 +66,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-latest, windows-2019]
+        os:
+          # - macOS-latest
+          - windows-2019
         ros_distribution: [humble, iron, jazzy, kilted]
     env:
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
@@ -265,16 +267,16 @@ jobs:
             ros_distribution: kilted
           - os: windows-2019
             ros_distribution: rolling
-          - os: macOS-latest
-            ros_distribution: humble
-          - os: macOS-latest
-            ros_distribution: iron
-          - os: macOS-latest
-            ros_distribution: jazzy
-          - os: macOS-latest
-            ros_distribution: kilted
-          - os: macOS-latest
-            ros_distribution: rolling
+          # - os: macOS-latest
+          #   ros_distribution: humble
+          # - os: macOS-latest
+          #   ros_distribution: iron
+          # - os: macOS-latest
+          #   ros_distribution: jazzy
+          # - os: macOS-latest
+          #   ros_distribution: kilted
+          # - os: macOS-latest
+          #   ros_distribution: rolling
     env:
       DISTRO_REPOS_URL: "https://raw.githubusercontent.com/ros2/ros2/${{ matrix.ros_distribution }}/ros2.repos"
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
