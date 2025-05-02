@@ -2,8 +2,7 @@ name: "Test action-ros-ci"
 on:
   pull_request:
   push:
-    branches:
-      - main
+    branches: [main]
   schedule:
     # Run the CI automatically nightly to catch flakes
     - cron: "0 0 * * *"
