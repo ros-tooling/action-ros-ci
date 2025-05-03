@@ -10,6 +10,8 @@ This action builds and tests a [ROS](http://wiki.ros.org/) or [ROS 2](https://do
 1. [Overview](#Overview)
 1. [Action Output](#Action-Output)
 1. [Usage](#Usage)
+   1. [Base Usage Patterns](#Base-Usage-Patterns)
+   1. [Building ROS 2 core dependencies from source](#building-ros-2-core-dependencies-from-source)
    1. [Build and run tests for your ROS 2 package](#Build-and-run-tests-for-your-ROS-2-package)
    1. [Build with a custom `repos` or `rosinstall` file](#Build-with-a-custom-repos-or-rosinstall-file)
    1. [Build a ROS 1 workspace](#Build-a-ROS-1-workspace)
@@ -75,7 +77,7 @@ See [`action.yml`](action.yml) to get the list of inputs supported by this actio
 
 [action-ros-ci-template](https://github.com/ros-tooling/action-ros-ci-template) offers a template for using `action-ros-ci`.
 
-### Core Usage Patterns
+### Base Usage Patterns
 
 In most cases, you will use one of the following two base patterns to set up your build environment and run your build.
 
@@ -129,10 +131,12 @@ In this case, `action-ros-ci` will build all necessary ROS 2 dependencies of `my
       vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/jazzy/ros2.repos
 ```
 
-### Schedule an action on a specific branch
+### Scheduling periodic builds
 
-If you want to continue supporting older ROS releases while developing on an the main branch use `acton-ros-ci` with `ref` on a scheduled job.
-Without setting `ref` the default branch and most recent commit will be used.
+You may want to run a build periodically - for example to reveal flaky tests or reveal problems from updates in upstream dependencies.
+
+Note in this example that we've specified `ref:` in the action, to build a non-default branch.
+Without this setting, the repository default branch and most recent commit will be checked out.
 
 ```yaml
 name: Jazzy Source Build
@@ -142,8 +146,17 @@ on:
     - cron '0 0 * * 0'
 
 jobs:
-  build_and_test_ros2_from_source:
-    ...
+  jazzy_from_source:
+    runs_on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+    steps:
+      - uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          package-name: my_package
+          ref: jazzy
+          target-ros2-distro: jazzy
+          vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/jazzy/ros2.repos
 ```
 
 ### Build with a custom `repos` or `rosinstall` file
