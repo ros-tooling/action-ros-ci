@@ -12,7 +12,6 @@ This action builds and tests a [ROS](http://wiki.ros.org/) or [ROS 2](https://do
 1. [Usage](#Usage)
    1. [Base Usage Patterns](#Base-Usage-Patterns)
    1. [Building ROS 2 core dependencies from source](#building-ros-2-core-dependencies-from-source)
-   1. [Build and run tests for your ROS 2 package](#Build-and-run-tests-for-your-ROS-2-package)
    1. [Build with a custom `repos` or `rosinstall` file](#Build-with-a-custom-repos-or-rosinstall-file)
    1. [Build a ROS 1 workspace](#Build-a-ROS-1-workspace)
    1. [Skip tests](#Skip-tests)
