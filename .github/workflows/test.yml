@@ -2,12 +2,10 @@ name: "Test action-ros-ci"
 on:
   pull_request:
   push:
-    branches:
-      - master
-      - "releases/*"
+    branches: [main]
   schedule:
-    # Run the CI automatically twice per day to look for flakyness.
-    - cron: "0 */12 * * *"
+    # Run the CI automatically nightly to catch flakes
+    - cron: "0 0 * * *"
 
 defaults:
   run:
