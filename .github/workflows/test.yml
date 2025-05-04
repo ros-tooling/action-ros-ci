@@ -97,7 +97,7 @@ jobs:
     name: "Test ROS 2 humble package with ROS dependencies"
     runs-on: ubuntu-latest
     container:
-      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+      image: rostooling/setup-ros-docker:ubuntu-jammy-latest
     needs: pre_condition
     steps:
       - uses: actions/checkout@v4
@@ -111,7 +111,7 @@ jobs:
     name: "Test with rosdep-skip-keys option"
     runs-on: ubuntu-latest
     container:
-      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+      image: rostooling/setup-ros-docker:ubuntu-jammy-latest
     needs: pre_condition
     steps:
       - uses: actions/checkout@v4
@@ -219,6 +219,8 @@ jobs:
     name: "ROS 2 from source"
     runs-on: ${{ startsWith(matrix.os, 'ubuntu') && 'ubuntu-latest' || matrix.os }}
     needs: pre_condition
+    container:
+      image: ${{ startsWith(matrix.os, 'ubuntu') && matrix.os || '' }}
     strategy:
       fail-fast: false
       matrix:
