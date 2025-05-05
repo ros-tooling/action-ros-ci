@@ -32,18 +32,18 @@ jobs:
         ros_distribution: # ROS 1 tests only run on Ubuntu
           - noetic
 
-        # Define the Docker image(s) associated with each ROS distribution.
+        # Define the OCI image(s) associated with each ROS distribution.
         # The include syntax allows additional variables to be defined, like
-        # docker_image in this case. See documentation:
+        # container_image in this case. See documentation:
         # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
         #
         # Platforms are defined in REP 3: https://ros.org/reps/rep-0003.html
         include:
           # Noetic Ninjemys (May 2020 - May 2025)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-noetic-ros-base-latest
+          - container_image: rostooling/setup-ros-docker:ubuntu-focal-latest
             ros_distribution: noetic
     container:
-      image: ${{ matrix.docker_image }}
+      image: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4.4.0
@@ -59,7 +59,7 @@ jobs:
       - run: test -d "${{ steps.action-ros-ci.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
         name: "Check that roscpp_tutorials install directory is present"
 
-  test_ros2:
+  test_ros2_mac_win:
     name: "Test ROS 2 packages in repository"
     runs-on: ${{ matrix.os }}
     needs: pre_condition
@@ -69,7 +69,7 @@ jobs:
         os:
           # - macOS-latest
           - windows-2019
-        ros_distribution: [humble, iron, jazzy, kilted]
+        ros_distribution: [humble, jazzy, kilted]
     env:
       INSTALL_TYPE: ${{ matrix.os == 'windows-2019' && 'merged' || 'default' }}
       INSTALL_PATH: ${{ matrix.os == 'windows-2019' && 'install/share' || 'install' }}
@@ -79,7 +79,7 @@ jobs:
         with:
           node-version: "20.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@main
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
       - uses: ./
@@ -95,13 +95,12 @@ jobs:
 
   test_ros2_humble_package_with_dependencies:
     name: "Test ROS 2 humble package with ROS dependencies"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-jammy-latest
     needs: pre_condition
     steps:
       - uses: actions/checkout@v4
-      - uses: ros-tooling/setup-ros@master
-        with:
-          required-ros-distributions: humble
       - uses: ./
         with:
           package-name: rmw
@@ -110,13 +109,12 @@ jobs:
 
   test_ros2_humble_rosdep_skip_keys:
     name: "Test with rosdep-skip-keys option"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-jammy-latest
     needs: pre_condition
     steps:
       - uses: actions/checkout@v4
-      - uses: ros-tooling/setup-ros@master
-        with:
-          required-ros-distributions: humble
       # Skip installing test_depend dependency and verifies it isn't installed.
       - uses: ./
         with:
@@ -141,40 +139,24 @@ jobs:
         run: |
           dpkg -s ros-humble-osrf-testing-tools-cpp
 
-  test_ros2_iron_skip_rosdep_install:
-    name: Test rosdep check/skip install options
-    runs-on: ubuntu-22.04
-    needs: pre_condition
-    container:
-      image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-ros-base-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./
-        with:
-          target-ros2-distro: iron
-          package-name: ament_copyright
-          vcs-repo-file-url: "https://raw.githubusercontent.com/ros2/ros2/release-iron-20240209/ros2.repos"
-          skip-rosdep-install: true
-          rosdep-check: true
-
   test_private_repo:
     name: "Test with private repos"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-noble-latest
     needs: pre_condition
     # We don't have access to the secret token for the test repo on a fork
     if: ${{ !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
     steps:
       - uses: actions/checkout@v4
-      - uses: ros-tooling/setup-ros@master
-        with:
-          required-ros-distributions: humble
       - uses: ./
         with:
           import-token: ${{ secrets.TOKEN_PRIVATE_REPO_TEST }}
           package-name: simple_package
-          target-ros2-distro: humble
+          target-ros2-distro: jazzy
           vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_private_repo.repos"
 
+  # Build and test a ROS 2 package in the setup-ros-docker base images
   test_ros2_docker:
     name: "ROS 2 Docker"
     runs-on: ubuntu-latest
@@ -184,33 +166,28 @@ jobs:
       matrix:
         ros_distribution:
           - humble
-          - iron
           - jazzy
           - rolling
-        # Define the Docker image(s) associated with each ROS distribution.
+        # Define the container image(s) associated with each ROS distribution.
         # The include syntax allows additional variables to be defined, like
-        # docker_image in this case. See documentation:
+        # container_image in this case. See documentation:
         # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
         #
         # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
         include:
           # Humble Hawksbill (May 2022 - May 2027)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-ros-base-latest
+          - container_image: rostooling/setup-ros-docker:ubuntu-jammy-latest
             ros_distribution: humble
 
-          # Iron Irwini (May 2023 - November 2024)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-ros-base-latest
-            ros_distribution: iron
-
           # Jazzy Jalisco (May 2024 - May 2029)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-noble-ros-jazzy-ros-base-latest
+          - container_image: rostooling/setup-ros-docker:ubuntu-noble-latest
             ros_distribution: jazzy
 
           # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-noble-ros-rolling-ros-base-latest
+          - container_image: rostooling/setup-ros-docker:ubuntu-noble-latest
             ros_distribution: rolling
     container:
-      image: ${{ matrix.docker_image }}
+      image: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4.4.0
@@ -237,6 +214,7 @@ jobs:
       - run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
       - run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/install/test_osrf_testing_tools_cpp"
 
+  # Test building all of ros2 from source in a bare runner, not a container
   test_ros2_from_source:
     name: "ROS 2 from source"
     runs-on: ${{ startsWith(matrix.os, 'ubuntu') && 'ubuntu-latest' || matrix.os }}
@@ -249,8 +227,6 @@ jobs:
         include:
           - os: ubuntu:22.04
             ros_distribution: humble
-          - os: ubuntu:22.04
-            ros_distribution: iron
           - os: ubuntu:24.04
             ros_distribution: jazzy
           - os: ubuntu:24.04
@@ -260,8 +236,6 @@ jobs:
           - os: windows-2019
             ros_distribution: humble
           - os: windows-2019
-            ros_distribution: iron
-          - os: windows-2019
             ros_distribution: jazzy
           - os: windows-2019
             ros_distribution: kilted
@@ -269,8 +243,6 @@ jobs:
             ros_distribution: rolling
           # - os: macOS-latest
           #   ros_distribution: humble
-          # - os: macOS-latest
-          #   ros_distribution: iron
           # - os: macOS-latest
           #   ros_distribution: jazzy
           # - os: macOS-latest
@@ -287,7 +259,7 @@ jobs:
         with:
           node-version: "20.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@main
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
@@ -454,8 +426,9 @@ jobs:
       - run: test ! -f "${{ steps.test_no_symlink_install.outputs.ros-workspace-directory-name }}/install/ament_copyright/lib/python3.*/site-packages/ament-copyright.egg-link"
         name: "Check that an .egg-link file in the install dir does not exist for ament_copyright"
 
-  test_ros2_from_source_docker:
-    name: "Test ROS 2 from source Docker"
+  # Test building all of ros2.repos, using ros-tooling/setup-ros action, in a bare Ubuntu container
+  test_ros2_from_source_container:
+    name: "Test ROS 2 from source in container"
     runs-on: ubuntu-latest
     needs: pre_condition
     strategy:
@@ -463,30 +436,24 @@ jobs:
       matrix:
         ros_distribution:
           - humble
-          - iron
           - jazzy
           - kilted
           - rolling
 
-        # Define the Docker image(s) associated with each ROS distribution.
+        # Define the container image(s) associated with each ROS distribution.
         # The include syntax allows additional variables to be defined, like
-        # docker_image in this case. See documentation:
+        # container_image in this case. See documentation:
         # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
         #
         # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
         include:
           # Humble Hawksbill (May 2022 - May 2027)
-          - docker_image: ubuntu:jammy
+          - container_image: ubuntu:jammy
             ros_distribution: humble
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
 
-          # Iron Irwini (May 2023 - November 2024)
-          - docker_image: ubuntu:jammy
-            ros_distribution: iron
-            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/iron/ros2.repos
-
           # Jazzy Jalisco (May 2024 - May 2029)
-          - docker_image: ubuntu:noble
+          - container_image: ubuntu:noble
             ros_distribution: jazzy
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/jazzy/ros2.repos
 
@@ -496,18 +463,18 @@ jobs:
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/kilted/ros2.repos
 
           # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
-          - docker_image: ubuntu:noble
+          - container_image: ubuntu:noble
             ros_distribution: rolling
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos
     container:
-      image: ${{ matrix.docker_image }}
+      image: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "20.x"
       - run: .github/workflows/build-and-test.sh
-      - uses: ros-tooling/setup-ros@master
+      - uses: ros-tooling/setup-ros@main
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
