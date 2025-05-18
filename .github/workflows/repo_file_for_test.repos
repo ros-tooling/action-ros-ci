@@ -7,12 +7,12 @@ repositories:
   ament_cmake:
     type: git
     url: https://github.com/ament/ament_cmake.git
-    version: 0.8.1
+    version: 0.8.3
   ament_lint:
     type: git
     url: https://github.com/ament/ament_lint.git
-    version: 0.19.1
+    version: 0.19.2
   ament_package:
     type: git
     url: https://github.com/ament/ament_package.git
-    version: 0.8.1
+    version: 0.8.9
