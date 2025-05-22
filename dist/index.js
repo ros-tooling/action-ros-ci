@@ -30712,19 +30712,14 @@ const url = __importStar(__nccwpck_require__(7310));
 const fs_1 = __importDefault(__nccwpck_require__(7147));
 const async_retry_1 = __importDefault(__nccwpck_require__(3415));
 const dep = __importStar(__nccwpck_require__(7760));
-const validROS1Distros = ["kinetic", "lunar", "melodic", "noetic"];
+
 const validROS2Distros = [
-    "dashing",
-    "eloquent",
-    "foxy",
-    "galactic",
     "humble",
-    "iron",
     "jazzy",
     "kilted",
     "rolling",
 ];
-const targetROS1DistroInput = "target-ros1-distro";
+
 const targetROS2DistroInput = "target-ros2-distro";
 const isLinux = process.platform == "linux";
 const isWindows = process.platform == "win32";
@@ -30826,13 +30821,9 @@ function execShellCommand(command_1, options_1) {
 }
 exports.execShellCommand = execShellCommand;
 //Determine whether all inputs name supported ROS distributions.
-function validateDistros(ros1Distro, ros2Distro) {
-    if (!ros1Distro && !ros2Distro) {
-        core.setFailed(`Neither '${targetROS1DistroInput}' or '${targetROS2DistroInput}' inputs were set, at least one is required.`);
-        return false;
-    }
-    if (ros1Distro && validROS1Distros.indexOf(ros1Distro) <= -1) {
-        core.setFailed(`Input ${ros1Distro} was not a valid ROS 1 distribution for '${targetROS1DistroInput}'. Valid values: ${validROS1Distros}`);
+function validateDistros(ros2Distro) {
+    if ( !ros2Distro) {
+        core.setFailed(`Neither '${targetROS2DistroInput}' inputs were set, at least one is required.`);
         return false;
     }
     if (ros2Distro && validROS2Distros.indexOf(ros2Distro) <= -1) {
@@ -30864,7 +30855,7 @@ exports.determineDistrib = determineDistrib;
 /**
  * Install ROS dependencies for given packages in the workspace, for all ROS distros being used.
  */
-function installRosdeps(packageSelection, skipKeys, workspaceDir, options, ros1Distro, ros2Distro) {
+function installRosdeps(packageSelection, skipKeys, workspaceDir, options, ros2Distro) {
     return __awaiter(this, void 0, void 0, function* () {
         const scriptName = "install_rosdeps.sh";
         const scriptPath = path.join(workspaceDir, scriptName);
@@ -30882,9 +30873,7 @@ function installRosdeps(packageSelection, skipKeys, workspaceDir, options, ros1D
 	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys "rti-connext-dds-5.3.1 rti-connext-dds-6.0.1 rti-connext-dds-7.3.0 ${filterNonEmptyJoin(skipKeys)}" --rosdistro $DISTRO -y`;
         fs_1.default.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
         let exitCode = 0;
-        if (ros1Distro) {
-            exitCode += yield execShellCommand([`./${scriptName} ${ros1Distro}`], options);
-        }
+
         if (ros2Distro) {
             exitCode += yield execShellCommand([`./${scriptName} ${ros2Distro}`], options);
         }
@@ -30894,7 +30883,7 @@ function installRosdeps(packageSelection, skipKeys, workspaceDir, options, ros1D
 /**
  * Check ROS dependencies have been satisfied for the workspace.
  */
-function checkRosdeps(packageSelection, skipKeys, workspaceDir, options, ros1Distro, ros2Distro) {
+function checkRosdeps(packageSelection, skipKeys, workspaceDir, options, ros2Distro) {
     return __awaiter(this, void 0, void 0, function* () {
         const scriptName = "check_rosdeps.sh";
         const scriptPath = path.join(workspaceDir, scriptName);
@@ -30909,9 +30898,7 @@ function checkRosdeps(packageSelection, skipKeys, workspaceDir, options, ros1Dis
 	rosdep check --from-paths $package_paths --ignore-src --skip-keys "${filterNonEmptyJoin(skipKeys)}" --rosdistro $DISTRO`;
         fs_1.default.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
         let exitCode = 0;
-        if (ros1Distro) {
-            exitCode += yield execShellCommand([`./${scriptName} ${ros1Distro}`], options);
-        }
+
         if (ros2Distro) {
             exitCode += yield execShellCommand([`./${scriptName} ${ros2Distro}`], options);
         }
@@ -31022,7 +31009,7 @@ function run_throw() {
         const rosWorkspaceName = "ros_ws";
         core.setOutput("ros-workspace-directory-name", rosWorkspaceName);
         const rosWorkspaceDir = path.join(workspace, rosWorkspaceName);
-        const targetRos1Distro = core.getInput(targetROS1DistroInput);
+ 
         const targetRos2Distro = core.getInput(targetROS2DistroInput);
         const vcsRepoFileUrlListAsString = core.getInput("vcs-repo-file-url") || "";
         let vcsRepoFileUrlList = vcsRepoFileUrlListAsString.split(RegExp("\\s"));
@@ -31050,7 +31037,7 @@ function run_throw() {
         });
         vcsRepoFileUrlList = vcsRepoFileUrlList.concat(vcsReposSupplemental);
         const vcsRepoFileUrlListNonEmpty = vcsRepoFileUrlList.filter((x) => x != "");
-        if (!validateDistros(targetRos1Distro, targetRos2Distro)) {
+        if (!validateDistros(targetRos2Distro)) {
             return;
         }
         // rosdep does not reliably work on Windows, see
@@ -31080,10 +31067,7 @@ function run_throw() {
         yield io.mkdirP(rosWorkspaceDir + "/src");
         const options = {
             cwd: rosWorkspaceDir,
-            env: Object.assign(Object.assign({}, process.env), { ROS_VERSION: targetRos2Distro ? "2" : "1", ROS_PYTHON_VERSION: targetRos2Distro || (targetRos1Distro && targetRos1Distro == "noetic")
-                    ? "3"
-                    : "2" }),
-        };
+            env: Object.assign(Object.assign({}, process.env), { ROS_VERSION: "2", ROS_PYTHON_VERSION: "3" });
         if (colconDefaultsFile !== "") {
             options.env = Object.assign(Object.assign({}, options.env), { COLCON_DEFAULTS_FILE: colconDefaultsFile });
         }
@@ -31197,10 +31181,10 @@ done`;
         // rosdep does not really work on Windows, so do not use it
         // See: https://github.com/ros-infrastructure/rosdep/issues/610
         if (!isWindows && !skipRosdepInstall) {
-            yield installRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
+            yield installRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos2Distro);
         }
         if (skipRosdepInstall && rosdepCheck) {
-            yield checkRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
+            yield checkRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos2Distro);
         }
         // Print list of Python packages and their version
         yield execShellCommand(["pip3 freeze || true"], options);
@@ -31225,16 +31209,7 @@ done`;
         // Source any installed ROS distributions if they are present
         let colconCommandPrefix = [];
         if (isLinux) {
-            if (targetRos1Distro) {
-                const ros1SetupPath = `/opt/ros/${targetRos1Distro}/setup.sh`;
-                if (fs_1.default.existsSync(ros1SetupPath)) {
-                    colconCommandPrefix = [
-                        ...colconCommandPrefix,
-                        `source ${ros1SetupPath}`,
-                        `&&`,
-                    ];
-                }
-            }
+
             if (targetRos2Distro) {
                 const ros2SetupPath = `/opt/ros/${targetRos2Distro}/setup.sh`;
                 if (fs_1.default.existsSync(ros2SetupPath)) {

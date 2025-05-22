@@ -56,21 +56,12 @@ inputs:
       Package names can be separated by any whitespace character.
     required: false
     default: ""
-  target-ros1-distro:
-    description: |
-      ROS 1 distribution to target for the build.  Will be used both for
-      `rosdep install` and `source setup.bash`. Either or both of
-      `target-ros1-distro` and `target-ros2-distro`, but at least one must
-      be specified. Typically, both are specified when building packages
-      that rely on both ROS versions, such as the ros1_bridge.
-    required: false
+
   target-ros2-distro:
     description: |
       ROS 2 distribution to target for the build.  Will be used both for
-      `rosdep install` and `source setup.bash`. Either or both of
-      `target-ros1-distro` and `target-ros2-distro`, but at least one must
-      be specified. Typically, both are specified when building packages
-      that rely on both ROS versions, such as the ros1_bridge.
+      `rosdep install` and `source setup.bash`. Typically, are specified when building packages
+      that rely on both ROS versions, such as the ros2_bridge.
     required: false
   vcs-repo-file-url:
     description: |

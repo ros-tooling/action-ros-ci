@@ -22,43 +22,7 @@ jobs:
     steps:
       - run: 'true'
 
-  test_ros:
-    name: "Test ROS package"
-    runs-on: ubuntu-latest
-    needs: pre_condition
-    strategy:
-      fail-fast: false
-      matrix:
-        ros_distribution: # ROS 1 tests only run on Ubuntu
-          - noetic
-
-        # Define the OCI image(s) associated with each ROS distribution.
-        # The include syntax allows additional variables to be defined, like
-        # container_image in this case. See documentation:
-        # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
-        #
-        # Platforms are defined in REP 3: https://ros.org/reps/rep-0003.html
-        include:
-          # Noetic Ninjemys (May 2020 - May 2025)
-          - container_image: rostooling/setup-ros-docker:ubuntu-focal-latest
-            ros_distribution: noetic
-    container:
-      image: ${{ matrix.container_image }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4.4.0
-        with:
-          node-version: "20.x"
-      - run: .github/workflows/build-and-test.sh
-      - uses: ./
-        id: action-ros-ci
-        with:
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/ros_tutorials.repos"
-          package-name: roscpp_tutorials
-          target-ros1-distro: ${{ matrix.ros_distribution }}
-      - run: test -d "${{ steps.action-ros-ci.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
-        name: "Check that roscpp_tutorials install directory is present"
-
+  
   test_ros2_mac_win:
     name: "Test ROS 2 packages in repository"
     runs-on: ${{ matrix.os }}

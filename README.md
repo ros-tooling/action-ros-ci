@@ -58,8 +58,8 @@ Step by step, that process goes like this:
 - run `colcon build` (optionally limited to packages specified in `package-name`)
 - run `colcon test` (optionally limited to packages specified in `package-name`; optionally [skipped](#Skip-tests))
 
-This action requires targeting a ROS or ROS 2 distribution explicitly.
-This is provided via the `target-ros1-distro` or `target-ros2-distro` inputs.
+This action requires targeting a ROS 2 distribution explicitly.
+This is provided via the `target-ros2-distro` inputs.
 Either or both may be specified, if neither is provided an error will be raised.
 This input is used to `source setup.sh` for any installed ROS binaries (e.g. installed using [`ros-tooling/setup-ros`](https://github.com/ros-tooling/setup-ros)), as well as used as an argument to `rosdep install`.
 
@@ -178,14 +178,14 @@ You can also automatically generate your package's dependencies using the follow
 
 Note that the `actions/checkout` step is required when using a custom repos file from your repository.
 
-### Build a ROS 1 workspace
+### Build a ROS 2 workspace
 
 Building a ROS 1 workspace works the same way.
-Simply use `target-ros1-distro` instead of `target-ros2-distro`.
+Simply use`target-ros2-distro`.
 
 ```yaml
 jobs:
-  build_and_test_ros1:
+  build_and_test_ros2:
     runs_on: ubuntu-latest
     container:
       image: rostooling/setup-ros-docker:ubuntu-focal-latest
@@ -193,7 +193,7 @@ jobs:
       - uses: ros-tooling/action-ros-ci@v0.4
         with:
           package-name: my_package
-          target-ros1-distro: noetic
+          target-ros2-distro: humble
 ```
 
 ### Skip tests
