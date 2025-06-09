@@ -670,10 +670,9 @@ done`;
 			core.setFailed(`Unsupported distribution ${dist}`);
 		}
 	}
-	// rosdep does not really work on Windows, so do not use it
-	// See: https://github.com/ros-infrastructure/rosdep/issues/610
-	if (!isWindows && !skipRosdepInstall) {
-		await installRosdeps(
+
+	if (rosdepCheck) {
+		await checkRosdeps(
 			buildPackageSelection,
 			rosdepSkipKeysSelection,
 			rosWorkspaceDir,
@@ -683,8 +682,10 @@ done`;
 		);
 	}
 
-	if (skipRosdepInstall && rosdepCheck) {
-		await checkRosdeps(
+	// rosdep does not really work on Windows, so do not use it
+	// See: https://github.com/ros-infrastructure/rosdep/issues/610
+	if (!isWindows && !skipRosdepInstall) {
+		await installRosdeps(
 			buildPackageSelection,
 			rosdepSkipKeysSelection,
 			rosWorkspaceDir,
