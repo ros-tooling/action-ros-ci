@@ -31199,7 +31199,7 @@ done`;
         if (!isWindows && !skipRosdepInstall) {
             yield installRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
         }
-        if (skipRosdepInstall && rosdepCheck) {
+        if (rosdepCheck) {
             yield checkRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
         }
         // Print list of Python packages and their version

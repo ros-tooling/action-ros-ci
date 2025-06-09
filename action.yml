@@ -100,7 +100,7 @@ inputs:
   rosdep-check:
     default: ""
     description: |
-      Check dependencies of packages using 'rosdep check'. Must be used with skip-rosdep-install.
+      Check dependencies of packages using 'rosdep check'.
       Set to 'true'.
     required: false
   rosdep-skip-keys:
