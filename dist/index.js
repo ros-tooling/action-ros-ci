@@ -31194,13 +31194,13 @@ done`;
                 core.setFailed(`Unsupported distribution ${dist}`);
             }
         }
-        if (rosdepCheck) {
-            yield checkRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
-        }
         // rosdep does not really work on Windows, so do not use it
         // See: https://github.com/ros-infrastructure/rosdep/issues/610
         if (!isWindows && !skipRosdepInstall) {
             yield installRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
+        }
+        if (rosdepCheck) {
+            yield checkRosdeps(buildPackageSelection, rosdepSkipKeysSelection, rosWorkspaceDir, options, targetRos1Distro, targetRos2Distro);
         }
         // Print list of Python packages and their version
         yield execShellCommand(["pip3 freeze || true"], options);
