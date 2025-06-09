@@ -201,7 +201,7 @@ async function installRosdeps(
 	# suppress errors from unresolved install keys to preserve backwards compatibility
 	# due to difficulty reading names of some non-catkin dependencies in the ros2 core
 	# see https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/#install-dependencies-using-rosdep
-	rosdep install -r --from-paths $package_paths --ignore-src --skip-keys "rti-connext-dds-5.3.1 rti-connext-dds-6.0.1 rti-connext-dds-7.3.0 ${filterNonEmptyJoin(
+	rosdep install --from-paths $package_paths --ignore-src --skip-keys "rti-connext-dds-5.3.1 rti-connext-dds-6.0.1 rti-connext-dds-7.3.0 ${filterNonEmptyJoin(
 		skipKeys,
 	)}" --rosdistro $DISTRO -y`;
 	fs.writeFileSync(scriptPath, scriptContent, { mode: 0o766 });
@@ -670,9 +670,10 @@ done`;
 			core.setFailed(`Unsupported distribution ${dist}`);
 		}
 	}
-
-	if (rosdepCheck) {
-		await checkRosdeps(
+	// rosdep does not really work on Windows, so do not use it
+	// See: https://github.com/ros-infrastructure/rosdep/issues/610
+	if (!isWindows && !skipRosdepInstall) {
+		await installRosdeps(
 			buildPackageSelection,
 			rosdepSkipKeysSelection,
 			rosWorkspaceDir,
@@ -681,11 +682,9 @@ done`;
 			targetRos2Distro,
 		);
 	}
-
-	// rosdep does not really work on Windows, so do not use it
-	// See: https://github.com/ros-infrastructure/rosdep/issues/610
-	if (!isWindows && !skipRosdepInstall) {
-		await installRosdeps(
+	
+	if (skipRosdepInstall && rosdepCheck) {
+		await checkRosdeps(
 			buildPackageSelection,
 			rosdepSkipKeysSelection,
 			rosWorkspaceDir,
