@@ -683,7 +683,7 @@ done`;
 		);
 	}
 
-	if (skipRosdepInstall && rosdepCheck) {
+	if (rosdepCheck) {
 		await checkRosdeps(
 			buildPackageSelection,
 			rosdepSkipKeysSelection,
