@@ -21,7 +21,7 @@ This action builds and tests a [ROS](http://wiki.ros.org/) or [ROS 2](https://do
    1. [Generate and process code coverage data](#Generate-and-process-code-coverage-data)
    1. [Store `colcon` logs as build artifacts](#Store-colcon-logs-as-build-artifacts)
    1. [Use with private repos](#Use-with-private-repos)
-   1. [Skip `rosdep install`](#Skip-rosdep-install)
+   1. [Skip `rosdep install` and run `rosdep check`](#Skip-rosdep-install-and-run-rosdep-check)
    1. [Interdependent pull requests or merge requests](#Interdependent-pull-requests-or-merge-requests)
 1. [Developing](#Developing)
 1. [License](#License)
@@ -411,7 +411,7 @@ For example, if this secret is called `REPO_TOKEN`:
 Note that this currently only works for tokens for the GitHub server this action runs on.
 For example, it will not work with a token for a private repo on github.com when the action is running on an enterprise GitHub server.
 
-### Skip `rosdep install`
+### Skip `rosdep install` and run `rosdep check`
 
 Include an option to bypass `rosdep install` for workflow that uses specific docker image that is expected to already have all dependencies.
 To check for missing dependencies within the workflow's image, user can run with `rosdep-check: true` flag.
