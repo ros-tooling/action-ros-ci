@@ -44,7 +44,7 @@ For reference, these are the minimum tools needed by the action, which are provi
 - `colcon-coveragepy-result` (Optional)
 - `colcon-mixin` (Optional)
 
-**Note**: for Windows, `action-ros-ci` currently needs to be run on `windows-2019` or needs another action to install Visual Studio 2019.
+**Note**: for Windows, ROS 2 currently only officially supports Visual Studio 2019, but GitHub has dropped support for the `windows-2019` runner image, so we can only use `windows-2022` (Visual Studio 2022) or newer.
 
 ## Overview
 
