@@ -30803,7 +30803,7 @@ function execShellCommand(command_1, options_1) {
                 "/S",
                 "/C",
                 "call",
-                "%programfiles(x86)%\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
+                "%programfiles(x86)%\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
                 "&&",
                 ...(use_bash ? [`C:\\Program Files\\Git\\bin\\bash.exe`, `-c`] : []),
                 ...command,
