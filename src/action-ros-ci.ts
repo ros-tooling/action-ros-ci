@@ -107,7 +107,7 @@ export async function execShellCommand(
 			"/S",
 			"/C",
 			"call",
-			"%programfiles(x86)%\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
+			"%programfiles%\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
 			"&&",
 			...(use_bash ? [`C:\\Program Files\\Git\\bin\\bash.exe`, `-c`] : []),
 			...command,
