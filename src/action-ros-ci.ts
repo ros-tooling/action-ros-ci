@@ -803,6 +803,12 @@ done`;
 			],
 			options,
 		);
+		await execShellCommand(
+			[
+				`/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@${gihubServerDomain}/.insteadof`,
+			],
+			options,
+		);
 	}
 }
 
