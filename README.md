@@ -87,12 +87,12 @@ The sections following cover more specific options.
 ```yaml
 jobs:
   build_and_test_ros2:
-    runs_on: ubuntu-latest
+    runs-on: ubuntu-latest
     container:
       image: rostooling/setup-ros-docker:ubuntu-noble-latest
     steps:
       - name: Build and run tests
-        uses: ros-tooling/action-ros-ci@0.7
+        uses: ros-tooling/action-ros-ci@0.4.4
         with:
           package-name: my_package
           target-ros2-distro: jazzy
@@ -106,7 +106,7 @@ In this case, `action-ros-ci` will rely on `setup-ros` for installing ROS 2 deve
 ```yaml
 jobs:
   build_and_test_ros2:
-    runs_on: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: ros-tooling/setup-ros@v0.7
         with:
@@ -123,7 +123,7 @@ In this case, `action-ros-ci` will build all necessary ROS 2 dependencies of `my
 
 ```yaml
   - name: Build and run tests
-    uses: ros-tooling/action-ros-ci@0.7
+    uses: ros-tooling/action-ros-ci@0.4.4
     with:
       package-name: my_package
       target-ros2-distro: jazzy
@@ -146,7 +146,7 @@ on:
 
 jobs:
   jazzy_from_source:
-    runs_on: ubuntu-latest
+    runs-on: ubuntu-latest
     container:
       image: rostooling/setup-ros-docker:ubuntu-noble-latest
     steps:
@@ -186,7 +186,7 @@ Simply use `target-ros1-distro` instead of `target-ros2-distro`.
 ```yaml
 jobs:
   build_and_test_ros1:
-    runs_on: ubuntu-latest
+    runs-on: ubuntu-latest
     container:
       image: rostooling/setup-ros-docker:ubuntu-focal-latest
     steps:
