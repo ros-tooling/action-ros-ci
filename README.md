@@ -92,7 +92,7 @@ jobs:
       image: rostooling/setup-ros-docker:ubuntu-noble-latest
     steps:
       - name: Build and run tests
-        uses: ros-tooling/action-ros-ci@0.4.4
+        uses: ros-tooling/action-ros-ci@v0.4
         with:
           package-name: my_package
           target-ros2-distro: jazzy
