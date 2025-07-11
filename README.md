@@ -123,7 +123,7 @@ In this case, `action-ros-ci` will build all necessary ROS 2 dependencies of `my
 
 ```yaml
   - name: Build and run tests
-    uses: ros-tooling/action-ros-ci@0.4.4
+    uses: ros-tooling/action-ros-ci@v0.4
     with:
       package-name: my_package
       target-ros2-distro: jazzy
