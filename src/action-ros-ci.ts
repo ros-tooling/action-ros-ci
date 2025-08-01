@@ -429,6 +429,7 @@ async function run_throw(): Promise<void> {
 	const skipTests = core.getInput("skip-tests") === "true";
 	const skipRosdepInstall = core.getInput("skip-rosdep-install") === "true";
 	const rosdepCheck = core.getInput("rosdep-check") === "true";
+	const gitSshPort = core.getInput("git-ssh-port");
 
 	// Check if PR overrides/adds supplemental repos files
 	const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
@@ -539,7 +540,7 @@ async function run_throw(): Promise<void> {
 			options,
 		);
 		const gihubServerDomainRegex = gihubServerDomain.replace(
-			".",
+			/\./g,
 			String.raw`\.`,
 		);
 		await execShellCommand(
@@ -571,12 +572,21 @@ async function run_throw(): Promise<void> {
 			options,
 		);
 		// Use a global insteadof entry because local configs aren't observed by git clone (ssh)
-		await execShellCommand(
-			[
-				`/usr/bin/git config --global url.https://x-access-token:${importToken}@${gihubServerDomain}/.insteadof 'git@${gihubServerDomain}:'`,
-			],
-			options,
-		);
+		if (gitSshPort) {
+			await execShellCommand(
+				[
+					`/usr/bin/git config --global --add url.https://x-access-token:${importToken}@${gihubServerDomain}.insteadof 'ssh://git@${gihubServerDomain}:${gitSshPort}'`,
+				],
+				options,
+			);
+		} else {
+			await execShellCommand(
+				[
+					`/usr/bin/git config --global url.https://x-access-token:${importToken}@${gihubServerDomain}/.insteadof 'git@${gihubServerDomain}:'`,
+				],
+				options,
+			);
+		}
 		if (core.isDebug()) {
 			await execShellCommand(
 				[`/usr/bin/git config --list --show-origin || true`],
@@ -803,12 +813,14 @@ done`;
 			],
 			options,
 		);
-		await execShellCommand(
-			[
-				`/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@${gihubServerDomain}/.insteadof`,
-			],
-			options,
-		);
+		if (!gitSshPort) {
+			await execShellCommand(
+				[
+					`/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@${gihubServerDomain}/.insteadof`,
+				],
+				options,
+			);
+		}
 	}
 }
 

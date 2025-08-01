@@ -31029,6 +31029,7 @@ function run_throw() {
         const skipTests = core.getInput("skip-tests") === "true";
         const skipRosdepInstall = core.getInput("skip-rosdep-install") === "true";
         const rosdepCheck = core.getInput("rosdep-check") === "true";
+        const gitSshPort = core.getInput("git-ssh-port");
         // Check if PR overrides/adds supplemental repos files
         const vcsReposOverride = dep.getReposFilesOverride(github.context.payload);
         const vcsReposSupplemental = dep.getReposFilesSupplemental(github.context.payload);
@@ -31099,7 +31100,7 @@ function run_throw() {
             yield execShellCommand([
                 `/usr/bin/git config --local --unset-all http.https://${gihubServerDomain}/.extraheader || true`,
             ], options);
-            const gihubServerDomainRegex = gihubServerDomain.replace(".", String.raw `\.`);
+            const gihubServerDomainRegex = gihubServerDomain.replace(/\./g, String.raw `\.`);
             yield execShellCommand([
                 String.raw `/usr/bin/git submodule foreach --recursive git config --local --name-only --get-regexp 'http\.https\:\/\/${gihubServerDomainRegex}\/\.extraheader'` +
                     ` && git config --local --unset-all 'http.https://${gihubServerDomain}/.extraheader' || true`,
@@ -31117,9 +31118,16 @@ function run_throw() {
                     ` && git config --local --unset-all 'git@${gihubServerDomain}:.extraheader' || true`,
             ], options);
             // Use a global insteadof entry because local configs aren't observed by git clone (ssh)
-            yield execShellCommand([
-                `/usr/bin/git config --global url.https://x-access-token:${importToken}@${gihubServerDomain}/.insteadof 'git@${gihubServerDomain}:'`,
-            ], options);
+            if (gitSshPort) {
+                yield execShellCommand([
+                    `/usr/bin/git config --global --add url.https://x-access-token:${importToken}@${gihubServerDomain}.insteadof 'ssh://git@${gihubServerDomain}:${gitSshPort}'`,
+                ], options);
+            }
+            else {
+                yield execShellCommand([
+                    `/usr/bin/git config --global url.https://x-access-token:${importToken}@${gihubServerDomain}/.insteadof 'git@${gihubServerDomain}:'`,
+                ], options);
+            }
             if (core.isDebug()) {
                 yield execShellCommand([`/usr/bin/git config --list --show-origin || true`], options);
             }
@@ -31285,9 +31293,11 @@ done`;
             yield execShellCommand([
                 `/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@${gihubServerDomain}.insteadof`,
             ], options);
-            yield execShellCommand([
-                `/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@${gihubServerDomain}/.insteadof`,
-            ], options);
+            if (!gitSshPort) {
+                yield execShellCommand([
+                    `/usr/bin/git config --global --unset-all url.https://x-access-token:${importToken}@${gihubServerDomain}/.insteadof`,
+                ], options);
+            }
         }
     });
 }
