@@ -30712,7 +30712,13 @@ const url = __importStar(__nccwpck_require__(7310));
 const fs_1 = __importDefault(__nccwpck_require__(7147));
 const async_retry_1 = __importDefault(__nccwpck_require__(3415));
 const dep = __importStar(__nccwpck_require__(7760));
-const validROS1Distros = ["kinetic", "lunar", "melodic", "noetic"];
+const validROS1Distros = [
+    "kinetic",
+    "lunar",
+    "melodic",
+    "noetic",
+    "one",
+];
 const validROS2Distros = [
     "dashing",
     "eloquent",
@@ -31081,7 +31087,9 @@ function run_throw() {
         yield io.mkdirP(rosWorkspaceDir + "/src");
         const options = {
             cwd: rosWorkspaceDir,
-            env: Object.assign(Object.assign({}, process.env), { ROS_VERSION: targetRos2Distro ? "2" : "1", ROS_PYTHON_VERSION: targetRos2Distro || (targetRos1Distro && targetRos1Distro == "noetic")
+            env: Object.assign(Object.assign({}, process.env), { ROS_VERSION: targetRos2Distro ? "2" : "1", ROS_PYTHON_VERSION: targetRos2Distro ||
+                    (targetRos1Distro &&
+                        (targetRos1Distro == "noetic" || targetRos1Distro == "one"))
                     ? "3"
                     : "2" }),
         };
