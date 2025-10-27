@@ -10,7 +10,13 @@ import fs from "fs";
 import retry from "async-retry";
 import * as dep from "./dependencies";
 
-const validROS1Distros: string[] = ["kinetic", "lunar", "melodic", "noetic"];
+const validROS1Distros: string[] = [
+	"kinetic",
+	"lunar",
+	"melodic",
+	"noetic",
+	"one",
+];
 const validROS2Distros: string[] = [
 	"dashing",
 	"eloquent",
@@ -509,7 +515,9 @@ async function run_throw(): Promise<void> {
 			...process.env,
 			ROS_VERSION: targetRos2Distro ? "2" : "1",
 			ROS_PYTHON_VERSION:
-				targetRos2Distro || (targetRos1Distro && targetRos1Distro == "noetic")
+				targetRos2Distro ||
+				(targetRos1Distro &&
+					(targetRos1Distro == "noetic" || targetRos1Distro == "one"))
 					? "3"
 					: "2",
 		},
