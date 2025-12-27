@@ -1,8 +1,8 @@
 # repo file only containing osrf_testing_tools_cpp
 # This repository has been chosen because it does depend on anything, as of
-# 1.5.2.
+# 1.5.3.
 repositories:
   osrf_testing_tools_cpp:
     type: git
     url: https://github.com/osrf/osrf_testing_tools_cpp.git
-    version: 1.5.2
+    version: 1.5.3
