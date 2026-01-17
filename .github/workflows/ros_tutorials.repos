@@ -1,10 +1,8 @@
 # repo file only containing ros_tutorials
-# This repository has been chosen because it does depend on anything, as of
-# 0.10.3
 #
-# https://github.com/ros/ros_tutorials/tree/0.10.3
+# https://github.com/ros/ros_tutorials/tree/0.10.4
 repositories:
   ros_tutorials:
     type: git
     url: https://github.com/ros/ros_tutorials.git
-    version: 0.10.3
+    version: 0.10.4
