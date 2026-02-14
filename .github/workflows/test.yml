@@ -178,7 +178,7 @@ jobs:
         # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
         include:
           # Humble Hawksbill (May 2022 - May 2027)
-          - container_image: rostooling/setup-ros-docker:ubuntu-jammy-latest
+          - container_image: rostooling/setup-ros-docker:ubuntu-noble-latest
             ros_distribution: humble
 
           # Jazzy Jalisco (May 2024 - May 2029)
