@@ -89,7 +89,7 @@ jobs:
   build_and_test_ros2:
     runs-on: ubuntu-latest
     container:
-      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+      image: ros-tooling/setup-ros-docker:ubuntu-noble-latest
     steps:
       - name: Build and run tests
         uses: ros-tooling/action-ros-ci@v0.4
@@ -148,7 +148,7 @@ jobs:
   jazzy_from_source:
     runs-on: ubuntu-latest
     container:
-      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+      image: ros-tooling/setup-ros-docker:ubuntu-noble-latest
     steps:
       - uses: ros-tooling/action-ros-ci@v0.4
         with:
@@ -188,7 +188,7 @@ jobs:
   build_and_test_ros1:
     runs-on: ubuntu-latest
     container:
-      image: rostooling/setup-ros-docker:ubuntu-focal-latest
+      image: ros-tooling/setup-ros-docker:ubuntu-focal-latest
     steps:
       - uses: ros-tooling/action-ros-ci@v0.4
         with:
