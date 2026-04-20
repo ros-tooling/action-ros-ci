@@ -45,7 +45,7 @@ jobs:
     container:
       image: ${{ matrix.container_image }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "20.x"
@@ -74,7 +74,7 @@ jobs:
       INSTALL_TYPE: ${{ startsWith(matrix.os, 'windows') && 'merged' || 'default' }}
       INSTALL_PATH: ${{ startsWith(matrix.os, 'windows') && 'install/share' || 'install' }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "20.x"
@@ -100,7 +100,7 @@ jobs:
       image: rostooling/setup-ros-docker:ubuntu-jammy-latest
     needs: pre_condition
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./
         with:
           package-name: rmw
@@ -114,7 +114,7 @@ jobs:
       image: rostooling/setup-ros-docker:ubuntu-jammy-latest
     needs: pre_condition
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Skip installing test_depend dependency and verifies it isn't installed.
       - uses: ./
         with:
@@ -148,7 +148,7 @@ jobs:
     # We don't have access to the secret token for the test repo on a fork
     if: ${{ !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./
         with:
           import-token: ${{ secrets.TOKEN_PRIVATE_REPO_TEST }}
@@ -189,7 +189,7 @@ jobs:
     container:
       image: ${{ matrix.container_image }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "20.x"
@@ -254,7 +254,7 @@ jobs:
       INSTALL_TYPE: ${{ startsWith(matrix.os, 'windows') && 'merged' || 'default' }}
       INSTALL_PATH: ${{ startsWith(matrix.os, 'windows') && 'install/share' || 'install' }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "20.x"
@@ -469,7 +469,7 @@ jobs:
     container:
       image: ${{ matrix.container_image }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "20.x"
