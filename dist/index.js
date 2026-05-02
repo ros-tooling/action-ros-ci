@@ -30722,6 +30722,7 @@ const validROS2Distros = [
     "iron",
     "jazzy",
     "kilted",
+    "lyrical",
     "rolling",
 ];
 const targetROS1DistroInput = "target-ros1-distro";
