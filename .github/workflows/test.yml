@@ -82,6 +82,8 @@ jobs:
       - uses: ros-tooling/setup-ros@main
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
+          # TODO(christophebedard): remove once Lyrical has been released and the Rolling transition to Resolute is complete
+          use-ros2-testing: ${{ matrix.ros_distribution == 'lyrical' || matrix.ros_distribution == 'rolling' }}
       - uses: ./
         id: test_all_packages_in_repo
         name: "Test all packages in single repo, default options"
@@ -270,6 +272,9 @@ jobs:
           node-version: "20.x"
       - run: .github/workflows/build-and-test.sh
       - uses: ros-tooling/setup-ros@main
+        with:
+          # TODO(christophebedard): remove once Lyrical has been released and the Rolling transition to Resolute is complete
+          use-ros2-testing: ${{ matrix.ros_distribution == 'lyrical' || matrix.ros_distribution == 'rolling' }}
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
@@ -491,6 +496,9 @@ jobs:
           node-version: "20.x"
       - run: .github/workflows/build-and-test.sh
       - uses: ros-tooling/setup-ros@main
+        with:
+          # TODO(christophebedard): remove once Lyrical has been released and the Rolling transition to Resolute is complete
+          use-ros2-testing: ${{ matrix.ros_distribution == 'lyrical' || matrix.ros_distribution == 'rolling' }}
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
