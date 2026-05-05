@@ -186,13 +186,11 @@ jobs:
             ros_distribution: jazzy
 
           # Lyrical Luth (May 2026 - May 2031)
-          # TODO(christophebedard): uncomment here and below for Rolling once Resolute images are available
-          # - container_image: rostooling/setup-ros-docker:ubuntu-resolute-latest
-          #   ros_distribution: lyrical
+          - container_image: rostooling/setup-ros-docker:ubuntu-resolute-latest
+            ros_distribution: lyrical
 
           # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
-          # - container_image: rostooling/setup-ros-docker:ubuntu-resolute-latest
-          - container_image: rostooling/setup-ros-docker:ubuntu-noble-latest
+          - container_image: rostooling/setup-ros-docker:ubuntu-resolute-latest
             ros_distribution: rolling
     container:
       image: ${{ matrix.container_image }}
