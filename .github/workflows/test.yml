@@ -69,7 +69,7 @@ jobs:
         os:
           # - macOS-latest
           - windows-2022
-        ros_distribution: [humble, jazzy, kilted]
+        ros_distribution: [humble, jazzy, kilted, lyrical]
     env:
       INSTALL_TYPE: ${{ startsWith(matrix.os, 'windows') && 'merged' || 'default' }}
       INSTALL_PATH: ${{ startsWith(matrix.os, 'windows') && 'install/share' || 'install' }}
@@ -82,6 +82,8 @@ jobs:
       - uses: ros-tooling/setup-ros@main
         with:
           required-ros-distributions: ${{ matrix.ros_distribution }}
+          # TODO(christophebedard): remove once Lyrical has been released and the Rolling transition to Resolute is complete
+          use-ros2-testing: ${{ matrix.ros_distribution == 'lyrical' || matrix.ros_distribution == 'rolling' }}
       - uses: ./
         id: test_all_packages_in_repo
         name: "Test all packages in single repo, default options"
@@ -183,8 +185,12 @@ jobs:
           - container_image: rostooling/setup-ros-docker:ubuntu-noble-latest
             ros_distribution: jazzy
 
+          # Lyrical Luth (May 2026 - May 2031)
+          - container_image: rostooling/setup-ros-docker:ubuntu-resolute-latest
+            ros_distribution: lyrical
+
           # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
-          - container_image: rostooling/setup-ros-docker:ubuntu-noble-latest
+          - container_image: rostooling/setup-ros-docker:ubuntu-resolute-latest
             ros_distribution: rolling
     container:
       image: ${{ matrix.container_image }}
@@ -231,7 +237,9 @@ jobs:
             ros_distribution: jazzy
           - os: ubuntu:24.04
             ros_distribution: kilted
-          - os: ubuntu:24.04
+          - os: ubuntu:26.04
+            ros_distribution: lyrical
+          - os: ubuntu:26.04
             ros_distribution: rolling
           - os: windows-2022
             ros_distribution: humble
@@ -239,6 +247,8 @@ jobs:
             ros_distribution: jazzy
           - os: windows-2022
             ros_distribution: kilted
+          - os: windows-2022
+            ros_distribution: lyrical
           - os: windows-2022
             ros_distribution: rolling
           # - os: macOS-latest
@@ -260,6 +270,9 @@ jobs:
           node-version: "20.x"
       - run: .github/workflows/build-and-test.sh
       - uses: ros-tooling/setup-ros@main
+        with:
+          # TODO(christophebedard): remove once Lyrical has been released and the Rolling transition to Resolute is complete
+          use-ros2-testing: ${{ matrix.ros_distribution == 'lyrical' || matrix.ros_distribution == 'rolling' }}
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
@@ -312,7 +325,7 @@ jobs:
         id: test_repo
         name: "Test single package, with custom repository file"
         with:
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos"
+          vcs-repo-file-url: ${{ github.workspace }}/.github/workflows/repo_file_for_test${{ contains(fromJSON('["ubuntu:24.04","ubuntu:26.04"]'), matrix.os) && '_noble' || '' }}.repos
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - name: "Check that ament_copyright install directory is present in ${{ env.INSTALL_TYPE }} install space"
@@ -342,7 +355,7 @@ jobs:
         name: "Test single package, with multiple custom repository files"
         with:
           vcs-repo-file-url: |
-            .github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos
+            .github/workflows/repo_file_for_test${{ contains(fromJSON('["ubuntu:24.04","ubuntu:26.04"]'), matrix.os) && '_noble' || '' }}.repos
             .github/workflows/repo_file_for_test_cpp_package.repos
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
@@ -391,7 +404,7 @@ jobs:
         with:
           package-name: ament_cmake_core
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos"
+          vcs-repo-file-url: ${{ github.workspace }}/.github/workflows/repo_file_for_test${{ contains(fromJSON('["ubuntu:24.04","ubuntu:26.04"]'), matrix.os) && '_noble' || '' }}.repos
           # We use a long unique string here to make sure that if this string
           # is found in CMakeCache.txt, it means the additional CMake flag has
           # been passed successfully. Non recognized flags are also written by
@@ -438,6 +451,7 @@ jobs:
           - humble
           - jazzy
           - kilted
+          - lyrical
           - rolling
 
         # Define the container image(s) associated with each ROS distribution.
@@ -458,12 +472,17 @@ jobs:
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/jazzy/ros2.repos
 
           # Kilted Kaiju (May 2025 - November 2026)
-          - docker_image: ubuntu:noble
+          - container_image: ubuntu:noble
             ros_distribution: kilted
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/kilted/ros2.repos
 
+          # Lyrical Luth (May 2026 - May 2031)
+          - container_image: ubuntu:resolute
+            ros_distribution: lyrical
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/lyrical/ros2.repos
+
           # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
-          - container_image: ubuntu:noble
+          - container_image: ubuntu:resolute
             ros_distribution: rolling
             distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos
     container:
@@ -475,6 +494,9 @@ jobs:
           node-version: "20.x"
       - run: .github/workflows/build-and-test.sh
       - uses: ros-tooling/setup-ros@main
+        with:
+          # TODO(christophebedard): remove once Lyrical has been released and the Rolling transition to Resolute is complete
+          use-ros2-testing: ${{ matrix.ros_distribution == 'lyrical' || matrix.ros_distribution == 'rolling' }}
       - uses: ./
         id: test_single_package
         name: "Test single package, default options"
@@ -528,7 +550,7 @@ jobs:
         id: test_repo
         name: "Test single package, with custom repository file"
         with:
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos"
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
@@ -541,7 +563,7 @@ jobs:
         name: "Test single package, with multiple custom repository files"
         with:
           vcs-repo-file-url: |
-            .github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos
+            .github/workflows/repo_file_for_test${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos
             .github/workflows/repo_file_for_test_cpp_package.repos
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
@@ -572,7 +594,7 @@ jobs:
         with:
           package-name: ament_cmake_core
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos"
           # We use a long unique string here to make sure that if this string
           # is found in CMakeCache.txt, it means the additional CMake flag has
           # been passed successfully. Non recognized flags are also written by
@@ -589,6 +611,6 @@ jobs:
         with:
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_dirs_with_same_name_as_repo${{ matrix.os == 'ubuntu:24.04' && '_noble' || '' }}.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_dirs_with_same_name_as_repo${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos"
       - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/action-ros-ci/foo"
       - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/foo/action-ros-ci/bar"
