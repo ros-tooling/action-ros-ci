@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euxo pipefail
-
+python -m pip install --upgrade pip setuptools
 npm install -g codecov
 
 # When running inside a Docker container, by default, we're root and all files belond to root.
