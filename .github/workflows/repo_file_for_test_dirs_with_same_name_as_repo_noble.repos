@@ -9,7 +9,7 @@ repositories:
   foo/action-ros-ci/bar:
     type: git
     url: https://github.com/ament/ament_lint.git
-    version: 0.19.1
+    version: 0.19.2
   # Test having a duplicate of the test repo
   ros-tooling/action-ros-ci:
     type: git
