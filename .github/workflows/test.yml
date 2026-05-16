@@ -46,7 +46,7 @@ jobs:
       image: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4.4.0
+      - uses: actions/setup-node@v6.3.0
         with:
           node-version: "24.x"
       - run: .github/workflows/build-and-test.sh
@@ -75,7 +75,7 @@ jobs:
       INSTALL_PATH: ${{ startsWith(matrix.os, 'windows') && 'install/share' || 'install' }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4.4.0
+      - uses: actions/setup-node@v6.3.0
         with:
           node-version: "24.x"
       - run: .github/workflows/build-and-test.sh
@@ -196,7 +196,7 @@ jobs:
       image: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4.4.0
+      - uses: actions/setup-node@v6.3.0
         with:
           node-version: "24.x"
       - run: .github/workflows/build-and-test.sh
@@ -265,7 +265,7 @@ jobs:
       INSTALL_PATH: ${{ startsWith(matrix.os, 'windows') && 'install/share' || 'install' }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4.4.0
+      - uses: actions/setup-node@v6.3.0
         with:
           node-version: "24.x"
       - run: .github/workflows/build-and-test.sh
@@ -489,7 +489,7 @@ jobs:
       image: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4.4.0
+      - uses: actions/setup-node@v6.3.0
         with:
           node-version: "24.x"
       - run: .github/workflows/build-and-test.sh
