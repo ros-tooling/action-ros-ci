@@ -117,6 +117,70 @@ jobs:
           target-ros2-distro: jazzy
 ```
 
+#### Building multiple packages
+
+We recommend that when building several packages in a repository, that you build each of them via a matrix.
+This helps to catch `package.xml` dependency specification issues before you run into them in the ROS buildfarm.
+Even if your packages are interdependent, this can reveal issues you won't see in a combined build.
+
+To do so, use a `matrix` specification
+
+```yaml
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [my_pkg_a, my_pkg_b]
+    name: ${{ matrix.package }}
+    container:
+      image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-jammy:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          target-ros2-distro: humble
+          package-name: ${{ matrix.package }}
+```
+
+#### Building against multiple ROS distributions
+
+You may be using a mono-branch strategy for your package, as some do.
+In this case, you can also include the distribution as part of the matrix.
+
+See this (simplified) example from [graph-monitor](https://github.com/ros-tooling/graph-monitor/blob/main/.github/workflows/build.yml)
+
+```yaml
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ros: [humble, jazzy, kilted, rolling]
+        package: [rmw_stats_shim, rosgraph_monitor, rosgraph_monitor_msgs, rosgraph_monitor_test]
+        include:
+          - ros: humble
+            ubuntu: jammy
+          - ros: jazzy
+            ubuntu: noble
+          - ros: kilted
+            ubuntu: noble-testing
+          - ros: rolling
+            ubuntu: noble
+    name: ${{ matrix.ros }} - ${{ matrix.package }}
+    container:
+      image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-${{ matrix.ubuntu }}:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          target-ros2-distro: ${{ matrix.ros }}
+          package-name: ${{ matrix.package }}
+```
+
+
 ### Building ROS 2 core dependencies from source
 
 In this case, `action-ros-ci` will build all necessary ROS 2 dependencies of `my_package` from source.
