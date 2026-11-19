@@ -1,0 +1,18 @@
+# repo file only containing ament_cmake, and ament_lint
+# These repositories have been chosen because they do not depend on anything.
+#
+# Versions are pinned to avoid updates to those packages creating failures.
+
+repositories:
+  ament_cmake:
+    type: git
+    url: https://github.com/ament/ament_cmake.git
+    version: 2.9.3
+  ament_lint:
+    type: git
+    url: https://github.com/ament/ament_lint.git
+    version: 0.21.4
+  ament_package:
+    type: git
+    url: https://github.com/ament/ament_package.git
+    version: 0.19.1
