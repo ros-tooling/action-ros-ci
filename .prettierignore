@@ -1,0 +1,5 @@
+dist
+coverage
+*.md
+*.yml
+*.yaml

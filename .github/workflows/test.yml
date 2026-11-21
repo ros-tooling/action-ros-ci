@@ -1,0 +1,616 @@
+name: "Test action-ros-ci"
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Run the CI automatically nightly to catch flakes
+    - cron: "0 0 * * *"
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+jobs:
+  pre_condition:
+    name: "Don't run scheduled jobs on forks"
+    runs-on: ubuntu-latest
+    if: ${{ (github.event_name != 'schedule') || (github.event_name == 'schedule' && github.repository == 'ros-tooling/action-ros-ci') }}
+    steps:
+      - run: 'true'
+
+  test_ros:
+    name: "Test ROS package"
+    runs-on: ubuntu-latest
+    needs: pre_condition
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distribution: # ROS 1 tests only run on Ubuntu
+          - noetic
+
+        # Define the OCI image(s) associated with each ROS distribution.
+        # The include syntax allows additional variables to be defined, like
+        # container_image in this case. See documentation:
+        # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
+        #
+        # Platforms are defined in REP 3: https://ros.org/reps/rep-0003.html
+        include:
+          # Noetic Ninjemys (May 2020 - May 2025)
+          - container_image: rostooling/setup-ros-docker:ubuntu-focal-latest
+            ros_distribution: noetic
+    container:
+      image: ${{ matrix.container_image }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: "24.x"
+      - run: .github/workflows/build-and-test.sh
+      - uses: ./
+        id: action-ros-ci
+        with:
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/ros_tutorials.repos"
+          package-name: roscpp_tutorials
+          target-ros1-distro: ${{ matrix.ros_distribution }}
+      - run: test -d "${{ steps.action-ros-ci.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
+        name: "Check that roscpp_tutorials install directory is present"
+
+  test_ros2_mac_win:
+    name: "Test ROS 2 packages in repository"
+    runs-on: ${{ matrix.os }}
+    needs: pre_condition
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          # - macOS-latest
+          - windows-2022
+        ros_distribution: [humble, jazzy, kilted, lyrical]
+    env:
+      INSTALL_TYPE: ${{ startsWith(matrix.os, 'windows') && 'merged' || 'default' }}
+      INSTALL_PATH: ${{ startsWith(matrix.os, 'windows') && 'install/share' || 'install' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: "24.x"
+      - run: .github/workflows/build-and-test.sh
+      - uses: ros-tooling/setup-ros@main
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
+          # TODO(christophebedard): remove once Lyrical has been released and the Rolling transition to Resolute is complete
+          use-ros2-testing: ${{ matrix.ros_distribution == 'lyrical' || matrix.ros_distribution == 'rolling' }}
+      - uses: ./
+        id: test_all_packages_in_repo
+        name: "Test all packages in single repo, default options"
+        with:
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+      - name: "Check that osrf_testing_tools_cpp install directory is present in ${{ env.INSTALL_TYPE }} install space"
+        run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/${{ env.INSTALL_PATH }}/osrf_testing_tools_cpp"
+      - name: "Check that test_osrf_testing_tools_cpp install directory is present in ${{ env.INSTALL_TYPE }} install space"
+        run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/${{ env.INSTALL_PATH }}/test_osrf_testing_tools_cpp"
+
+  test_ros2_humble_package_with_dependencies:
+    name: "Test ROS 2 humble package with ROS dependencies"
+    runs-on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-jammy-latest
+    needs: pre_condition
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        with:
+          package-name: rmw
+          target-ros2-distro: humble
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
+
+  test_ros2_humble_rosdep_skip_keys:
+    name: "Test with rosdep-skip-keys option"
+    runs-on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-jammy-latest
+    needs: pre_condition
+    steps:
+      - uses: actions/checkout@v5
+      # Skip installing test_depend dependency and verifies it isn't installed.
+      - uses: ./
+        with:
+          package-name: rmw
+          target-ros2-distro: humble
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
+          extra-cmake-args: -DBUILD_TESTING=Off
+          skip-tests: true
+          rosdep-skip-keys: osrf_testing_tools_cpp
+      - name: Install dpkg
+        run: sudo apt -y install dpkg
+      - name: "Verify dependencies were skipped"
+        run: |
+          [[ $(dpkg -s ros-humble-osrf-testing-tools-cpp) -eq 0 ]]
+      # Install dependencies as usual and verifies it is now installed.
+      - uses: ./
+        with:
+          package-name: rmw
+          target-ros2-distro: humble
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
+      - name: "Verify dependencies weren't skipped"
+        run: |
+          dpkg -s ros-humble-osrf-testing-tools-cpp
+
+  test_private_repo:
+    name: "Test with private repos"
+    runs-on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+    needs: pre_condition
+    # We don't have access to the secret token for the test repo on a fork
+    if: ${{ !github.event.repository.fork && !github.event.pull_request.head.repo.fork }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        with:
+          import-token: ${{ secrets.TOKEN_PRIVATE_REPO_TEST }}
+          package-name: simple_package
+          target-ros2-distro: jazzy
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_private_repo.repos"
+
+  # Build and test a ROS 2 package in the setup-ros-docker base images
+  test_ros2_docker:
+    name: "ROS 2 Docker"
+    runs-on: ubuntu-latest
+    needs: pre_condition
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distribution:
+          - humble
+          - jazzy
+          - rolling
+        # Define the container image(s) associated with each ROS distribution.
+        # The include syntax allows additional variables to be defined, like
+        # container_image in this case. See documentation:
+        # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
+        #
+        # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
+        include:
+          # Humble Hawksbill (May 2022 - May 2027)
+          - container_image: rostooling/setup-ros-docker:ubuntu-jammy-latest
+            ros_distribution: humble
+
+          # Jazzy Jalisco (May 2024 - May 2029)
+          - container_image: rostooling/setup-ros-docker:ubuntu-noble-latest
+            ros_distribution: jazzy
+
+          # Lyrical Luth (May 2026 - May 2031)
+          - container_image: rostooling/setup-ros-docker:ubuntu-resolute-latest
+            ros_distribution: lyrical
+
+          # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
+          - container_image: rostooling/setup-ros-docker:ubuntu-resolute-latest
+            ros_distribution: rolling
+    container:
+      image: ${{ matrix.container_image }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: "24.x"
+      - run: .github/workflows/build-and-test.sh
+      - uses: ./
+        name: "Test rosdep installs from correct distro"
+        with:
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: .github/workflows/repo_file_for_test_rosdep_distro.repos
+          # test_msgs depends on test_interface_files, which should be installed by rosdep
+          # If the dependencies are installed for the wrong distribution, then the build should fail
+          package-name: test_msgs
+      # Verify that rosdep installed the required Debian package
+      - run: dpkg -s ros-${{ matrix.ros_distribution }}-test-interface-files
+
+      - uses: ./
+        id: test_all_packages_in_repo
+        name: "Test all packages in repo, default options"
+        with:
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+      - run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
+      - run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/install/test_osrf_testing_tools_cpp"
+
+  # Test building all of ros2 from source in a bare runner, not a container
+  test_ros2_from_source:
+    name: "ROS 2 from source"
+    runs-on: ${{ startsWith(matrix.os, 'ubuntu') && 'ubuntu-latest' || matrix.os }}
+    needs: pre_condition
+    container:
+      image: ${{ startsWith(matrix.os, 'ubuntu') && matrix.os || '' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu:22.04
+            ros_distribution: humble
+          - os: ubuntu:24.04
+            ros_distribution: jazzy
+          - os: ubuntu:24.04
+            ros_distribution: kilted
+          - os: ubuntu:26.04
+            ros_distribution: lyrical
+          - os: ubuntu:26.04
+            ros_distribution: rolling
+          - os: windows-2022
+            ros_distribution: humble
+          - os: windows-2022
+            ros_distribution: jazzy
+          - os: windows-2022
+            ros_distribution: kilted
+          - os: windows-2022
+            ros_distribution: lyrical
+          - os: windows-2022
+            ros_distribution: rolling
+          # - os: macOS-latest
+          #   ros_distribution: humble
+          # - os: macOS-latest
+          #   ros_distribution: jazzy
+          # - os: macOS-latest
+          #   ros_distribution: kilted
+          # - os: macOS-latest
+          #   ros_distribution: rolling
+    env:
+      DISTRO_REPOS_URL: "https://raw.githubusercontent.com/ros2/ros2/${{ matrix.ros_distribution }}/ros2.repos"
+      INSTALL_TYPE: ${{ startsWith(matrix.os, 'windows') && 'merged' || 'default' }}
+      INSTALL_PATH: ${{ startsWith(matrix.os, 'windows') && 'install/share' || 'install' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: "24.x"
+      - run: .github/workflows/build-and-test.sh
+      - uses: ros-tooling/setup-ros@main
+        with:
+          # TODO(christophebedard): remove once Lyrical has been released and the Rolling transition to Resolute is complete
+          use-ros2-testing: ${{ matrix.ros_distribution == 'lyrical' || matrix.ros_distribution == 'rolling' }}
+      - uses: ./
+        id: test_single_package
+        name: "Test single package, default options"
+        with:
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
+      - name: "Check that ament_copyright install directory is present in ${{ env.INSTALL_TYPE }} install space"
+        run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/${{ env.INSTALL_PATH }}/ament_copyright"
+      - uses: ./
+        id: test_multiple_packages
+        name: "Test multiple package, default options"
+        with:
+          package-name: ament_copyright ament_lint
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
+      - name: "Check that ament_copyright install directory is present in ${{ env.INSTALL_TYPE }} install space"
+        run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/${{ env.INSTALL_PATH }}/ament_copyright"
+      - name: "Check that ament_lint install directory is present in ${{ env.INSTALL_TYPE }} install space"
+        run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/${{ env.INSTALL_PATH }}/ament_lint"
+      - uses: ./
+        id: test_connext_dependency
+        name: "Test single package with Connext dependency, default options"
+        if: startsWith(matrix.os, 'ubuntu-')
+        with:
+          package-name: rmw_implementation
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
+      - run: test -d "${{ steps.test_connext_dependency.outputs.ros-workspace-directory-name }}/install/rmw_implementation"
+        name: "Check that rmw_implementation install directory is present"
+        if: startsWith(matrix.os, 'ubuntu-')
+
+      - uses: ./
+        id: test_mixin
+        name: "Test single package, with custom mixin"
+        with:
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["asan-gcc"]
+              }
+            }
+          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
+      - name: "Check that ament_copyright install directory is present in ${{ env.INSTALL_TYPE }} install space"
+        run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/${{ env.INSTALL_PATH }}/ament_copyright"
+      - uses: ./
+        id: test_repo
+        name: "Test single package, with custom repository file"
+        with:
+          vcs-repo-file-url: ${{ github.workspace }}/.github/workflows/repo_file_for_test${{ contains(fromJSON('["ubuntu:24.04","ubuntu:26.04"]'), matrix.os) && '_noble' || '' }}.repos
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+      - name: "Check that ament_copyright install directory is present in ${{ env.INSTALL_TYPE }} install space"
+        run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/${{ env.INSTALL_PATH }}/ament_copyright"
+      - uses: ./
+        id: test_colcon_defaults
+        name: "Test single package, with colcon defaults"
+        with:
+          colcon-defaults: |
+            {
+              "build": {
+                "build-base": "build-custom"
+              }
+            }
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
+      - name: "Check that ament_copyright install directory is present in ${{ env.INSTALL_TYPE }} install space"
+        run: test -d "${{ steps.test_colcon_defaults.outputs.ros-workspace-directory-name }}/${{ env.INSTALL_PATH }}/ament_copyright"
+      - run: test -d "${{ steps.test_colcon_defaults.outputs.ros-workspace-directory-name }}/build-custom"
+
+      # The second repo file is ignored, but will get vcs-import'ed anyway.
+      # This test case just run basic testing on the action logic, making
+      # sure the for-loop is implemented correctly.
+      - uses: ./
+        id: test_multiple_repos
+        name: "Test single package, with multiple custom repository files"
+        with:
+          vcs-repo-file-url: |
+            .github/workflows/repo_file_for_test${{ contains(fromJSON('["ubuntu:24.04","ubuntu:26.04"]'), matrix.os) && '_noble' || '' }}.repos
+            .github/workflows/repo_file_for_test_cpp_package.repos
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+      - name: "Check that ament_copyright install directory is present in ${{ env.INSTALL_TYPE }} install space"
+        run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/${{ env.INSTALL_PATH }}/ament_copyright"
+      - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/ament_lint"
+      - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/osrf_testing_tools_cpp"
+
+      - uses: ./
+        id: test_coverage
+        name: "Test single package, with coverage enabled (Linux only)"
+        with:
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["coverage-gcc"]
+              }
+            }
+          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+          package-name: osrf_testing_tools_cpp
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+        if: runner.os != 'Windows'
+      - run: find ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
+        name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
+        if: runner.os != 'Windows'
+      - run: test -d ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/lcov/ && rm -rf ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/lcov/
+        name: "Check if lcov-result directory is present (Linux only)"
+        if: runner.os != 'Windows'
+
+      - uses: ./
+        id: test_coverage_disable
+        name: "Test single package, with coverage result disabled"
+        with:
+          package-name: osrf_testing_tools_cpp
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+          coverage-result: false
+      - run: test ! -d ${{ steps.test_coverage_disable.outputs.ros-workspace-directory-name }}/lcov/
+        name: "Check if lcov-result directory is not present"
+        if: runner.os != 'Windows'
+
+      - uses: ./
+        id: test_extra_cmake
+        name: "Test single package, with extra cmake flags"
+        with:
+          package-name: ament_cmake_core
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ github.workspace }}/.github/workflows/repo_file_for_test${{ contains(fromJSON('["ubuntu:24.04","ubuntu:26.04"]'), matrix.os) && '_noble' || '' }}.repos
+          # We use a long unique string here to make sure that if this string
+          # is found in CMakeCache.txt, it means the additional CMake flag has
+          # been passed successfully. Non recognized flags are also written by
+          # cmake into CMakeCache.txt, so this does not need to be a flag that
+          # really exists in this package.
+          extra-cmake-args: |
+            -DADDITIONAL_CMAKE_OPTION_FOR_TEST:STR="9ae391a63628efe6d72ba34a1a1d9dc9"
+      - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
+        name: "Check that the additional extra flags has been correctly passed"
+
+      - uses: ./
+        id: test_skip_tests
+        name: "Test single package, skip tests"
+        with:
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
+          skip-tests: true
+      - run: test -d "${{ steps.test_skip_tests.outputs.ros-workspace-directory-name }}/build/ament_copyright"
+        name: "Check that a build directory exists for ament_copyright"
+      - run: test ! -f "${{ steps.test_skip_tests.outputs.ros-workspace-directory-name }}/build/ament_copyright/colcon_test.rc"
+        name: "Check that 'colcon test' wasn't run on ament_copyright"
+
+      - uses: ./
+        id: test_no_symlink_install
+        name: "Test single package, with no --symlink-install"
+        with:
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ env.DISTRO_REPOS_URL }}
+          no-symlink-install: true
+      - run: test ! -f "${{ steps.test_no_symlink_install.outputs.ros-workspace-directory-name }}/install/ament_copyright/lib/python3.*/site-packages/ament-copyright.egg-link"
+        name: "Check that an .egg-link file in the install dir does not exist for ament_copyright"
+
+  # Test building all of ros2.repos, using ros-tooling/setup-ros action, in a bare Ubuntu container
+  test_ros2_from_source_container:
+    name: "Test ROS 2 from source in container"
+    runs-on: ubuntu-latest
+    needs: pre_condition
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distribution:
+          - humble
+          - jazzy
+          - kilted
+          - lyrical
+          - rolling
+
+        # Define the container image(s) associated with each ROS distribution.
+        # The include syntax allows additional variables to be defined, like
+        # container_image in this case. See documentation:
+        # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#example-including-configurations-in-a-matrix-build
+        #
+        # Platforms are defined in REP 2000: https://ros.org/reps/rep-2000.html
+        include:
+          # Humble Hawksbill (May 2022 - May 2027)
+          - container_image: ubuntu:jammy
+            ros_distribution: humble
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+
+          # Jazzy Jalisco (May 2024 - May 2029)
+          - container_image: ubuntu:noble
+            ros_distribution: jazzy
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/jazzy/ros2.repos
+
+          # Kilted Kaiju (May 2025 - November 2026)
+          - container_image: ubuntu:noble
+            ros_distribution: kilted
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/kilted/ros2.repos
+
+          # Lyrical Luth (May 2026 - May 2031)
+          - container_image: ubuntu:resolute
+            ros_distribution: lyrical
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/lyrical/ros2.repos
+
+          # Rolling Ridley (see REP 2002: https://www.ros.org/reps/rep-2002.html)
+          - container_image: ubuntu:resolute
+            ros_distribution: rolling
+            distro_repos_url: https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos
+    container:
+      image: ${{ matrix.container_image }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: "24.x"
+      - run: .github/workflows/build-and-test.sh
+      - uses: ros-tooling/setup-ros@main
+        with:
+          # TODO(christophebedard): remove once Lyrical has been released and the Rolling transition to Resolute is complete
+          use-ros2-testing: ${{ matrix.ros_distribution == 'lyrical' || matrix.ros_distribution == 'rolling' }}
+      - uses: ./
+        id: test_single_package
+        name: "Test single package, default options"
+        with:
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ matrix.distro_repos_url }}
+      - run: test -d "${{ steps.test_single_package.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+        name: "Check that ament_copyright install directory is present"
+
+      - uses: ./
+        id: test_multiple_packages
+        name: "Test multiple package, default options"
+        with:
+          package-name: ament_copyright ament_lint
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ matrix.distro_repos_url }}
+      - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+        name: "Check that ament_copyright install directory is present"
+      - run: test -d "${{ steps.test_multiple_packages.outputs.ros-workspace-directory-name }}/install/ament_lint"
+        name: "Check that ament_lint install directory is present"
+
+      - uses: ./
+        id: test_connext_dependency
+        name: "Test single package with Connext dependency, default options"
+        with:
+          package-name: rmw_implementation
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ matrix.distro_repos_url }}
+      - run: test -d "${{ steps.test_connext_dependency.outputs.ros-workspace-directory-name }}/install/rmw_implementation"
+        name: "Check that rmw_implementation install directory is present"
+
+      - uses: ./
+        id: test_mixin
+        name: "Test single package, with custom mixin"
+        with:
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["asan-gcc"]
+              }
+            }
+          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: ${{ matrix.distro_repos_url }}
+      - run: test -d "${{ steps.test_mixin.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+        name: "Check that ament_copyright install directory is present"
+
+      - uses: ./
+        id: test_repo
+        name: "Test single package, with custom repository file"
+        with:
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos"
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+      - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+
+      # The second repo file is ignored, but will get vcs-import'ed anyway.
+      # This test case just run basic testing on the action logic, making
+      # sure the for-loop is implemented correctly.
+      - uses: ./
+        id: test_multiple_repos
+        name: "Test single package, with multiple custom repository files"
+        with:
+          vcs-repo-file-url: |
+            .github/workflows/repo_file_for_test${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos
+            .github/workflows/repo_file_for_test_cpp_package.repos
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+      - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/install/ament_copyright"
+      - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/ament_lint"
+      - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/src/osrf_testing_tools_cpp"
+
+      - uses: ./
+        id: test_coverage
+        name: "Test single package, with coverage enabled (Linux only)"
+        with:
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["coverage-gcc"]
+              }
+            }
+          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+          package-name: osrf_testing_tools_cpp
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+      - run: find ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
+        name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
+
+      - uses: ./
+        id: test_extra_cmake
+        name: "Test single package, with extra cmake flags"
+        with:
+          package-name: ament_cmake_core
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos"
+          # We use a long unique string here to make sure that if this string
+          # is found in CMakeCache.txt, it means the additional CMake flag has
+          # been passed successfully. Non recognized flags are also written by
+          # cmake into CMakeCache.txt, so this does not need to be a flag that
+          # really exists in this package.
+          extra-cmake-args: |
+            -DADDITIONAL_CMAKE_OPTION_FOR_TEST:STR="9ae391a63628efe6d72ba34a1a1d9dc9"
+      - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
+        name: "Check that the additional extra flags has been correctly passed"
+
+      - uses: ./
+        id: test_directories_with_same_name_as_repo
+        name: "Test that directories with the same name as this repository are not removed"
+        with:
+          package-name: ament_copyright
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_dirs_with_same_name_as_repo${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos"
+      - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/action-ros-ci/foo"
+      - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/foo/action-ros-ci/bar"
