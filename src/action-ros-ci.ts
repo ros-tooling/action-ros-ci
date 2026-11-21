@@ -40,6 +40,65 @@ export function filterNonEmptyJoin(values: string[]): string {
 }
 
 /**
+ * Information about the runner executing the action.
+ *
+ * Included in error messages so that platform-specific failures (e.g. on
+ * Windows runners) can be diagnosed from the CI logs.
+ *
+ * @returns a string describing the runner environment
+ */
+export function runnerInfoString(): string {
+	const info = [
+		`platform: ${process.platform}`,
+		`arch: ${process.arch}`,
+		`os.release: ${os.release()}`,
+		`node: ${process.version}`,
+	];
+	if (process.env.RUNNER_OS) {
+		info.push(`RUNNER_OS: ${process.env.RUNNER_OS}`);
+	}
+	if (process.env.RUNNER_ARCH) {
+		info.push(`RUNNER_ARCH: ${process.env.RUNNER_ARCH}`);
+	}
+	if (process.env.RUNNER_NAME) {
+		info.push(`RUNNER_NAME: ${process.env.RUNNER_NAME}`);
+	}
+	return info.join(", ");
+}
+
+/**
+ * Wrap an error thrown while executing a shell command with the command that
+ * was run and information about the runner.
+ *
+ * The error produced by @actions/exec only mentions the tool runner process
+ * (on Windows: "The process 'cmd.exe' failed with exit code N"), which on its
+ * own does not say which command failed or why.
+ * See https://github.com/ros-tooling/action-ros-ci/issues/1000
+ *
+ * @param   error       the error thrown while executing the command
+ * @param   commandLine the full command line that was executed
+ * @returns a new Error with a detailed message and the original error as cause
+ */
+export function enrichExecError(error: unknown, commandLine: string): Error {
+	const originalMessage =
+		error instanceof Error ? error.message : String(error);
+	const enriched = new Error(
+		[
+			`Command failed (${runnerInfoString()}):`,
+			commandLine,
+			`Underlying error: ${originalMessage}`,
+		].join("\n"),
+	);
+	if (error instanceof Error) {
+		(enriched as Error & { cause?: unknown }).cause = error;
+		if (error.stack) {
+			enriched.stack = `${enriched.message}\n${error.stack}`;
+		}
+	}
+	return enriched;
+}
+
+/**
  * Check if a string is a valid JSON string.
  *
  * @param str the string to validate
@@ -75,6 +134,13 @@ function resolveVcsRepoFileUrl(vcsRepoFileUrl: string): string {
 /**
  * Execute a shell command and wrap the output in a log group.
  *
+ * If the command fails, the thrown error is enriched with the full command
+ * line that was executed and information about the runner, so that the
+ * failure is reported with useful details in the CI logs (in particular on
+ * Windows, where the bare tool runner error only mentions cmd.exe and an
+ * exit code, without saying which command failed or why).
+ * See https://github.com/ros-tooling/action-ros-ci/issues/1000
+ *
  * @param   command         command to execute w/ any params
  * @param   force_bash      force running in bash shell, instead of os default. defaults to true.
  * @param   options         optional exec options.  See ExecOptions
@@ -87,7 +153,11 @@ export async function execShellCommand(
 	force_bash: boolean = true,
 	log_message?: string,
 ): Promise<number> {
-	const use_bash = !isWindows || force_bash;
+	// Determine the platform at call time (instead of relying on the
+	// module-level constant) so that the Windows code path can be exercised
+	// in tests.
+	const platform: NodeJS.Platform = process.platform;
+	const use_bash = platform != "win32" || force_bash;
 	if (use_bash) {
 		// Bash commands needs to be flattened into a single string when passed to bash with "-c" switch
 		command = [filterNonEmptyJoin(command)];
@@ -95,7 +165,7 @@ export async function execShellCommand(
 
 	let toolRunnerCommandLine = "";
 	let toolRunnerCommandLineArgs: string[] = [];
-	if (isWindows) {
+	if (platform == "win32") {
 		toolRunnerCommandLine = "C:\\Windows\\system32\\cmd.exe";
 		// This passes the same flags to cmd.exe that "run:" in a workflow.
 		// https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
@@ -117,20 +187,28 @@ export async function execShellCommand(
 		toolRunnerCommandLine = "bash";
 		toolRunnerCommandLineArgs = ["-c", ...command];
 	}
-	const message =
-		log_message ||
-		`Invoking: ${toolRunnerCommandLine} ${toolRunnerCommandLineArgs}`;
+	const commandLine = [
+		toolRunnerCommandLine,
+		...toolRunnerCommandLineArgs,
+	].join(" ");
+	const message = log_message || `Invoking: ${commandLine}`;
 	const runner: tr.ToolRunner = new tr.ToolRunner(
 		toolRunnerCommandLine,
 		toolRunnerCommandLineArgs,
 		options,
 	);
-	if (options && options.silent) {
-		return runner.exec();
+	try {
+		if (options && options.silent) {
+			return await runner.exec();
+		}
+		return await core.group(message, () => {
+			return runner.exec();
+		});
+	} catch (error) {
+		// Surface which command failed and on which runner, instead of only
+		// the bare tool runner error (e.g. the cmd.exe exit code on Windows).
+		throw enrichExecError(error, commandLine);
 	}
-	return core.group(message, () => {
-		return runner.exec();
-	});
 }
 
 //Determine whether all inputs name supported ROS distributions.
@@ -825,14 +903,33 @@ done`;
 	}
 }
 
+/**
+ * Report an error that made the action fail: print the full stack trace to
+ * the logs and fail the action with the real error message (instead of a
+ * generic one), so that failures are diagnosable from the CI logs.
+ *
+ * @param error the error to report
+ */
+export function reportError(error: unknown): void {
+	let errorMessage = "Unknown error";
+	if (error instanceof Error) {
+		errorMessage = error.message;
+		if (error.stack) {
+			// Print the full stack trace to the logs so that the failure can be
+			// diagnosed even when the error message alone is not informative
+			// (e.g. the bare cmd.exe "failed with exit code" error on Windows).
+			console.error(error.stack);
+		}
+	} else if (error !== undefined && error !== null) {
+		errorMessage = String(error);
+	}
+	core.setFailed(errorMessage);
+}
+
 export async function run(): Promise<void> {
 	try {
 		await run_throw();
 	} catch (error) {
-		let errorMessage = "Unknown error";
-		if (error instanceof Error) {
-			errorMessage = error.message;
-		}
-		core.setFailed(errorMessage);
+		reportError(error);
 	}
 }
