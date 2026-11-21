@@ -1,0 +1,44 @@
+name: "Generate .repos file"
+description: "Generate a .repos file for the given packages using rosinstall_generator and upstream release tags"
+inputs:
+  rosdistro:
+    description: "ROS distro"
+    required: true
+  packages:
+    description: "Package names, separated by whitespace"
+    required: true
+  deps:
+    description: "Include recursive dependencies (--deps)"
+    required: false
+    default: "false"
+outputs:
+  repos-file:
+    description: "Path to the generated .repos file, relative to the workspace"
+    value: ${{ steps.generate.outputs.repos-file }}
+runs:
+  using: composite
+  steps:
+    # pipx is preinstalled on GitHub-hosted runners, but not in our containers.
+    # python3-venv is listed explicitly because pipx does not depend on it on Ubuntu 20.04.
+    - name: "Install pipx if needed"
+      shell: bash
+      run: |
+        if ! command -v pipx > /dev/null; then
+          sudo=$([ "$(id -u)" = 0 ] || echo sudo)
+          $sudo apt-get update -q
+          $sudo env DEBIAN_FRONTEND=noninteractive \
+            apt-get install -y -q --no-install-recommends pipx python3-venv
+        fi
+    - name: "Generate .repos file"
+      id: generate
+      shell: bash
+      env:
+        DISTRO: ${{ inputs.rosdistro }}
+        PACKAGES: ${{ inputs.packages }}
+        DEPS: ${{ inputs.deps == 'true' && '--deps' || '' }}
+      run: |
+        mkdir -p generated_repos
+        file="generated_repos/${DISTRO}${DEPS:+-deps}-$(echo $PACKAGES | tr ' ' '-').repos"
+        pipx run rosinstall_generator --rosdistro "$DISTRO" --upstream --format repos $DEPS $PACKAGES > "$file"
+        cat "$file"
+        echo "repos-file=$file" >> "$GITHUB_OUTPUT"
