@@ -4,7 +4,7 @@
 
 Install [Node.js](https://nodejs.org/en/download/).
 
-We are currently using Node.js v20.
+We are currently using Node.js v24.
 
 ## Install dependencies
 
