@@ -93,8 +93,7 @@ describe("PR-specific repos files", () => {
 Description of the changes.
 Blah blah.
 `;
-		let payload = {};
-		payload = { pull_request: { body: bodyEmpty } };
+		let payload: object = { pull_request: { body: bodyEmpty } };
 		expect(dep.getReposFilesOverride(payload)).toEqual([]);
 		expect(dep.getReposFilesSupplemental(payload)).toEqual([]);
 

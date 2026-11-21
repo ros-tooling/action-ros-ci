@@ -1,4 +1,7 @@
-import { WebhookPayload } from "@actions/github/lib/interfaces";
+import type { context } from "@actions/github";
+
+// @actions/github does not export its WebhookPayload type
+type WebhookPayload = typeof context.payload;
 
 // Expecting something like:
 //  action-ros-ci-repos-override: https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos
