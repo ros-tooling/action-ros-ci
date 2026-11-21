@@ -23,7 +23,7 @@ describe("execShellCommand test suite", () => {
 		const options = {
 			ignoreReturnCode: true,
 		};
-		const result = execShellCommand(["somebadcommand"], options);
+		const result = await execShellCommand(["somebadcommand"], options);
 		expect(mockGroup).toHaveBeenCalled();
 		expect(result).not.toEqual(0);
 	});
