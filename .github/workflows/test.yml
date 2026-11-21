@@ -46,6 +46,11 @@ jobs:
       image: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/rosinstall-generator
+        id: repos_ros_tutorials
+        with:
+          rosdistro: ${{ matrix.ros_distribution }}
+          packages: roscpp_tutorials
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "24.x"
@@ -53,7 +58,7 @@ jobs:
       - uses: ./
         id: action-ros-ci
         with:
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/ros_tutorials.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_ros_tutorials.outputs.repos-file }}"
           package-name: roscpp_tutorials
           target-ros1-distro: ${{ matrix.ros_distribution }}
       - run: test -d "${{ steps.action-ros-ci.outputs.ros-workspace-directory-name }}/install/roscpp_tutorials"
@@ -75,6 +80,11 @@ jobs:
       INSTALL_PATH: ${{ startsWith(matrix.os, 'windows') && 'install/share' || 'install' }}
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/rosinstall-generator
+        id: repos_cpp_package
+        with:
+          rosdistro: ${{ matrix.ros_distribution }}
+          packages: osrf_testing_tools_cpp
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "24.x"
@@ -89,7 +99,7 @@ jobs:
         name: "Test all packages in single repo, default options"
         with:
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_cpp_package.outputs.repos-file }}"
       - name: "Check that osrf_testing_tools_cpp install directory is present in ${{ env.INSTALL_TYPE }} install space"
         run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/${{ env.INSTALL_PATH }}/osrf_testing_tools_cpp"
       - name: "Check that test_osrf_testing_tools_cpp install directory is present in ${{ env.INSTALL_TYPE }} install space"
@@ -103,11 +113,16 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/rosinstall-generator
+        id: repos_cpp_with_dependency
+        with:
+          rosdistro: humble
+          packages: rmw
       - uses: ./
         with:
           package-name: rmw
           target-ros2-distro: humble
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_cpp_with_dependency.outputs.repos-file }}"
 
   test_ros2_humble_rosdep_skip_keys:
     name: "Test with rosdep-skip-keys option"
@@ -117,12 +132,17 @@ jobs:
     needs: pre_condition
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/rosinstall-generator
+        id: repos_cpp_with_dependency
+        with:
+          rosdistro: humble
+          packages: rmw
       # Skip installing test_depend dependency and verifies it isn't installed.
       - uses: ./
         with:
           package-name: rmw
           target-ros2-distro: humble
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_cpp_with_dependency.outputs.repos-file }}"
           extra-cmake-args: -DBUILD_TESTING=Off
           skip-tests: true
           rosdep-skip-keys: osrf_testing_tools_cpp
@@ -136,7 +156,7 @@ jobs:
         with:
           package-name: rmw
           target-ros2-distro: humble
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_with_dependency.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_cpp_with_dependency.outputs.repos-file }}"
       - name: "Verify dependencies weren't skipped"
         run: |
           dpkg -s ros-humble-osrf-testing-tools-cpp
@@ -156,7 +176,7 @@ jobs:
           import-token: ${{ secrets.TOKEN_PRIVATE_REPO_TEST }}
           package-name: simple_package
           target-ros2-distro: jazzy
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_private_repo.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/private_repo.repos"
 
   # Build and test a ROS 2 package in the setup-ros-docker base images
   test_ros2_docker:
@@ -196,6 +216,16 @@ jobs:
       image: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/rosinstall-generator
+        id: repos_rosdep_distro
+        with:
+          rosdistro: ${{ matrix.ros_distribution }}
+          packages: test_msgs
+      - uses: ./.github/actions/rosinstall-generator
+        id: repos_cpp_package
+        with:
+          rosdistro: ${{ matrix.ros_distribution }}
+          packages: osrf_testing_tools_cpp
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "24.x"
@@ -204,7 +234,7 @@ jobs:
         name: "Test rosdep installs from correct distro"
         with:
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: .github/workflows/repo_file_for_test_rosdep_distro.repos
+          vcs-repo-file-url: ${{ steps.repos_rosdep_distro.outputs.repos-file }}
           # test_msgs depends on test_interface_files, which should be installed by rosdep
           # If the dependencies are installed for the wrong distribution, then the build should fail
           package-name: test_msgs
@@ -216,7 +246,7 @@ jobs:
         name: "Test all packages in repo, default options"
         with:
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_cpp_package.outputs.repos-file }}"
       - run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/install/osrf_testing_tools_cpp"
       - run: test -d "${{ steps.test_all_packages_in_repo.outputs.ros-workspace-directory-name }}/install/test_osrf_testing_tools_cpp"
 
@@ -265,6 +295,17 @@ jobs:
       INSTALL_PATH: ${{ startsWith(matrix.os, 'windows') && 'install/share' || 'install' }}
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/rosinstall-generator
+        id: repos_ament
+        with:
+          rosdistro: ${{ matrix.ros_distribution }}
+          packages: ament_copyright ament_cmake_core
+          deps: true
+      - uses: ./.github/actions/rosinstall-generator
+        id: repos_cpp_package
+        with:
+          rosdistro: ${{ matrix.ros_distribution }}
+          packages: osrf_testing_tools_cpp
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "24.x"
@@ -325,7 +366,7 @@ jobs:
         id: test_repo
         name: "Test single package, with custom repository file"
         with:
-          vcs-repo-file-url: ${{ github.workspace }}/.github/workflows/repo_file_for_test${{ contains(fromJSON('["ubuntu:24.04","ubuntu:26.04"]'), matrix.os) && '_noble' || '' }}.repos
+          vcs-repo-file-url: ${{ github.workspace }}/${{ steps.repos_ament.outputs.repos-file }}
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - name: "Check that ament_copyright install directory is present in ${{ env.INSTALL_TYPE }} install space"
@@ -355,8 +396,8 @@ jobs:
         name: "Test single package, with multiple custom repository files"
         with:
           vcs-repo-file-url: |
-            .github/workflows/repo_file_for_test${{ contains(fromJSON('["ubuntu:24.04","ubuntu:26.04"]'), matrix.os) && '_noble' || '' }}.repos
-            .github/workflows/repo_file_for_test_cpp_package.repos
+            ${{ steps.repos_ament.outputs.repos-file }}
+            ${{ steps.repos_cpp_package.outputs.repos-file }}
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - name: "Check that ament_copyright install directory is present in ${{ env.INSTALL_TYPE }} install space"
@@ -377,7 +418,7 @@ jobs:
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           package-name: osrf_testing_tools_cpp
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_cpp_package.outputs.repos-file }}"
         if: runner.os != 'Windows'
       - run: find ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
         name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
@@ -392,7 +433,7 @@ jobs:
         with:
           package-name: osrf_testing_tools_cpp
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_cpp_package.outputs.repos-file }}"
           coverage-result: false
       - run: test ! -d ${{ steps.test_coverage_disable.outputs.ros-workspace-directory-name }}/lcov/
         name: "Check if lcov-result directory is not present"
@@ -404,7 +445,7 @@ jobs:
         with:
           package-name: ament_cmake_core
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: ${{ github.workspace }}/.github/workflows/repo_file_for_test${{ contains(fromJSON('["ubuntu:24.04","ubuntu:26.04"]'), matrix.os) && '_noble' || '' }}.repos
+          vcs-repo-file-url: ${{ github.workspace }}/${{ steps.repos_ament.outputs.repos-file }}
           # We use a long unique string here to make sure that if this string
           # is found in CMakeCache.txt, it means the additional CMake flag has
           # been passed successfully. Non recognized flags are also written by
@@ -489,6 +530,17 @@ jobs:
       image: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v5
+      - uses: ./.github/actions/rosinstall-generator
+        id: repos_ament
+        with:
+          rosdistro: ${{ matrix.ros_distribution }}
+          packages: ament_copyright ament_cmake_core
+          deps: true
+      - uses: ./.github/actions/rosinstall-generator
+        id: repos_cpp_package
+        with:
+          rosdistro: ${{ matrix.ros_distribution }}
+          packages: osrf_testing_tools_cpp
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "24.x"
@@ -550,7 +602,7 @@ jobs:
         id: test_repo
         name: "Test single package, with custom repository file"
         with:
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_ament.outputs.repos-file }}"
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - run: test -d "${{ steps.test_repo.outputs.ros-workspace-directory-name }}/install/ament_copyright"
@@ -563,8 +615,8 @@ jobs:
         name: "Test single package, with multiple custom repository files"
         with:
           vcs-repo-file-url: |
-            .github/workflows/repo_file_for_test${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos
-            .github/workflows/repo_file_for_test_cpp_package.repos
+            ${{ steps.repos_ament.outputs.repos-file }}
+            ${{ steps.repos_cpp_package.outputs.repos-file }}
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
       - run: test -d "${{ steps.test_multiple_repos.outputs.ros-workspace-directory-name }}/install/ament_copyright"
@@ -584,7 +636,7 @@ jobs:
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
           package-name: osrf_testing_tools_cpp
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_cpp_package.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_cpp_package.outputs.repos-file }}"
       - run: find ${{ steps.test_coverage.outputs.ros-workspace-directory-name }}/build -name "*.gcda" | grep -q "."
         name: "Check if one or more code coverage files (*.gcda) are present (Linux only)"
 
@@ -594,7 +646,7 @@ jobs:
         with:
           package-name: ament_cmake_core
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_ament.outputs.repos-file }}"
           # We use a long unique string here to make sure that if this string
           # is found in CMakeCache.txt, it means the additional CMake flag has
           # been passed successfully. Non recognized flags are also written by
@@ -605,12 +657,28 @@ jobs:
       - run: grep -q 9ae391a63628efe6d72ba34a1a1d9dc9 ./${{ steps.test_extra_cmake.outputs.ros-workspace-directory-name }}/build/ament_cmake_core/CMakeCache.txt
         name: "Check that the additional extra flags has been correctly passed"
 
+      - name: "Generate repos file with directories that have the same name as this repository"
+        id: repos_same_name_dirs
+        run: |
+          file=same_name_dirs.repos
+          # Test having a top-level directory and a child directory with the same name as the test repo
+          sed -e 's|^  ament_cmake:$|  action-ros-ci/foo:|' \
+              -e 's|^  ament_lint:$|  foo/action-ros-ci/bar:|' \
+              "${{ steps.repos_ament.outputs.repos-file }}" > "$file"
+          # Test having a duplicate of the test repo
+          cat >> "$file" << 'EOF'
+            ros-tooling/action-ros-ci:
+              type: git
+              url: https://github.com/ros-tooling/action-ros-ci.git
+              version: main
+          EOF
+          echo "repos-file=$file" >> "$GITHUB_OUTPUT"
       - uses: ./
         id: test_directories_with_same_name_as_repo
         name: "Test that directories with the same name as this repository are not removed"
         with:
           package-name: ament_copyright
           target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: "${{ github.workspace }}/.github/workflows/repo_file_for_test_dirs_with_same_name_as_repo${{ matrix.container_image == 'ubuntu:24.04' || matrix.container_image == 'ubuntu:26.04' && '_noble' || '' }}.repos"
+          vcs-repo-file-url: "${{ github.workspace }}/${{ steps.repos_same_name_dirs.outputs.repos-file }}"
       - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/action-ros-ci/foo"
       - run: test -d "${{ steps.test_directories_with_same_name_as_repo.outputs.ros-workspace-directory-name }}/src/foo/action-ros-ci/bar"
