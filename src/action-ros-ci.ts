@@ -1,7 +1,6 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import * as im from "@actions/exec/lib/interfaces"; // eslint-disable-line no-unused-vars
-import * as tr from "@actions/exec/lib/toolrunner";
+import * as actions_exec from "@actions/exec";
 import * as io from "@actions/io";
 import * as os from "os";
 import * as path from "path";
@@ -48,7 +47,7 @@ export function filterNonEmptyJoin(values: string[]): string {
 function isValidJson(str: string): boolean {
 	try {
 		JSON.parse(str);
-	} catch (e) {
+	} catch {
 		return false;
 	}
 	return true;
@@ -83,7 +82,7 @@ function resolveVcsRepoFileUrl(vcsRepoFileUrl: string): string {
  */
 export async function execShellCommand(
 	command: string[],
-	options?: im.ExecOptions,
+	options?: actions_exec.ExecOptions,
 	force_bash: boolean = true,
 	log_message?: string,
 ): Promise<number> {
@@ -120,17 +119,16 @@ export async function execShellCommand(
 	const message =
 		log_message ||
 		`Invoking: ${toolRunnerCommandLine} ${toolRunnerCommandLineArgs}`;
-	const runner: tr.ToolRunner = new tr.ToolRunner(
-		toolRunnerCommandLine,
-		toolRunnerCommandLineArgs,
-		options,
-	);
+	const runCommand = () =>
+		actions_exec.exec(
+			toolRunnerCommandLine,
+			toolRunnerCommandLineArgs,
+			options,
+		);
 	if (options && options.silent) {
-		return runner.exec();
+		return runCommand();
 	}
-	return core.group(message, () => {
-		return runner.exec();
-	});
+	return core.group(message, runCommand);
 }
 
 //Determine whether all inputs name supported ROS distributions.
@@ -166,7 +164,7 @@ export function validateDistros(
  */
 export async function determineDistrib(): Promise<string> {
 	let distrib = "";
-	const options: im.ExecOptions = {};
+	const options: actions_exec.ExecOptions = {};
 	options.listeners = {
 		stdout: (data: Buffer) => {
 			distrib += data.toString();
@@ -183,7 +181,7 @@ async function installRosdeps(
 	packageSelection: string[],
 	skipKeys: string[],
 	workspaceDir: string,
-	options: im.ExecOptions,
+	options: actions_exec.ExecOptions,
 	ros1Distro?: string,
 	ros2Distro?: string,
 ): Promise<number> {
@@ -230,7 +228,7 @@ async function checkRosdeps(
 	packageSelection: string[],
 	skipKeys: string[],
 	workspaceDir: string,
-	options: im.ExecOptions,
+	options: actions_exec.ExecOptions,
 	ros1Distro?: string,
 	ros2Distro?: string,
 ): Promise<number> {
@@ -279,7 +277,7 @@ async function checkRosdeps(
  */
 async function runTests(
 	colconCommandPrefix: string[],
-	options: im.ExecOptions,
+	options: actions_exec.ExecOptions,
 	testPackageSelection: string[],
 	colconExtraArgs: string[],
 	coverageIgnorePattern: string[],
@@ -504,7 +502,7 @@ async function run_throw(): Promise<void> {
 	// Checkout ROS 2 from source and install ROS 2 system dependencies
 	await io.mkdirP(rosWorkspaceDir + "/src");
 
-	const options: im.ExecOptions = {
+	const options: actions_exec.ExecOptions = {
 		cwd: rosWorkspaceDir,
 		env: {
 			...process.env,
